@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messaging-gateway
+  namespace: bbt-integration
+  labels:
+    app: messaging-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: messaging-gateway
+  template:
+    metadata:
+      labels:
+        app: messaging-gateway
+    spec:
+      containers:
+      - name: messaging-gateway
+        image: burganbank/messaging-gateway:latest
+        ports:
+        - containerPort: 5070
+        env:
+          - name: ASPNETCORE_ENVIRONMENT
+            value: "Mock"

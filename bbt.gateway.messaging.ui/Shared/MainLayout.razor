@@ -1,0 +1,93 @@
+﻿@inherits LayoutComponentBase
+@using bbt.gateway.messaging.ui.Pages.Authorize
+<PageTitle>bbt.gateway.messaging.ui</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="page">
+              <BaseAuthorizeView>
+            <AuthorizedControl>
+    <RadzenDialog />
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+     
+                 <div class="top-row px-4">
+          <img  class="top-row px-4"  src="https://upload.wikimedia.org/wikipedia/commons/9/96/Burgan_Bank_logo.svg" alt="Burgan Bank" >
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+         
+          
+             
+       
+    </main>
+      </AuthorizedControl>
+       <NotAuthorizedControl>
+           <div class="sidebar">
+                 </div>
+                  <main>
+                       <article class="content px-4">
+           <p>
+             <h3 class="ml-md-auto">Bu sayfaya erişim için yetkiniz bulunmamaktadır</h3>
+             <br />
+
+             </p>
+             <p>
+                     <RadzenButton Click="@(args => LogoutSite())" Text="Logout" class="col-4" />
+                 <br />
+             </p>
+              </article>
+                 </main>
+       </NotAuthorizedControl>
+
+        </BaseAuthorizeView>
+</div>
+</Authorized><NotAuthorized><p></p><br />    
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+        </div>
+        <div class="col-lg-4 mb-4">
+            <RadzenCard style="height: 100%;margin-bottom:1rem">
+                  <div class="row">
+                          <div class="col-4"></div>
+                <p  class="col-4 text-center">Yetkiniz yoktur. Login olmanız gerekmektedir.</p>
+                <div class="col-4"></div>
+               </div>
+              <div class="row">
+                  <div class="col-4"></div>
+                   <RadzenButton Click="@(args => LoginSite())" Text="Login" class="col-4" />
+                        <div class="col-4"></div>
+              </div>
+                   
+               
+            </RadzenCard>
+        </div>
+        <div class="col-lg-4 mb-4">
+        </div>
+    </div></NotAuthorized>
+</AuthorizeView>
+   @* </AuthorizedControl>
+    <NotAuthorizedControl>
+          <div class="page">
+    <RadzenDialog />
+    <div class="sidebar">
+        
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+         
+        </div>
+
+        <article class="content px-4">
+            <h3>Bu sayfaya erişiminiz bulunmamaktadır.</h3>
+        </article>
+    </main>
+</div>
+    </NotAuthorizedControl>
+</BaseAuthorizeView>*@

@@ -1,0 +1,13 @@
+﻿body {
+    
+}
+
+.renderedMarkdown div {
+    margin: 0.5rem;
+    color: #3d3838;
+    padding: 1rem;
+    box-shadow: 0 0 2px 1px #00cfee9c;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 14px;
+}

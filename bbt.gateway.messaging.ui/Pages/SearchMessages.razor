@@ -1,0 +1,159 @@
+﻿@page "/searchMessages"
+
+<PageTitle>Mesaj Sorgulama</PageTitle>
+
+@using bbt.gateway.common.Models
+@using bbt.gateway.messaging.ui.Data
+@inject IMessagingGatewayService MessagingGateway
+@inherits bbt.gateway.messaging.ui.Pages.Base.BaseComponent
+@implements IDisposable
+
+<div class="row align-items-center mb-2">
+   
+        <RadzenCard class="w-100 p-3" >
+            <h6 class="mb-1">Arama Türü</h6>
+            <RadzenRadioButtonList @bind-Value=@searchModel.SelectedSearchType TValue="int" Change=@(args => SelectionChanged(args))>
+                <Items>
+                    @foreach (var choice in Constants.Filters)
+                    {
+                    <RadzenRadioButtonListItem Text="@choice.Value.Name" Value="@choice.Key"  />
+                    }
+                </Items>
+            </RadzenRadioButtonList>
+        </RadzenCard>
+   
+</div>
+
+@foreach (var choice in Constants.Filters)
+{
+    @if (searchModel.SelectedSearchType == choice.Key)
+    {
+        <div class="row mb-2" Style="display:flex; gap: 3%;">
+            
+                <RadzenCard class="col-2 p-3" Style="flex: 1;" >
+                    <h6 class="mb-1">@choice.Value.Name</h6>
+                     @if (searchModel.SelectedSearchType ==3 )
+            { 
+                    <RadzenTextBox Placeholder="905554443322" @bind-Value="searchModel.FilterValue" Class="w-100" />
+            }
+                @if (searchModel.SelectedSearchType != 3)
+            { 
+                    <RadzenTextBox Placeholder="Search..." @bind-Value="searchModel.FilterValue" Class="w-100" />
+            }
+                </RadzenCard>    
+         
+            @if (choice.Value.MessageTypes != null)
+            { 
+              
+                    <RadzenCard class="col-2 p-3" Style="flex: 1;" >
+                        <h6 class="mb-1">Mesaj Türü</h6>
+                        <RadzenDropDown AllowClear="true" TValue="Enum" Class="w-100"
+                            TextProperty="Name" ValueProperty="Type"
+                                Data=@choice.Value.MessageTypes
+                                Change=@(args => SelectMessageType(args, "DropDown")) />
+                    </RadzenCard>
+              
+            }
+            @if ((searchModel.SelectedSearchType != 4&&searchModel.MessageType == MessageTypeEnum.Sms )|| searchModel.SelectedSearchType == 3)
+            { 
+               
+                    <RadzenCard class="col-2" Style="flex: 1" >
+                        <h6 class="mb-1">Sms Türü</h6>
+                        <RadzenDropDown AllowClear="true" TValue="Enum" Class="w-100"
+                                        TextProperty="Name" ValueProperty="Type"
+                                        Data=@choice.Value.SmsTypes
+                                        Change=@(args => SelectSmsType(args, "DropDown")) />
+                    </RadzenCard>
+                 
+               
+            }
+               <RadzenCard class="col-2" Style="flex: 1" >
+                        <h6 class="mb-1">Gönderen Sistem Bilgisi</h6>
+                           <RadzenTextBox Placeholder="Gönderen Sistem" @bind-Value="searchModel.CreatedBy" Class="w-100" />
+                    </RadzenCard>
+                <RadzenCard class="col-2 p-3" Style="flex: 1;" >
+                    <h6 class="mb-1">Başlangıç Tarihi</h6>
+                    <RadzenDatePicker @bind-Value=@searchModel.StartDate DateFormat="d" Change=@(args => OnChange(args, "DatePicker", "MM/dd/yyyy")) Class="w-100" />
+                </RadzenCard>
+         
+           
+                <RadzenCard class="col-2 p-3" Style="flex: 1;" >
+                    <h6 class="mb-1">Bitiş Tarihi</h6>
+                    <RadzenDatePicker @bind-Value=@searchModel.EndDate DateFormat="d" Change=@(args => OnChange(args, "DatePicker", "MM/dd/yyyy")) Class="w-100" />
+                </RadzenCard>
+           
+        </div>
+    }
+}
+
+<div class="row mb-2">
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <RadzenButton Click=@(args => SearchTransactions()) Text="Sorgula" ButtonStyle="ButtonStyle.Primary" Disabled="@useSpinner" />
+    </div>
+</div>
+@if (rowsCount > 0)
+{
+
+        <RadzenButton Click=@(args => ExcelDownload()) Text="Excel (xlsx)" ButtonStyle="ButtonStyle.Primary" Disabled="@closeExcel" />
+    
+    <div class="row mb-2"  Style="display:flex; gap: 3%;">
+      <RadzenCard class="col-2 p-3" Style="flex: 1;" >
+          <span>Müşteri No</span>
+                      <RadzenLabel ReadOnly Text="@transactionFirst.CustomerNo.ToString()" />
+                </RadzenCard>
+                 <RadzenCard class="col-2 p-3" Style="flex: 1;" >
+          <span>Kimlik No</span>
+                      <RadzenLabel ReadOnly Text="@transactionFirst.CitizenshipNo" />
+                </RadzenCard>
+</div>
+}
+
+
+    <RadzenDataGrid @ref=@grid IsLoading="@useSpinner" Data="@transactions" Count="@rowsCount" LoadData="@SearchTransactions"
+    AllowPaging="true" PageSize="@pageCount" PagerHorizontalAlign="HorizontalAlign.Right" TItem="Transaction" ColumnWidth="50px"
+    >
+        <Columns>
+            <RadzenDataGridColumn TItem="Transaction" Property="CreatedAt" Filterable="true" Title="Gönderim Zamanı"  Width="40px"/>
+            <RadzenDataGridColumn TItem="Transaction" Title="İşlem Türü" Sortable="true"  Width="25px">
+                <Template Context="data">
+                    @Constants.TransactionTypeMap[data.TransactionType]
+                </Template>
+            </RadzenDataGridColumn>
+         
+            @if (searchModel.MessageType == MessageTypeEnum.Sms || searchModel.SelectedSearchType == 3)
+            {
+                <RadzenDataGridColumn TItem="Transaction" Property="Phone" Title="Telefon No" Sortable="true" />
+            }
+            @if (searchModel.MessageType == MessageTypeEnum.Mail || searchModel.SelectedSearchType == 4)
+            {
+                <RadzenDataGridColumn TItem="Transaction" Property="Mail" Title="E-Mail" Sortable="true" />
+            }
+            <RadzenDataGridColumn TItem="Transaction" Title="Gönderen Sistem" Sortable="true"  Width="25px">
+                <Template Context="data">
+                   @data.CreatedBy.Name
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Transaction" Title="Durumu" Sortable="true">
+                <Template Context="data">
+                @if (CheckSmsStatus(data)==EnumBasari.Basarili)
+                {
+                    <span class="text-success fw-bold">Başarılı</span>
+                }
+                else if(CheckSmsStatus(data)==EnumBasari.Basarisiz)
+                {
+                    <span class="text-danger fw-bold">Başarısız</span>
+                }
+                else if(CheckSmsStatus(data)==EnumBasari.SmsKontrolGerekli)
+                {
+                     <span class="text-danger fw-bold">Operatör Sorgulama Gerekli</span>
+                }
+            </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Transaction" Title="İşlemler" OrderIndex="15" Width="25px">
+                <Template Context="data">
+                    <RadzenButton Icon="search" Text="" ButtonStyle="ButtonStyle.Secondary" Click="async() => {await OpenSmsDetails(data);}" />
+                </Template>
+            </RadzenDataGridColumn>
+    </Columns>
+    </RadzenDataGrid>
+

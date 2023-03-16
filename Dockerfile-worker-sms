@@ -1,0 +1,23 @@
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal AS base
+WORKDIR /app
+
+RUN adduser -u 5679 --disabled-password --gecos "" smsgateway-workeruser && chown -R smsgateway-workeruser:smsgateway-workeruser /app
+USER smsgateway-workeruser
+
+FROM mcr.microsoft.com/dotnet/sdk:6.0-focal AS build
+WORKDIR /src
+COPY ["bbt.gateway.worker.SmsReports/bbt.gateway.worker.SmsReports.csproj", "bbt.gateway.worker.SmsReports/"]
+RUN dotnet restore "bbt.gateway.worker.SmsReports/bbt.gateway.worker.SmsReports.csproj"
+COPY . .
+WORKDIR "/src/bbt.gateway.worker.SmsReports"
+RUN dotnet build "bbt.gateway.worker.SmsReports.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "bbt.gateway.worker.SmsReports.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+EXPOSE 5000
+ENV ASPNETCORE_URLS=http://*:5000
+ENTRYPOINT ["dotnet", "bbt.gateway.worker.SmsReports.dll"]

@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>8aa373cf-3fa7-4b56-b3aa-60e7f6690b77</UserSecretsId>
+    <PackageId>BbtCoreExtensions</PackageId>
+    <Authors>Sercan YÜKSEL</Authors>
+    <Company>Burgan Bank</Company>
+    <Product>CoreExtensions</Product>
+    <Description>Extensions for webapi and console projects</Description>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+	 <NoWarn>$(NoWarn);1591</NoWarn>
+	 <DocumentationFile>C:\WorkFile\bbt.gateway.messaging\bbt.gateway.messaging\wwwroot\bbt.gateway.common.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapr.Extensions.Configuration" Version="1.9.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+	  <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+	  <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
+	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.3" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Consul" Version="1.6.10.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.13" />
+    <PackageReference Include="VaultSharp" Version="1.12.2" />
+	<PackageReference Include="VaultSharp.Extensions.Configuration" Version="0.5.3" />
+	<PackageReference Include="Winton.Extensions.Configuration.Consul" Version="3.1.2" />
+	<PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
+	<PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+	<PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
+	<PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.4.1" />
+	<PackageReference Include="Refit" Version="6.3.2" />
+	<PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
+	<PackageReference Include="Refit.Newtonsoft.Json" Version="6.3.2" />
+	<PackageReference Include="Dapr.Client" Version="1.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Dtos\" />
+  </ItemGroup>
+
+</Project>

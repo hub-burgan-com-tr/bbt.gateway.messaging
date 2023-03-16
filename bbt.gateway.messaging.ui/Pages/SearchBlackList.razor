@@ -1,0 +1,81 @@
+﻿@page "/searchBlackList"
+@using bbt.gateway.common.Models
+@using bbt.gateway.messaging.ui.Data
+@inject IMessagingGatewayService MessagingGateway
+@inherits bbt.gateway.messaging.ui.Pages.Base.BaseComponent
+
+<PageTitle>Blacklist Sorgulama</PageTitle>
+<div class="row align-items-center mb-2">
+    <div class="col-12">
+        <RadzenCard class="w-100 p-3">
+            <h6 class="mb-1">Arama Türü</h6>
+            <RadzenRadioButtonList @bind-Value=@searchModel.SelectedSearchType TValue="int" Change=@(args => SelectionChanged(args))>
+                <Items>
+                    @foreach (var choice in Constants.FiltersBlackList)
+                    {
+                    <RadzenRadioButtonListItem Text="@choice.Value.Name" Value="@choice.Key" />
+                    }
+                </Items>
+            </RadzenRadioButtonList>
+        </RadzenCard>
+    </div>
+</div>
+@*<button type="button" class="btn btn-success" @onclick="Save">Save</button>*@
+@foreach (var choice in Constants.FiltersBlackList)
+{
+    @if (searchModel.SelectedSearchType == choice.Key)
+    {
+        <div class="row mb-2">
+            <div class="col-2">
+                <RadzenCard class="p-3">
+                    <h6 class="mb-1">@choice.Value.Name</h6>
+                     @if (searchModel.SelectedSearchType ==1 )
+            { 
+                        <RadzenTextBox Placeholder="905554443322" @bind-Value="searchModel.FilterValue" Class="w-100" />
+                    }
+                    @if (searchModel.SelectedSearchType !=1 )
+                    {
+                       <RadzenTextBox  Placeholder="Search..." @bind-Value="searchModel.FilterValue" Class="w-100" />
+                    }
+                 
+                </RadzenCard>    
+            </div>
+
+         @*   <div class="col-2">
+                <RadzenCard class="p-3">
+                    <h6 class="mb-1">Başlangıç Tarihi</h6>
+                    <RadzenDatePicker @bind-Value=@searchModel.StartDate DateFormat="d"  Class="w-100" />
+                </RadzenCard>
+            </div>
+            <div class="col-2">
+                <RadzenCard class="p-3">
+                    <h6 class="mb-1">Bitiş Tarihi</h6>
+                    <RadzenDatePicker @bind-Value=@searchModel.EndDate DateFormat="d" Class="w-100" />
+                </RadzenCard>
+            </div>*@
+        </div>
+    }
+}
+
+<div class="row mb-2">
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <RadzenButton Click=@(args => SearchBlackListEntries()) Text="Sorgula" ButtonStyle="ButtonStyle.Primary" />
+    </div>
+</div>
+
+    <RadzenDataGrid @ref=@grid IsLoading="@useSpinner" Data="@blackListEntries" Count="@rowsCount" LoadData="@SearchBlackListEntries"
+    AllowPaging="true" PageSize="@pageCount" PagerHorizontalAlign="HorizontalAlign.Right" TItem="BlackListEntry" ColumnWidth="50px"
+    >
+        <Columns>
+            <RadzenDataGridColumn TItem="BlackListEntry" Property="CreatedAt" Filterable="false" Title="Tarih" Frozen="true" Width="40px"/>
+            <RadzenDataGridColumn TItem="BlackListEntry" Title="Durum" Sortable="false" Filterable="false" Width="25px">
+                <Template Context="data">
+                    @Constants.BlacklistStatusMap[data.Status]
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="BlackListEntry" Property="Reason" Title="Nedeni" Frozen="true" />
+            <RadzenDataGridColumn TItem="BlackListEntry" Property="Source" Title="Kaynak" Frozen="true" />
+             <RadzenDataGridColumn TItem="BlackListEntry" Property="ResolvedAt"  Filterable="false" Title="Çözümlenme Tarihi" Frozen="true"  />
+
+    </Columns>
+    </RadzenDataGrid>

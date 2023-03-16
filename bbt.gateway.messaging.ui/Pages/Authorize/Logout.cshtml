@@ -1,0 +1,71 @@
+﻿@page "/logoutPage"
+
+@model bbt.gateway.messaging.ui.Pages.Authorize.LogoutModel
+@{
+    <!DOCTYPE html>
+<html lang="en">
+
+    <head>
+       <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="_content/Radzen.Blazor/css/default-base.css">
+    <link href="css/site.css" rel="stylesheet" />
+    </head>
+    <body>
+
+    <p></p><br />    
+     <p></p><br />    
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+        </div>
+        <div class="col-lg-4 mb-4" style="padding: 1.25rem 1.5625rem;
+  border-radius: 4px;
+  box-shadow: 0 6px 14px 0 rgba(0, 0, 0, 0.06);
+  background-color: #ffffff;">
+            <RadzenCard style="height: 100%;margin-bottom:1rem">
+                  <div class="row">
+                          <div class="col-4"></div>
+                <p  class="col-4 text-center">Erişim yetkiniz sonlanmıştır. Tekrar Login olmanız gerekmektedir</p>
+                <div class="col-4"></div>
+
+                <div class="row">
+                  <div class="col-4"></div>
+                 
+                    <a href="/login" class="col-4" style="display: block;
+   
+    height: 45px;
+    background: #4E9CAF;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    line-height: 25px;">Login</a>
+                        <div class="col-4"></div>
+              </div>
+               
+               </div>
+              
+                   
+               
+            </RadzenCard>
+        </div>
+        <div class="col-lg-4 mb-4">
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+       <script src="_framework/blazor.server.js"></script>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js"></script>
+ 
+   </body>
+
+</html>
+}

@@ -1,0 +1,29 @@
+FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal AS base
+ENV ASPNETCORE_URLS=http://*:5000
+EXPOSE 5000
+WORKDIR /app
+
+RUN adduser -u 5679 --disabled-password --gecos "" smsgateway-uiuser && chown -R smsgateway-uiuser:smsgateway-uiuser /app
+USER root
+
+RUN echo "deb http://us.archive.ubuntu.com/ubuntu focal main" >> /etc/apt/sources.list
+RUN until (apt-get update ); do echo trying again; done \
+    && apt-get -y install libldap-2.4-2 sssd realmd krb5-user software-properties-common packagekit gss-ntlmssp samba
+    
+USER smsgateway-uiuser
+FROM mcr.microsoft.com/dotnet/sdk:6.0-focal AS build
+WORKDIR /src
+
+COPY . .
+RUN dotnet restore "bbt.gateway.messaging.ui/bbt.gateway.messaging.ui.csproj"
+WORKDIR "/src/bbt.gateway.messaging.ui"
+RUN dotnet build "bbt.gateway.messaging.ui.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "bbt.gateway.messaging.ui.csproj" -c Release -o /app/publish 
+
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "bbt.gateway.messaging.ui.dll"]

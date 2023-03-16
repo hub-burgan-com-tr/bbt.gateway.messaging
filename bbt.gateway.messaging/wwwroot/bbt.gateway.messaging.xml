@@ -1,0 +1,1313 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>bbt.gateway.messaging</name>
+    </assembly>
+    <members>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DataTable">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DataTable.diffgram">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.diffgram">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.diffgram.DocumentElement">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail.CustomerNumber">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail.TelephoneType">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail.CountryCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail.CityCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail.TelephoneNumber">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail.CustomerName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail.Tckn">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail.Vkn">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail.id">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail.rowOrder">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElementCustomerDetail.hasChanges">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElement">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetByPhone.DocumentElement.CustomerDetail">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.DataSet">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.DataSet.diffgram">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.diffgram">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.diffgram.CusInfo">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfo.CustomerIndividual">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfo.Telephones">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfo.Emails">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfo.Integrations">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfo.AddressesNew">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfo.Corroboration">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfo.CusInfoChannels">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.Id">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ExternalClientNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CustomerName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.MiddleName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.Surname">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ShortName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ChannelNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.TaxOffice">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.TaxOfficeName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.BirthDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CitizenshipNumber">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.DrivingLicenceNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.FatherName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBSeries">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBSerialNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IdentityType">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.MotherName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.TaxNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.BirthPlace">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.BirthPlaceCityCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.BirthPlaceCityName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.BirthPlaceTownCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.BirthPlaceTownName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.Gender">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.MaritalStatus">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.MotherMaidenSurname">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.Nationality">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.NationalityName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ReferencePersonnel">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ReferencePersonnelName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ReferenceCustomer">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ReferenceCustomerName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ResidenceCountry">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ResidenceCountryName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.HasResidenceLicence">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.PortfolioCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.InvestmentRepresentativeCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.InvestmentRepresentativeName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IdentityNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.FirstRelationDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CustomerProfile">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.HasDrivingLicence">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CreditCardExtreAddress">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CreditCardDeliveryAddress">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ConnectAddress">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ATMCardFlag">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.AccountFlag">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ATMCardGroup">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ATMCustomerGroup">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ATMCustomerGroupName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CreditCardGroup">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CreditCardGroupName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBRegisteredCity">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBRegisteredCityName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBRegisteredTown">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBQuarter">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBVolume">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBFamilyOrderNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBOrderNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBPlaceGiven">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.GivingReason">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBRegisterNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.DateGiven">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.NetSalary">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.TotalIncome">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.TotalExpense">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.FamilyNetSalary">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.FamilyTotalIncome">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.FamilyTotalExpense">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.EmployeeCount">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.PersonalCommercial">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.UnitStatus">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IsCompany">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CompanyTitle">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CompanyDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.WorkingCompany">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.WorkStatus">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.FirmName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.PortfolioManager">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.EducationStatus">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.PrimarySchoolName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.QuantisExtreAddress">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.MarriageDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CustomerType">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.MainBranchCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IsTarisYatirimCustomer">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.SegmentCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ResidenceStatus">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.WarningMessage">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ErrorMessage">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.RecordStatus">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.SubSegment">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.WorkTitle">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.WorkArea">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.WorkingStatus">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.Farmer">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CoreBankingServiceAgreement">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CoreBankingServiceAgreementNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.Sector">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.SectorName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.MainSectorCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.MainSectorCodeName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.SubSectorCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.SubSectorCodeName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.SectorActivity">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.SectorActivityName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.BalanceSystem">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CreditGroupCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CreditGroupName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.CreditAllocationDepartment">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.BusinessLine">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.SalaryFirmCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.PayrollAccount">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.RetiredSalaryAccCheckDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBTCKKSeriesNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBTransientNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IBExpireDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IsHandicap">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.HandicapRate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.HandicapType">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.UpdatedBy">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.IsPrivateBanking">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.ActualSegment">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.id">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.rowOrder">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividual.hasChanges">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividualMainSectorCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividualMainSectorCode.space">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividualMainSectorCode.Value">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividualSubSectorCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividualSubSectorCode.space">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividualSubSectorCode.Value">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividualSectorActivity">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividualSectorActivity.space">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCustomerIndividualSectorActivity.Value">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoTelephones">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoTelephones.TelephoneType">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoTelephones.TelefonTipi">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoTelephones.CountryCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoTelephones.Ülke">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoTelephones.AreaCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoTelephones.TelephoneNumber">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoTelephones.Extension">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoTelephones.id">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoTelephones.rowOrder">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoTelephones.hasChanges">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoEmails">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoEmails.EmailType">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoEmails.EmailTipi">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoEmails.Email">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoEmails.SendEkstre">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoEmails.IsVerified">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoEmails.VerifyDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoEmails.id">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoEmails.rowOrder">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoEmails.hasChanges">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoIntegrations">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoIntegrations.Id">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoIntegrations.IntegrationType">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoIntegrations.BranchCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoIntegrations.UserName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoIntegrations.RecordTime">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoIntegrations.id">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoIntegrations.rowOrder">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoIntegrations.hasChanges">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.AddressTypeDescription">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.CityName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.CountryName">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.Id">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.AddressType">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.CountryCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.CityCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.City">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.Town">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.District">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.Street">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.AddressDetail">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.Longtitude">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.Latitude">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.PostalCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.ValidationLevel">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.ValidityStartDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.ValidityEndDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.RecordTime">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.ILCE_ID">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.id">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.rowOrder">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoAddressesNew.hasChanges">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.AddressCheck">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.TelephoneCheck">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.EMailCheck">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.RegisterRecordCheck">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.CorroboratorsCheck">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.IdentityCheck">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.AuthorizedSignaturesCheck">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.CasebookCheck">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.CorroboratorsAuthorizationCheck">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.AddressADNKSCheck">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.FootballTeam">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.id">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.rowOrder">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCorroboration.hasChanges">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.CustomerNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.IsRetiredCustomer">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.RetiredSalaryAccCheckDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.HasExpireAttention">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.ExpireDay">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.CanLoginChannel">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.ExpireDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.IdentityType">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.CitizenshipNumber">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.IBSeries">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.IBSerialNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.IBTCKKSeriesNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.MersisNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.GsmNoWaitingApprove">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.IBTransientNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.IBExpireDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.IsHandicap">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.HandicapRate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.HandicapType">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.ContacttoCustomerDate">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.CoreBankingServiceAgreement">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.CoreBankingServiceAgreementNo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.id">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.rowOrder">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Pusula.Model.GetCustomer.CusInfoCusInfoChannels.hasChanges">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.Auth.ErrorXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.Auth.ErrorXml.Envelope.Header">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.Auth.ErrorXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.Auth.ErrorXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.Auth.ErrorXml.EnvelopeBody.Fault">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.Auth.ErrorXml.EnvelopeBodyFault">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.Auth.ErrorXml.EnvelopeBodyFault.faultcode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.Auth.ErrorXml.EnvelopeBodyFault.faultstring">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.Auth.SuccessXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.Auth.SuccessXml.Envelope.Header">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.Auth.SuccessXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.Auth.SuccessXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.Auth.SuccessXml.EnvelopeBody.registerResponse">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.Auth.SuccessXml.EnvelopeBody.encodingStyle">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.Auth.SuccessXml.registerResponse">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.Auth.SuccessXml.registerResponse.result">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.BodyXml.MSGIDRETURN">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.BodyXml.MSGIDRETURN.VERSION">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.BodyXml.MSGIDRETURN.MSGID_LIST">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.BodyXml.MSGIDRETURNMSGID_LIST">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.BodyXml.MSGIDRETURNMSGID_LIST.MSGID">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.ErrorXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.ErrorXml.Envelope.Header">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.ErrorXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.ErrorXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.ErrorXml.EnvelopeBody.Fault">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.ErrorXml.EnvelopeBodyFault">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.ErrorXml.EnvelopeBodyFault.faultcode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.ErrorXml.EnvelopeBodyFault.faultstring">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.SuccessXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.SuccessXml.Envelope.Header">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.SuccessXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.SuccessXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.SuccessXml.EnvelopeBody.sendSMSResponse">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.SuccessXml.EnvelopeBody.encodingStyle">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.SuccessXml.sendSMSResponse">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SendSms.SuccessXml.sendSMSResponse.result">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.BodyXml.STATUSRETURN">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.BodyXml.STATUSRETURN.VERSION">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.BodyXml.STATUSRETURN.STATUS_LIST">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.BodyXml.STATUSRETURNSTATUS_LIST">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.BodyXml.STATUSRETURNSTATUS_LIST.STATUS">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.BodyXml.STATUSRETURNSTATUS_LISTSTATUS">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.BodyXml.STATUSRETURNSTATUS_LISTSTATUS.MSGID">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.BodyXml.STATUSRETURNSTATUS_LISTSTATUS.MSGSTAT">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.BodyXml.STATUSRETURNSTATUS_LISTSTATUS.DTIME">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.BodyXml.STATUSRETURNSTATUS_LISTSTATUS.REASON">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.ErrorXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.ErrorXml.Envelope.Header">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.ErrorXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.ErrorXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.ErrorXml.EnvelopeBody.Fault">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.ErrorXml.EnvelopeBodyFault">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.ErrorXml.EnvelopeBodyFault.faultcode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.ErrorXml.EnvelopeBodyFault.faultstring">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.SuccessXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.SuccessXml.Envelope.Header">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.SuccessXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.SuccessXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.SuccessXml.EnvelopeBody.getStatusResponse">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.SuccessXml.EnvelopeBody.encodingStyle">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.SuccessXml.getStatusResponse">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.SuccessXml.getStatusResponse.result">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBody.Fault">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBodyFault">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBodyFault.Code">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBodyFault.Reason">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBodyFault.Detail">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBodyFaultCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBodyFaultCode.Value">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBodyFaultReason">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBodyFaultReason.Text">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBodyFaultReasonText">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBodyFaultReasonText.lang">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.EnvelopeBodyFaultReasonText.Value">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.Auth.SuccessXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.SuccessXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.Auth.SuccessXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.SuccessXml.EnvelopeBody.authenticateResponse">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.Auth.SuccessXml.authenticateResponse">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.SuccessXml.authenticateResponse.return">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.Auth.SuccessXml.return">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.Auth.SuccessXml.return.sessionId">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBody.Fault">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBodyFault">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBodyFault.Code">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBodyFault.Reason">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBodyFault.Detail">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBodyFaultCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBodyFaultCode.Value">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBodyFaultReason">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBodyFaultReason.Text">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBodyFaultReasonText">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBodyFaultReasonText.lang">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.ErrorXml.EnvelopeBodyFaultReasonText.Value">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.EnvelopeBody.sendSMSPacketResponse">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.sendSMSPacketResponse">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.sendSMSPacketResponse.return">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.return">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.return.deliveryResponseList">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.return.description">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.return.errorCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.return.logId">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.return.packetId">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.return.result">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.return.serviceParameters">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseList">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseList.deliveryResponse">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponse">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponse.deliveryInfoList">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponse.messageId">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponse.unifier">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponseDeliveryInfoList">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponseDeliveryInfoList.deliveryInfo">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponseDeliveryInfoListDeliveryInfo">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponseDeliveryInfoListDeliveryInfo.errorCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponseDeliveryInfoListDeliveryInfo.msisdn">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponseDeliveryInfoListDeliveryInfo.subscriberAttributes">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponseDeliveryInfoListDeliveryInfo.transactionId">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponseDeliveryInfoListDeliveryInfoSubscriberAttributes">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SendSms.SuccessXml.returnDeliveryResponseListDeliveryResponseDeliveryInfoListDeliveryInfoSubscriberAttributes.attribute">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBody.Fault">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBodyFault">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBodyFault.Code">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBodyFault.Reason">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBodyFault.Detail">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBodyFaultCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBodyFaultCode.Value">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBodyFaultReason">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBodyFaultReason.Text">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBodyFaultReasonText">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBodyFaultReasonText.lang">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.ErrorXml.EnvelopeBodyFaultReasonText.Value">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.Envelope">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.Envelope.Body">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.EnvelopeBody">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.EnvelopeBody.queryPacketStatusResponse">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.queryPacketStatusResponse">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.queryPacketStatusResponse.return">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.return">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.return.deliveryStatusList">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.return.description">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.return.errorCode">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.return.logId">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.return.result">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.return.serviceParameters">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusList">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusList.deliveryStatus">
+            <remarks/>
+        </member>
+        <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusListDeliveryStatus">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusListDeliveryStatus.cancelTime">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusListDeliveryStatus.createTime">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusListDeliveryStatus.deliveryTime">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusListDeliveryStatus.expiryTime">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusListDeliveryStatus.messageId">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusListDeliveryStatus.packetId">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusListDeliveryStatus.reason">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusListDeliveryStatus.status">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusListDeliveryStatus.submitTime">
+            <remarks/>
+        </member>
+        <member name="P:bbt.gateway.messaging.Api.Vodafone.Model.SmsStatus.SuccessXml.returnDeliveryStatusListDeliveryStatus.transactionId">
+            <remarks/>
+        </member>
+        <member name="T:CodecFastApi.KeyAndValue">
+            <remarks/>
+        </member>
+        <member name="P:CodecFastApi.KeyAndValue.Key">
+            <remarks/>
+        </member>
+        <member name="P:CodecFastApi.KeyAndValue.Value">
+            <remarks/>
+        </member>
+    </members>
+</doc>
