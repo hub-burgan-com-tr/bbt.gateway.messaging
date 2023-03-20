@@ -9,6 +9,8 @@ namespace bbt.gateway.common.Api.MessagingGateway
         Task<OtpTrackingLog> CheckOtpStatus(CheckSmsRequest request);
         [Post("/api/v2/Administration/sms/check-message")]
         Task<SmsTrackingLog> CheckSmsStatus(common.Models.v2.CheckFastSmsRequest request);
+        [Post("/api/v2/Administration/email/check-message")]
+        Task<MailTrackingLog> CheckMailStatus(common.Models.v2.CheckMailStatusRequest request);
         [Post("/api/v1/Administration/templates/sms")]
         Task SetSmsTemplates();
         [Post("/api/v1/Administration/templates/mail")]

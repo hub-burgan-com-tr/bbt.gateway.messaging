@@ -270,5 +270,10 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                 password = OperatorConfig.Password
             };
         }
+
+        public Task<MailStatusResponse> CheckMail(string queryId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

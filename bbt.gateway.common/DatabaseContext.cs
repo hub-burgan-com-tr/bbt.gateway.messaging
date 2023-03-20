@@ -18,7 +18,7 @@ namespace bbt.gateway.common
         public DbSet<MailConfiguration> MailConfigurations { get; set; }
         public DbSet<MailRequestLog> MailRequestLog { get; set; }
         public DbSet<MailResponseLog> MailResponseLog { get; set; }
-
+        public DbSet<MailTrackingLog> MailTrackingLog { get; set; }
         public DbSet<PushNotificationRequestLog> PushNotificationRequestLogs { get; set; }
         public DbSet<PushNotificationResponseLog> PushNotificationResponseLogs { get; set; }
 

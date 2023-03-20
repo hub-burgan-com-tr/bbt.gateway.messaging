@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bbt.gateway.messaging.test"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bbt.gateway.worker.SmsReports", "bbt.gateway.worker.SmsReports\bbt.gateway.worker.SmsReports.csproj", "{DF72D609-97DA-4A9B-815B-A24D216886F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bbt.gateway.worker.OtpReports", "bbt.gateway.worker.OtpReports\bbt.gateway.worker.OtpReports.csproj", "{E19C5E91-E408-44CA-A9ED-77F32BA053DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bbt.gateway.worker.OtpReports", "bbt.gateway.worker.OtpReports\bbt.gateway.worker.OtpReports.csproj", "{E19C5E91-E408-44CA-A9ED-77F32BA053DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bbt.gateway.worker.MailReports", "bbt.gateway.worker.MailReports\bbt.gateway.worker.MailReports.csproj", "{BBF3AA01-BC16-47CC-B39E-FB02EDB233E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{E19C5E91-E408-44CA-A9ED-77F32BA053DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E19C5E91-E408-44CA-A9ED-77F32BA053DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E19C5E91-E408-44CA-A9ED-77F32BA053DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBF3AA01-BC16-47CC-B39E-FB02EDB233E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBF3AA01-BC16-47CC-B39E-FB02EDB233E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBF3AA01-BC16-47CC-B39E-FB02EDB233E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBF3AA01-BC16-47CC-B39E-FB02EDB233E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

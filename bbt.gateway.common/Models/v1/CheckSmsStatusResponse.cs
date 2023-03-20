@@ -23,12 +23,14 @@ namespace bbt.gateway.common.Models
     public enum TransactionStatus
     {
         Delivered = 0,
-        NotDelivered = 1
+        NotDelivered = 1,
+        Waiting = 2
     }
 
     public class CheckTransactionStatusResponse
     {
-        public TransactionStatus status { get; set; }
+        public TransactionStatus Status { get; set; }
+        public string Detail { get; set; }
     }
 }
 

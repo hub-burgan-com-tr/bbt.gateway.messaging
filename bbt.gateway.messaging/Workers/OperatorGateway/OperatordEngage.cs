@@ -208,6 +208,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             var mailResponseLog = new MailResponseLog()
             {
                 Topic = "dEngage Mail Sending",
+                Operator = Type
             };
 
             MailFrom mailFrom = new MailFrom();
@@ -671,6 +672,33 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                 userkey = OperatorConfig.User,
                 password = OperatorConfig.Password
             };
+        }
+
+        public async Task<MailStatusResponse> CheckMail(string queryId)
+        {
+            var authResponse = await Auth();
+            if (authResponse.ResponseCode == "0")
+            {
+                try
+                {
+                    MailStatusRequest mailStatusRequest = new()
+                    {
+                        trackingId = queryId,
+                    };
+
+                    var response = await _dEngageClient.GetMailStatus(_authToken, mailStatusRequest);
+                    return response;
+                }
+                catch (ApiException ex)
+                {
+
+                }
+            }
+            else
+            {
+
+            }
+            return null;
         }
     }
 }

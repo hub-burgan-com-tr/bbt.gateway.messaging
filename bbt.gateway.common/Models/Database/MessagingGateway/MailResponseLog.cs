@@ -16,6 +16,7 @@ namespace bbt.gateway.common.Models
         public string Status { get; set; }
         public ICollection<MailTrackingLog> TrackingLogs { get; set; } = new List<MailTrackingLog>();
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public OperatorType Operator { get; set; }
 
         public  string GetResponseCode()
         {
