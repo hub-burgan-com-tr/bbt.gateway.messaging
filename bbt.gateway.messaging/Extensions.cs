@@ -233,6 +233,32 @@ namespace bbt.gateway.messaging
             return smsTrackingLog;
         }
 
+        public static MailTrackingLog BuilddEngageMailTrackingResponse(this MailStatusResponse apiTrackingResponse, common.Models.v2.CheckMailStatusRequest checkMailStatusRequest)
+        {
+            var mailTrackingLog = new MailTrackingLog();
+            mailTrackingLog.LogId = checkMailStatusRequest.MailRequestLogId;
+            mailTrackingLog.Detail = JsonConvert.SerializeObject(apiTrackingResponse);
+
+            var eventType = apiTrackingResponse.data.result.FirstOrDefault().event_type;
+
+            if (eventType == "DL")
+            {
+                mailTrackingLog.Status = MailTrackingStatus.Delivered;
+            }
+
+            if (eventType == "HB")
+            {
+                mailTrackingLog.Status = MailTrackingStatus.HardBounced;
+            }
+
+            if (eventType == "SB")
+            {
+                mailTrackingLog.Status = MailTrackingStatus.SoftBounced;
+            }
+
+            return mailTrackingLog;
+        }
+
         public static dEngageResponseCodes GetdEngageStatus(this IdEngageResponse dEngageResponse)
         {
             if(Constant.dEngageStatusCodes.ContainsKey(dEngageResponse.GetResponseCode()))

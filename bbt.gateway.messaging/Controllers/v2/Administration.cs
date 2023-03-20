@@ -101,6 +101,94 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         }
 
+        [SwaggerOperation(
+           Summary = "Check Mail Message Status",
+           Description = "Check Mail Delivery Status."
+           )]
+        [HttpPost("email/check-message")]
+        //[ApiExplorerSettings(IgnoreApi = true)]
+
+        public async Task<IActionResult> CheckMessageStatus([FromBody] CheckMailStatusRequest data)
+        {
+
+            if (ModelState.IsValid)
+            {
+                if (data.Operator == OperatorType.dEngageOn ||
+                    data.Operator == OperatorType.dEngageBurgan)
+                {
+                    var res = await _dEngageSender.CheckMail(data);
+                    return Ok(res);
+                }
+                return BadRequest("Unknown Operator");
+            }
+            else
+            {
+                return BadRequest(ModelState);
+            }
+
+        }
+
+        [SwaggerOperation(
+          Summary = "Check Message Status",
+          Description = "Check Message Status."
+          )]
+        [HttpGet("transaction/check")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IActionResult> CheckTransactionStatus([FromQuery] Guid transactionId)
+        {
+            var transaction = await _repositoryManager.Transactions.GetWithIdAsNoTrackingAsync(transactionId);
+            if (transaction == null)
+                return NotFound("Transaction Not Found");
+
+            if (transaction.TransactionType == TransactionType.TransactionalSms
+                || transaction.TransactionType == TransactionType.TransactionalTemplatedSms)
+            { 
+            
+            }
+
+            if (transaction.TransactionType == TransactionType.Otp)
+            {
+
+            }
+
+            if (transaction.TransactionType == TransactionType.TransactionalMail
+                || transaction.TransactionType == TransactionType.TransactionalTemplatedMail)
+            {
+                if (transaction.MailRequestLog == null)
+                {
+                    return Ok(new CheckTransactionStatusResponse { Status = TransactionStatus.NotDelivered , Detail = "MailRequestLog Not Found"});
+                }
+
+                if (transaction.MailRequestLog?.ResponseLogs == null)
+                {
+                    return Ok(new CheckTransactionStatusResponse { Status = TransactionStatus.NotDelivered, Detail = "MailResponseLog Not Found" });
+                }
+
+                var responseLog = transaction.MailRequestLog.ResponseLogs.FirstOrDefault();
+                if (responseLog == null)
+                {
+                    return Ok(new CheckTransactionStatusResponse { Status = TransactionStatus.NotDelivered, Detail = "MailResponseLog Not Found" });
+                }
+
+                if (responseLog.Status == "Delivered")
+                {
+                    return Ok(new CheckTransactionStatusResponse { Status = TransactionStatus.Delivered, Detail = "E-Mail Delivered Successfully" });
+                }
+
+                if (responseLog.Status == "NotDelivered")
+                {
+                    return Ok(new CheckTransactionStatusResponse { Status = TransactionStatus.NotDelivered, Detail = "E-Mail Not Delivered" });
+                }
+
+                if (responseLog.Status == "Waiting" || String.IsNullOrWhiteSpace(responseLog.Status))
+                {
+                    return Ok(new CheckTransactionStatusResponse { Status = TransactionStatus.Waiting, Detail = "Report is Not Ready" });
+                }
+            }
+
+            return BadRequest();
+        }
+
         [SwaggerOperation(Summary = "Returns content headers configuration",
             Tags = new[] { "Header Management" })]
         [HttpGet("headers")]
@@ -529,103 +617,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 return NotFound();
         }
 
-        [SwaggerOperation(
-           Summary = "Check Transaction Status",
-           Description = "Check Transactional Delivery Status."
-           )]
-        [HttpGet("transaction/check")]
-
-        public async Task<IActionResult> CheckSmsStatus(System.Guid TxnId)
-        {
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Mock")
-            {
-                return Ok(new CheckTransactionStatusResponse()
-                {
-                    status = TransactionStatus.Delivered
-                });
-            }
-
-            CheckSmsStatusRequest request = new();
-
-            var transaction = await _repositoryManager.Transactions.GetWithIdAsNoTrackingAsync(TxnId);
-            if (transaction == null)
-                return NotFound("Transaction not found");
-
-            if (transaction.TransactionType == TransactionType.TransactionalTemplatedSms
-                || transaction.TransactionType == TransactionType.TransactionalSms)
-            {
-                if (transaction.SmsRequestLog?.ResponseLogs == null)
-                {
-                    return Ok(new CheckTransactionStatusResponse
-                    {
-                        status = TransactionStatus.NotDelivered
-                    });
-                }
-                var responseLog = transaction.SmsRequestLog.ResponseLogs.FirstOrDefault();
-                if (responseLog == null)
-                {
-                    return Ok(new CheckTransactionStatusResponse
-                    {
-                        status = TransactionStatus.NotDelivered
-                    });
-                }
-
-                if (responseLog.Status == "Delivered")
-                {
-                    return Ok(new CheckTransactionStatusResponse
-                    {
-                        status = TransactionStatus.Delivered
-                    });
-                }
-                else
-                {
-                    return Ok(new CheckTransactionStatusResponse
-                    {
-                        status = TransactionStatus.NotDelivered
-                    });
-                }
-            }
-            if (transaction.TransactionType == TransactionType.Otp)
-            {
-
-            }
-            if (transaction.TransactionType == TransactionType.TransactionalMail ||
-                transaction.TransactionType == TransactionType.TransactionalMail)
-            {
-                if (transaction.MailRequestLog?.ResponseLogs == null)
-                {
-                    return Ok(new CheckTransactionStatusResponse
-                    {
-                        status = TransactionStatus.NotDelivered
-                    });
-                }
-                var responseLog = transaction.MailRequestLog.ResponseLogs.FirstOrDefault();
-                if (responseLog == null)
-                {
-                    return Ok(new CheckTransactionStatusResponse
-                    {
-                        status = TransactionStatus.NotDelivered
-                    });
-                }
-
-                if (responseLog.Status == "Delivered")
-                {
-                    return Ok(new CheckTransactionStatusResponse
-                    {
-                        status = TransactionStatus.Delivered
-                    });
-                }
-                else
-                {
-                    return Ok(new CheckTransactionStatusResponse
-                    {
-                        status = TransactionStatus.NotDelivered
-                    });
-                }
-            }
-
-            return BadRequest("Should pass valid request");
-        }
+        
 
         [SwaggerOperation(Summary = "Returns phones otp sending logs",
             Tags = new[] { "Phone Management" })]

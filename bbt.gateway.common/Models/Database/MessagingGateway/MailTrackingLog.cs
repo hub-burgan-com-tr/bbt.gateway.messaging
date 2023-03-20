@@ -1,8 +1,13 @@
-﻿namespace bbt.gateway.common.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace bbt.gateway.common.Models
 {
     public class MailTrackingLog
     {
         public Guid Id { get; set; } = Guid.NewGuid();
+        [ForeignKey("MailResponseLog")]
+        [Column("MailResponseLogId")]
+        public Guid LogId { get; set; }
         public MailTrackingStatus Status { get; set; }
         public int BounceCode { get; set; }
         public string BounceText { get; set; }

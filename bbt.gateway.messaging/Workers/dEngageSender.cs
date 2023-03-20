@@ -251,6 +251,70 @@ namespace bbt.gateway.messaging.Workers
 
         }
 
+        public async Task<MailTrackingLog> CheckMail(common.Models.v2.CheckMailStatusRequest checkMailStatusRequest)
+        {
+            _operatordEngage.Type = checkMailStatusRequest.Operator;
+            var response = await _operatordEngage.CheckMail(checkMailStatusRequest.StatusQueryId);
+
+            if (response != null)
+            {
+                if (response.code == 0)
+                {
+                    if (response.data.result != null)
+                    {
+                        if (response.data.result.Count() > 0)
+                        {
+                            return response.BuilddEngageMailTrackingResponse(checkMailStatusRequest);
+                        }
+                        else
+                        {
+                            return new MailTrackingLog()
+                            {
+                                Id = Guid.NewGuid(),
+                                LogId = checkMailStatusRequest.MailRequestLogId,
+                                Status = MailTrackingStatus.Pending,
+                                Detail = "",
+                            };
+                        }
+                    }
+                    else
+                    {
+                        return new MailTrackingLog()
+                        {
+                            Id = Guid.NewGuid(),
+                            LogId = checkMailStatusRequest.MailRequestLogId,
+                            Status = MailTrackingStatus.Pending,
+                            Detail = "",
+                        };
+                    }
+
+                }
+                else
+                {
+                    return new MailTrackingLog()
+                    {
+                        Id = Guid.NewGuid(),
+                        LogId = checkMailStatusRequest.MailRequestLogId,
+                        Status = MailTrackingStatus.Pending,
+                        Detail = "",
+                        BounceText = $"dEngage operatöründen bilgi alınamadı. Response Code : {response.code} | Response Message : {response.message}"
+                    };
+                }
+            }
+            else
+            {
+                return new MailTrackingLog()
+                {
+                    Id = Guid.NewGuid(),
+                    LogId = checkMailStatusRequest.MailRequestLogId,
+                    Status = MailTrackingStatus.Pending,
+                    Detail = "",
+                    BounceText = $"dEngage operatöründen bilgi alınamadı."
+                };
+            }
+
+        }
+
         public async Task<SendSmsResponse> SendSms(SendMessageSmsRequest sendMessageSmsRequest)
         {
             SendSmsResponse sendSmsResponse = new SendSmsResponse()

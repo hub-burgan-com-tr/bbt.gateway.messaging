@@ -12,6 +12,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
         public Task<SmsResponseLog> SendSms(Phone phone, SmsTypes smsType, string? content, string? templateId, string? templateParams);
         public Task<PushNotificationResponseLog> SendPush(string contactId, string template, string templateParams, string customParameters, bool? saveInbox, string[] tags);
         public Task<SmsStatusResponse> CheckSms(string queryId);
+        public Task<MailStatusResponse> CheckMail(string queryId);
         public Task<MailContentsResponse> GetMailContents(int limit, string offset);
         public Task<SmsContentsResponse> GetSmsContents(int limit, string offset);
         public Task<PushContentsResponse> GetPushContents(int limit, string offset);

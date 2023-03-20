@@ -27,7 +27,7 @@ namespace bbt.gateway.common.Api.dEngage
         [Get("/transactional/sms")]
         Task<SmsStatusResponse> GetSmsStatus([Authorize("Bearer")] string token, SmsStatusRequest smsStatusRequest);
         [Get("/transactional/email")]
-        Task<GetSmsFromsResponse> GetMailStatus([Authorize("Bearer")] string token);
+        Task<MailStatusResponse> GetMailStatus([Authorize("Bearer")] string token,MailStatusRequest mailStatusRequest);
         [Get("/contents/email")]
         Task<MailContentsResponse> GetMailContents([Authorize("Bearer")] string token, int limit, string offset);
         [Get("/contents/sms")]
