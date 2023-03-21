@@ -40,26 +40,28 @@ namespace bbt.gateway.worker.MailReports
             {
                 await _tracer.CaptureTransaction("Mail Tracking", ApiConstants.TypeRequest, async () =>
                 {
-                    try
-                    {
-                        var endDate = DateTime.Now.AddMinutes(-15);
-                        var startDate = endDate.AddMinutes(-60);
-                        var mailResponseLogs = await _dbContext.MailResponseLog.
-                        FromSqlRaw("Select * from MailResponseLog (NOLOCK) WHERE ResponseCode = '0' AND CreatedAt Between {0} AND {1} AND (status is null OR status = '')", startDate.ToString("yyyy-MM-dd HH:mm"), endDate.ToString("yyyy-MM-dd HH:mm"))
-                        .AsNoTracking().ToListAsync();
+                try
+                {
+                    var endDate = DateTime.Now.AddMinutes(-5);
+                    var startDate = endDate.AddMinutes(-60);
+                    var mailResponseLogs = await _dbContext.MailRequestLog.AsNoTracking().Where(m => m.CreatedAt >= startDate && m.CreatedAt <= endDate)
+                            .Include(m => m.ResponseLogs.Where(r => r.ResponseCode == "0" && string.IsNullOrWhiteSpace(r.Status))).ToListAsync();
+                    
 
                         _logManager.LogInformation("Mail Count : " + mailResponseLogs.Count);
 
                         ConcurrentBag<MailEntitiesToBeProcessed> concurrentBag = new();
 
                         var dividedList = mailResponseLogs.DivideListIntoParts(50);
-                        foreach (List<MailResponseLog> mailResponseLogsParts in dividedList)
+                        foreach (List<MailRequestLog> mailResponseLogsParts in dividedList)
                         {
                             _logManager.LogInformation("Part Count : " + mailResponseLogsParts.Count);
                             var taskList = new List<Task>();
                             mailResponseLogsParts.ForEach(mailResponseLog =>
                             {
-                                taskList.Add(GetDeliveryStatus(mailResponseLog, concurrentBag));
+                                var rLog = mailResponseLog.ResponseLogs.FirstOrDefault();
+                                rLog.Operator = mailResponseLog.Operator;
+                                taskList.Add(GetDeliveryStatus(rLog, concurrentBag));
                             });
                             await Task.WhenAll(taskList);
                         }
@@ -96,7 +98,7 @@ namespace bbt.gateway.worker.MailReports
                 await _dbContext.DisposeAsync();
                 _hostApplicationLifetime.StopApplication();
             }
-            _logManager.LogInformation("Sms Tracking Finished");
+            _logManager.LogInformation("Mail Tracking Finished");
             _hostApplicationLifetime.StopApplication();
         }
 
@@ -124,7 +126,7 @@ namespace bbt.gateway.worker.MailReports
             }
             catch (ApiException ex)
             {
-                _logManager.LogError($"Messaging Gateway Api Error | Status Code : {ex.StatusCode} | Detail : Operator => {mailResponseLog.Operator}, SmsResponseLogId => {mailResponseLog.Id}, StatusQueryId => {mailResponseLog.StatusQueryId}");
+                _logManager.LogError($"Messaging Gateway Api Error | Status Code : {ex.StatusCode} | Detail : Operator => {mailResponseLog.Operator}, MailResponseLogId => {mailResponseLog.Id}, StatusQueryId => {mailResponseLog.StatusQueryId}");
             }
             catch (Exception ex)
             {
