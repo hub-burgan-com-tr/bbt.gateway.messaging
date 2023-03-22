@@ -77,6 +77,12 @@ namespace bbt.gateway.common
             {
                 string environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                 var configuration = builder.Build();
+                var confList = configuration.AsEnumerable();
+                foreach (var item in confList)
+                {
+                    Console.WriteLine($"Key : {item.Key} | Value : {item.Value}");
+                }
+
                 Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
                 ApiKeyAuthenticationCredentials k = new ApiKeyAuthenticationCredentials(configuration["ElasticSearch:ApiKey"]);
                 indexFormat = (environmentName != "Prod" ? "nonprod-" : "prod-") + indexFormat;
@@ -108,6 +114,7 @@ namespace bbt.gateway.common
                 builder.AddJsonFile($"appsettings.{environmentName}.json", false, true).AddUserSecrets(type.Assembly);
                 var conf = builder.Build();
 
+                Console.WriteLine("Vault Secret Path : " + $"{applicationName}.{environmentName}");
                 builder.AddVaultConfiguration(() => new VaultOptions(conf["Api:Vault:BaseAddress"], conf["Api:Vault:Token"]), $"{applicationName}.{environmentName}", "MessagingGateway");
             });
         }
