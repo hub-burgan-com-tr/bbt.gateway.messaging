@@ -32,7 +32,6 @@ namespace bbt.gateway.worker.SmsReports
 
         public override async Task StopAsync(CancellationToken stoppingToken)
         {
-            _logManager.LogInformation("5 saniye beklenecek...");
             await Task.Delay(5000);
         }
 
