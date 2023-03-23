@@ -2,6 +2,7 @@
 using Elasticsearch.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Sinks.Elasticsearch;
 using VaultSharp.Extensions.Configuration;
@@ -75,13 +76,11 @@ namespace bbt.gateway.common
 
             return host.ConfigureAppConfiguration((context, builder) =>
             {
-                string environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                
+                string environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+
                 var configuration = builder.Build();
-                var confList = configuration.AsEnumerable();
-                foreach (var item in confList)
-                {
-                    Console.WriteLine($"Key : {item.Key} | Value : {item.Value}");
-                }
+                
                 Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
                 ApiKeyAuthenticationCredentials k = new ApiKeyAuthenticationCredentials(configuration["ElasticSearch:ApiKey"]);
                 indexFormat = (environmentName != "Prod" ? "nonprod-" : "prod-") + indexFormat;
@@ -108,15 +107,23 @@ namespace bbt.gateway.common
         {
             return host.ConfigureAppConfiguration((context, builder) =>
             {
+                using var loggerFactory = LoggerFactory.Create(builder =>
+                    builder.AddConsole(c => c.LogToStandardErrorThreshold = Microsoft.Extensions.Logging.LogLevel.Debug).AddDebug());
+                var logger = loggerFactory.CreateLogger<TestLog>();
+
                 string applicationName = context.HostingEnvironment.ApplicationName;
                 string environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
                 builder.AddJsonFile($"appsettings.{environmentName}.json", false, true).AddUserSecrets(type.Assembly);
+
                 var conf = builder.Build();
-                
-                builder.AddVaultConfiguration(() => new VaultOptions(conf["Api:Vault:BaseAddress"], conf["Api:Vault:Token"]), $"{applicationName}.{environmentName}", "MessagingGateway");
+
+                builder.AddVaultConfiguration(() => new VaultOptions(conf["Api:Vault:BaseAddress"], conf["Api:Vault:Token"]), $"{applicationName}.{environmentName}", "MessagingGateway", logger);
             });
         }
 
 
     }
+
+    public class TestLog
+    { }
 }
