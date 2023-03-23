@@ -112,7 +112,7 @@ namespace bbt.gateway.common
                 string environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
                 builder.AddJsonFile($"appsettings.{environmentName}.json", false, true).AddUserSecrets(type.Assembly);
                 var conf = builder.Build();
-                Console.WriteLine("Vault Secret Path : " + $"{applicationName}.{environmentName}");
+                
                 builder.AddVaultConfiguration(() => new VaultOptions(conf["Api:Vault:BaseAddress"], conf["Api:Vault:Token"]), $"{applicationName}.{environmentName}", "MessagingGateway");
             });
         }

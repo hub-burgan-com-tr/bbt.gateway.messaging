@@ -101,7 +101,7 @@ namespace bbt.gateway.messaging
                     Title = "Bbt.Gateway.Messaging",
                 });
             });
-
+            
             services.AddSwaggerExamplesFromAssemblyOf<Startup>();
 
             services.AddDaprClient(builder =>
