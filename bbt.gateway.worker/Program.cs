@@ -9,7 +9,7 @@ using Refit;
 using System.Text.Json;
 
 var host = Host.CreateDefaultBuilder()
-    .UseConsulSettings(typeof(Program))
+    .UseVaultSecrets(typeof(Program))
     .UseSeriLog("entegrasyon")
     .ConfigureServices((context, services) =>
     {
