@@ -326,7 +326,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 GsmNumber = "+" + data.Phone.CountryCode + data.Phone.Prefix + data.Phone.Number,
                 Explanation = "Messaging Gateway tarafından eklendi.",
                 IsVerified = false,
-                RecordDate = now,
+                RecordDate = data.CreatedAt,
                 TryCount = 0,
                 VerifiedBy = null,
                 VerifyDate = null
@@ -344,7 +344,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 Source = data.Source,
                 ValidTo = DateTime.UtcNow.AddDays(data.Days),
                 CreatedBy = data.Process,
-                CreatedAt = now,
+                CreatedAt = data.CreatedAt,
                 SmsId = oldOtpBlacklistEntry.SmsId
             };
 
@@ -368,13 +368,13 @@ namespace bbt.gateway.messaging.Controllers.v2
             var resolvedAt = DateTime.Now;
             config.ResolvedBy = data.ResolvedBy;
             config.Status = BlacklistStatus.Resolved;
-            config.ResolvedAt = resolvedAt;
+            config.ResolvedAt = data.ResolvedAt;
 
             //Update Old System
             var oldBlacklistEntry = await _repositoryManager.DirectBlacklists.FirstOrDefaultAsync(b => b.SmsId == config.SmsId);
             if (oldBlacklistEntry != null)
             {
-                oldBlacklistEntry.VerifyDate = resolvedAt;
+                oldBlacklistEntry.VerifyDate = data.ResolvedAt;
                 oldBlacklistEntry.IsVerified = true;
                 oldBlacklistEntry.VerifiedBy = data.ResolvedBy.Identity;
                 oldBlacklistEntry.Explanation = "Messaging Gateway Tarafından Onaylandı.";

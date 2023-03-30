@@ -7,6 +7,7 @@ namespace bbt.gateway.common.Models
 {
     public class ResolveBlacklistEntryRequest
     {
+        public DateTime ResolvedAt { get; set; }
         public Process ResolvedBy { get; set; }
     }
 }
