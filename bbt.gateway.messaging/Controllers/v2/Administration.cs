@@ -27,18 +27,16 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly HeaderManager _headerManager;
         private readonly OperatorManager _operatorManager;
         private readonly IRepositoryManager _repositoryManager;
-        private readonly ITransactionManager _transactionManager;
         private readonly CodecSender _codecSender;
         private readonly dEngageSender _dEngageSender;
         private readonly OtpSender _otpSender;
         public Administration(HeaderManager headerManager, OperatorManager operatorManager,
-            IRepositoryManager repositoryManager, ITransactionManager transactionManager,
+            IRepositoryManager repositoryManager,
             CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender)
         {
             _headerManager = headerManager;
             _operatorManager = operatorManager;
             _repositoryManager = repositoryManager;
-            _transactionManager = transactionManager;
             _codecSender = codecSender;
             _dEngageSender = dEngageSender;
             _otpSender = otpSender;
@@ -319,14 +317,14 @@ namespace bbt.gateway.messaging.Controllers.v2
                 await _repositoryManager.PhoneConfigurations.AddAsync(config);
             }
 
-            var now = DateTime.Now;
+            var now = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Prod" ? DateTime.Now : data.CreatedAt;
 
             var oldOtpBlacklistEntry = new SmsDirectBlacklist
             {
                 GsmNumber = "+" + data.Phone.CountryCode + data.Phone.Prefix + data.Phone.Number,
-                Explanation = "Messaging Gateway tarafından eklendi.",
+                Explanation = "Reason",
                 IsVerified = false,
-                RecordDate = data.CreatedAt,
+                RecordDate = now,
                 TryCount = 0,
                 VerifiedBy = null,
                 VerifyDate = null
@@ -344,7 +342,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 Source = data.Source,
                 ValidTo = DateTime.UtcNow.AddDays(data.Days),
                 CreatedBy = data.Process,
-                CreatedAt = data.CreatedAt,
+                CreatedAt = now,
                 SmsId = oldOtpBlacklistEntry.SmsId
             };
 
@@ -365,19 +363,19 @@ namespace bbt.gateway.messaging.Controllers.v2
             var config = await _repositoryManager.BlackListEntries.FirstOrDefaultAsync(b => b.Id == entryId);
             if (config == null)
                 return NotFound(entryId);
-            var resolvedAt = DateTime.Now;
+            var resolvedAt = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Prod" ? DateTime.Now : data.ResolvedAt;
             config.ResolvedBy = data.ResolvedBy;
             config.Status = BlacklistStatus.Resolved;
-            config.ResolvedAt = data.ResolvedAt;
+            config.ResolvedAt = resolvedAt;
 
             //Update Old System
             var oldBlacklistEntry = await _repositoryManager.DirectBlacklists.FirstOrDefaultAsync(b => b.SmsId == config.SmsId);
             if (oldBlacklistEntry != null)
             {
-                oldBlacklistEntry.VerifyDate = data.ResolvedAt;
+                oldBlacklistEntry.VerifyDate = resolvedAt;
                 oldBlacklistEntry.IsVerified = true;
                 oldBlacklistEntry.VerifiedBy = data.ResolvedBy.Identity;
-                oldBlacklistEntry.Explanation = "Messaging Gateway Tarafından Onaylandı.";
+                oldBlacklistEntry.Explanation = data.Reason;
                 await _repositoryManager.SaveSmsBankingChangesAsync();
             }
 

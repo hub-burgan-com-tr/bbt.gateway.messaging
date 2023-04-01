@@ -72,7 +72,7 @@ namespace bbt.gateway.worker.MailReports
                             {
                                 await _dbContext.MailTrackingLog.AddAsync(entities.mailTrackingLog);
                             }
-                            if (entities.mailTrackingLog != null)
+                            if (entities.mailResponseLog != null)
                             {
                                 _dbContext.MailResponseLog.Update(entities.mailResponseLog);
                             }
