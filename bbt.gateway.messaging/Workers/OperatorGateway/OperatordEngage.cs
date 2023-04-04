@@ -259,9 +259,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                     try
                     {
 
-                        TransactionManager.LogInformation("dEngage requested : "+DateTime.Now);
                         var sendMailResponse = await _dEngageClient.SendMail(req, _authToken);
-                        TransactionManager.LogInformation("dEngage responsed : " + DateTime.Now);
                         mailResponseLog.ResponseCode = sendMailResponse.code.ToString();
                         mailResponseLog.ResponseMessage = sendMailResponse.message;
                         mailResponseLog.StatusQueryId = sendMailResponse.data.to.trackingId;
@@ -325,6 +323,157 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                 mailResponseLog.ResponseMessage = authResponse.ResponseMessage;
 
                 return mailResponseLog;
+            }
+
+        }
+
+        public async Task<List<MailResponseLog>> SendBulkMail(string to, string? from, string? subject, string? html, string? templateId, string? templateParams, List<common.Models.Attachment> attachments, string? cc, string? bcc)
+        {
+            var mailResponseLogs = new List<MailResponseLog>();
+            var mailResponseLog = new MailResponseLog()
+            {
+                Topic = "dEngage Mail Sending",
+                Operator = Type
+            };
+
+            MailFrom mailFrom = new MailFrom();
+            var authResponse = await Auth();
+            if (authResponse.ResponseCode == "0")
+            {
+                if (html != null)
+                {
+                    var mailFromsByteArray = await _daprClient.GetStateAsync<byte[]>(GlobalConstants.DAPR_STATE_STORE, OperatorConfig.Type.ToString() + "_mailFroms");
+                    //var mailFromsByteArray = await _distrubitedCache.GetAsync(OperatorConfig.Type.ToString() + "_mailFroms");
+                    if (mailFromsByteArray != null)
+                    {
+                        _mailIds = JsonConvert.DeserializeObject<GetMailFromsResponse>(System.Text.Encoding.UTF8.GetString(mailFromsByteArray));
+                    }
+                    else
+                    {
+                        var res = await SetMailFromsToCache();
+                        if (res.Item1 != "0")
+                        {
+                            mailResponseLog.ResponseCode = res.Item1;
+                            mailResponseLog.ResponseMessage = res.Item2;
+                        }
+                    }
+
+                    mailFrom = _mailIds.data.emailFroms.Where(m => m.fromAddress == from).FirstOrDefault();
+                    if (mailFrom == null)
+                    {
+                        var res = await SetMailFromsToCache();
+                        if (res.Item1 != "0")
+                        {
+                            mailResponseLog.ResponseCode = res.Item1;
+                            mailResponseLog.ResponseMessage = res.Item2;
+                        }
+
+                        mailFrom = _mailIds.data.emailFroms.Where(m => m.fromAddress == from).FirstOrDefault();
+                        if (mailFrom == null)
+                        {
+                            mailResponseLog.ResponseCode = "99999";
+                            mailResponseLog.ResponseMessage = "Mail From is Not Found";
+                        }
+                    }
+
+                }
+
+                try
+                {
+                    var req = CreateBulkMailRequest(to, mailFrom.fromName, from, subject, html, templateId, templateParams, attachments, cc, bcc);
+                    try
+                    {
+
+                        var sendMailResponse = await _dEngageClient.SendBulkMail(req, _authToken);
+                        mailResponseLog.ResponseCode = sendMailResponse.code.ToString();
+                        mailResponseLog.ResponseMessage = sendMailResponse.message;
+                        foreach (var element in sendMailResponse.data.emailList)
+                        {
+                            if (element != null)
+                            {
+                                foreach (var item in element.emailResults)
+                                {
+                                    if (String.IsNullOrWhiteSpace(item.to.trackingId))
+                                    {
+                                        mailResponseLog.StatusQueryId = item.to.trackingId;
+                                    }
+                                    if (String.IsNullOrWhiteSpace(item.cc.trackingId))
+                                    {
+                                        mailResponseLog.StatusQueryId = item.cc.trackingId;
+                                    }
+                                    if (String.IsNullOrWhiteSpace(item.bcc.trackingId))
+                                    {
+                                        mailResponseLog.StatusQueryId = item.bcc.trackingId;
+                                    }
+                                    mailResponseLogs.Add(mailResponseLog);
+                                }
+                                
+                            }
+                        }
+
+                    }
+                    catch (ApiException ex)
+                    {
+                        if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        {
+                            authResponse = await RefreshToken();
+                            if (authResponse.ResponseCode == "0")
+                            {
+                                _authTryCount++;
+                                if (_authTryCount < 3)
+                                {
+                                    return await SendBulkMail(to, from, subject, html, templateId, templateParams, attachments, cc, bcc);
+                                }
+                                else
+                                {
+                                    mailResponseLog.ResponseCode = "99999";
+                                    mailResponseLog.ResponseMessage = "dEngage Auth Failed For 3 Times";
+                                    mailResponseLogs.Add(mailResponseLog);
+                                    return mailResponseLogs;
+                                }
+                            }
+                            else
+                            {
+                                mailResponseLog.ResponseCode = authResponse.ResponseCode;
+                                mailResponseLog.ResponseMessage = authResponse.ResponseMessage;
+                                mailResponseLogs.Add(mailResponseLog);
+                                return mailResponseLogs;
+                            }
+                        }
+                        if ((int)ex.StatusCode >= 400 && (int)ex.StatusCode < 500)
+                        {
+                            var error = await ex.GetContentAsAsync<common.Api.dEngage.Model.Transactional.SendSmsResponse>();
+                            mailResponseLog.ResponseCode = error.code.ToString();
+                            mailResponseLog.ResponseMessage = error.message;
+                        }
+                        if ((int)ex.StatusCode >= 500)
+                        {
+                            mailResponseLog.ResponseCode = "-999";
+                            mailResponseLog.ResponseMessage = "dEngage Internal Server Error";
+                        }
+                    }
+
+                    mailResponseLogs.Add(mailResponseLog);
+                    return mailResponseLogs;
+                }
+                catch (Exception ex)
+                {
+                    mailResponseLog.ResponseCode = "-99999";
+                    mailResponseLog.ResponseMessage = ex.ToString();
+                    mailResponseLogs.Add(mailResponseLog);
+
+                    //logging
+                    return mailResponseLogs;
+                }
+
+            }
+            else
+            {
+                mailResponseLog.ResponseCode = authResponse.ResponseCode;
+                mailResponseLog.ResponseMessage = authResponse.ResponseMessage;
+                mailResponseLogs.Add(mailResponseLog);
+
+                return mailResponseLogs;
             }
 
         }
@@ -577,6 +726,103 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             return sendMailRequest;
         }
 
+        private SendBulkMailRequest CreateBulkMailRequest(string to, string fromName, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc)
+        {
+            SendBulkMailRequest sendBulkMailRequest = new();
+
+            var ToMailAdresses = to.Split(';');
+            var CcMailAdresses = cc.Split(';');
+            var BccMailAdresses = bcc.Split(';');
+
+            var mailCurrent = "";
+
+            if (!string.IsNullOrEmpty(templateParams))
+            {
+                mailCurrent = templateParams.ClearMaskingFields();
+            }
+
+            var mailAttachments = new List<common.Api.dEngage.Model.Transactional.Attachment>();
+            if (attachments != null)
+            {
+                foreach (common.Models.Attachment attachment in attachments)
+                {
+                    mailAttachments.Add(new()
+                    {
+                        fileName = attachment.Name,
+                        fileContent = attachment.Data
+                    });
+                }
+            }
+
+            sendBulkMailRequest.emailList = new List<BulkMailItem>();
+
+            BulkMailItem bulkMailItem = new();
+            bulkMailItem.content = new ContentMail();
+             
+            if (!string.IsNullOrEmpty(templateId))
+            {
+                bulkMailItem.content.templateId = templateId;
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(html))
+                {
+                    bulkMailItem.content.FromAddress = from;
+                    bulkMailItem.content.FromName = fromName;
+                    bulkMailItem.content.html = html.ClearMaskingFields();
+                    bulkMailItem.content.subject = subject.ClearMaskingFields();
+                }
+                else
+                {
+                    //Critical Error
+                }
+
+            }
+
+            bulkMailItem.props = new();
+            foreach (var toMail in ToMailAdresses)
+            {
+                bulkMailItem.props.Add(new BulkMailProp
+                {
+                    attachments = mailAttachments,
+                    current = mailCurrent,
+                    send = new() { 
+                        to = toMail,
+                    }
+                });
+            }
+
+            foreach (var toCc in CcMailAdresses)
+            {
+                bulkMailItem.props.Add(new BulkMailProp
+                {
+                    attachments = mailAttachments,
+                    current = mailCurrent,
+                    send = new()
+                    {
+                        cc = toCc,
+                    }
+                });
+            }
+
+            foreach (var toBcc in BccMailAdresses)
+            {
+                bulkMailItem.props.Add(new BulkMailProp
+                {
+                    attachments = mailAttachments,
+                    current = mailCurrent,
+                    send = new()
+                    {
+                        bcc = toBcc,
+                    }
+                });
+            }
+
+            sendBulkMailRequest.emailList.Add(bulkMailItem);
+
+            return sendBulkMailRequest;
+        }
+
         private SendPushRequest CreatePushRequest(string contactId, string template, string templateParams, string customParameters, bool?  saveInbox,string[] tags)
         {
             SendPushRequest sendPushRequest = new();
@@ -700,5 +946,8 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             }
             return null;
         }
+
     }
+
+    
 }

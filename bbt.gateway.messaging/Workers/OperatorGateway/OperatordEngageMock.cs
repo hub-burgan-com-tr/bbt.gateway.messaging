@@ -275,5 +275,11 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
         {
             throw new NotImplementedException();
         }
+
+        public async Task<List<MailResponseLog>> SendBulkMail(string to, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc)
+        {
+            await Task.CompletedTask;
+            return new List<MailResponseLog>();
+        }
     }
 }

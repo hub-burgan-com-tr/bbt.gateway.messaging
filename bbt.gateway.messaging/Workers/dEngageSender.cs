@@ -424,11 +424,30 @@ namespace bbt.gateway.messaging.Workers
 
             _transactionManager.Transaction.MailRequestLog = mailRequest;
 
-            var response = await _operatordEngage.SendMail(sendMessageEmailRequest.Email, sendMessageEmailRequest.From, sendMessageEmailRequest.Subject, sendMessageEmailRequest.Content, null, null, sendMessageEmailRequest.Attachments, sendMessageEmailRequest.Cc, sendMessageEmailRequest.Bcc);
+            if (!sendMessageEmailRequest.Email.Contains(';') && sendMessageEmailRequest.Cc.Contains(';') && sendMessageEmailRequest.Bcc.Contains(';'))
+            {
+                var response = await _operatordEngage.SendMail(sendMessageEmailRequest.Email, sendMessageEmailRequest.From, sendMessageEmailRequest.Subject, sendMessageEmailRequest.Content, null, null, sendMessageEmailRequest.Attachments, sendMessageEmailRequest.Cc, sendMessageEmailRequest.Bcc);
 
-            mailRequest.ResponseLogs.Add(response);
+                mailRequest.ResponseLogs.Add(response);
 
-            sendEmailResponse.Status = response.GetdEngageStatus();
+                sendEmailResponse.Status = response.GetdEngageStatus();
+            }
+            else
+            {
+                var response = await _operatordEngage.SendBulkMail(sendMessageEmailRequest.Email, sendMessageEmailRequest.From, sendMessageEmailRequest.Subject, sendMessageEmailRequest.Content, null, null, sendMessageEmailRequest.Attachments, sendMessageEmailRequest.Cc, sendMessageEmailRequest.Bcc);
+
+                mailRequest.ResponseLogs = response;
+
+                try
+                {
+                    sendEmailResponse.Status = response.FirstOrDefault().GetdEngageStatus();
+                }
+                catch (Exception ex)
+                {
+                    sendEmailResponse.Status = dEngageResponseCodes.BadRequest;
+                }
+                
+            }
 
             return sendEmailResponse;
         }
