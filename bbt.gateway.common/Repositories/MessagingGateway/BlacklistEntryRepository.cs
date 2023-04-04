@@ -37,9 +37,7 @@ namespace bbt.gateway.common.Repositories
         public async Task<(IEnumerable<BlackListEntry>, int)> GetBlackListByPhoneAsync(int countryCode, int prefix, int number, int page, int pageSize)
         {
             IEnumerable<BlackListEntry> list =await Context.BlackListEntries
-
                 .Where(b => b.PhoneConfiguration.Phone.CountryCode == countryCode && b.PhoneConfiguration.Phone.Prefix == prefix && b.PhoneConfiguration.Phone.Number == number)
-              
                 .Skip(page)
                 .Take(pageSize)
                 .ToListAsync();
