@@ -21,6 +21,8 @@ namespace bbt.gateway.common.Api.dEngage
         Task<SendSmsResponse> SendSms(SendSmsRequest sendSmsRequest, [Authorize("Bearer")] string token);
         [Post("/transactional/email")]
         Task<SendSmsResponse> SendMail(SendMailRequest sendMailRequest, [Authorize("Bearer")] string token);
+        [Post("/transactional/email/bulkV2")]
+        Task<SendBulkMailResponse> SendBulkMail(SendBulkMailRequest sendBulkMailRequest, [Authorize("Bearer")] string token);
         [Post("/transactional/push")]
         Task<SendPushResponse> SendPush(SendPushRequest sendPushRequest, [Authorize("Bearer")] string token);
 

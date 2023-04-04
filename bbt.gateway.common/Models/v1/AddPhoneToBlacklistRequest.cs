@@ -9,7 +9,7 @@ namespace bbt.gateway.common.Models
     public class AddPhoneToBlacklistRequest
     {
         public PhoneString Phone { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
         public int Days { get; set; }
         public string Reason { get; set; }
         public string Source { get; set; }

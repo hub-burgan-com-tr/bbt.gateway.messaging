@@ -275,10 +275,10 @@ namespace bbt.gateway.messaging.Controllers.v2
         [HttpGet("blacklists/{countryCode}/{prefix}/{number}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(BlackListEntry))]
 
-        public async Task<IActionResult> GetPhoneBlacklistRecords(int countryCode, int prefix, int number, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetPhoneBlacklistRecords(string countryCode, string prefix, string number, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {
             return Ok(await _repositoryManager.BlackListEntries
-                .GetWithLogsAsync(countryCode, prefix, number, page, pageSize));
+                .GetWithLogsAsync(Convert.ToInt32(countryCode), Convert.ToInt32(prefix), Convert.ToInt32(number), page, pageSize));
         }
 
         [SwaggerOperation(Summary = "Adds phone to blacklist records",
@@ -301,7 +301,8 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
                 config = new PhoneConfiguration
                 {
-                    Phone = data.Phone.MapTo<common.Models.Phone>(),
+                    Phone = new common.Models.Phone { CountryCode = Convert.ToInt32(data.Phone.CountryCode) , Prefix = Convert.ToInt32(data.Phone.Prefix),
+                    Number = Convert.ToInt32(data.Phone.Number)},
                     Logs = new List<PhoneConfigurationLog>(),
                     BlacklistEntries = new List<BlackListEntry>()
                 };
@@ -317,7 +318,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 await _repositoryManager.PhoneConfigurations.AddAsync(config);
             }
 
-            var now = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Prod" ? DateTime.Now : data.CreatedAt;
+            var now = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Prod" ? DateTime.Now : (data.CreatedAt ?? DateTime.Now);
 
             var oldOtpBlacklistEntry = new SmsDirectBlacklist
             {
@@ -363,7 +364,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             var config = await _repositoryManager.BlackListEntries.FirstOrDefaultAsync(b => b.Id == entryId);
             if (config == null)
                 return NotFound(entryId);
-            var resolvedAt = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Prod" ? DateTime.Now : data.ResolvedAt;
+            var resolvedAt = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Prod" ? DateTime.Now : (data.ResolvedAt ?? DateTime.Now);
             config.ResolvedBy = data.ResolvedBy;
             config.Status = BlacklistStatus.Resolved;
             config.ResolvedAt = resolvedAt;

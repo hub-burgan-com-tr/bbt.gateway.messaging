@@ -31,6 +31,7 @@ namespace bbt.gateway.common.Repositories
                 .Include(b => b.Logs)
                 .Skip(page)
                 .Take(pageSize)
+                .OrderByDescending(b => b.CreatedAt)
                 .ToListAsync();
         }
         public async Task<(IEnumerable<BlackListEntry>, int)> GetBlackListByPhoneAsync(int countryCode, int prefix, int number, int page, int pageSize)
