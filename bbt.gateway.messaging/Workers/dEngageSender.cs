@@ -424,7 +424,7 @@ namespace bbt.gateway.messaging.Workers
 
             _transactionManager.Transaction.MailRequestLog = mailRequest;
 
-            if (!sendMessageEmailRequest.Email.Contains(';') && sendMessageEmailRequest.Cc.Contains(';') && sendMessageEmailRequest.Bcc.Contains(';'))
+            if (!sendMessageEmailRequest.Email.Contains(';') && !sendMessageEmailRequest.Cc.Contains(';') && !sendMessageEmailRequest.Bcc.Contains(';'))
             {
                 var response = await _operatordEngage.SendMail(sendMessageEmailRequest.Email, sendMessageEmailRequest.From, sendMessageEmailRequest.Subject, sendMessageEmailRequest.Content, null, null, sendMessageEmailRequest.Attachments, sendMessageEmailRequest.Cc, sendMessageEmailRequest.Bcc);
 

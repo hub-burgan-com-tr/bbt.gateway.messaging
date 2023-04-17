@@ -275,6 +275,15 @@ namespace bbt.gateway.messaging.Workers
             {
                 Transaction.CustomerNo = CustomerRequestInfo.CustomerNo;
             }
+
+            if (customerDetail.VerifiedMailAdresses.Exists(m => m == Transaction.Mail))
+            {
+                MailRequestInfo.IsMailVerified = true;
+            }
+            else
+            {
+                MailRequestInfo.IsMailVerified = false;
+            }
         }
 
         private void ThrowNotFoundError()
@@ -369,6 +378,7 @@ namespace bbt.gateway.messaging.Workers
         public string Content { get; set; }
         public string TemplateId { get; set; }
         public string TemplateParams { get; set; }
+        public bool IsMailVerified { get; set; }
         public Process Process { get; set; }
     }
 

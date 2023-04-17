@@ -23,6 +23,7 @@ namespace bbt.gateway.common.Models.v2
         [CitizenshipNo(10, 11)]
         public string? CitizenshipNo { get; set; }
         public string[] Tags { get; set; }
+        public bool? CheckIsVerified { get; set; } = false;
         public Process Process { get; set; }
     }
 }

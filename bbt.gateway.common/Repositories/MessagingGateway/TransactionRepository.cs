@@ -415,5 +415,339 @@ namespace bbt.gateway.common.Repositories
 
             return transactions;
         }
+
+        public async Task<int> GetForeignSmsRequestCount(DateTime startDate, DateTime endDate, OperatorType @operator, bool isSuccess)
+        {
+            if (isSuccess)
+            {
+                return await Context.Transactions.CountAsync(t =>
+                    t.CreatedAt.Date >= startDate.Date &&
+                        t.CreatedAt.Date <= endDate.Date &&
+                        t.Phone.CountryCode != 0 &&
+                            t.Phone.CountryCode != 90 &&
+                        t.SmsRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.OperatorResponseCode == 0)
+                );
+            }
+            else
+            {
+                return await Context.Transactions.CountAsync(t =>
+                    t.CreatedAt.Date >= startDate.Date &&
+                        t.CreatedAt.Date <= endDate.Date &&
+                        t.Phone.CountryCode != 0 &&
+                            t.Phone.CountryCode != 90 &&
+                        t.SmsRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.OperatorResponseCode != 0)
+                );
+            }
+
+        }
+
+        public async Task<int> GetSmsRequestCount(DateTime startDate, DateTime endDate, OperatorType @operator,bool isSuccess)
+        {
+            if (isSuccess)
+            {
+                return await Context.Transactions.CountAsync(t =>
+                    t.CreatedAt.Date >= startDate.Date &&
+                        t.CreatedAt.Date <= endDate.Date &&
+                        t.SmsRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.OperatorResponseCode == 0)
+                );
+            }
+            else
+            {
+                return await Context.Transactions.CountAsync(t =>
+                    t.CreatedAt.Date >= startDate.Date &&
+                        t.CreatedAt.Date <= endDate.Date &&
+                        t.SmsRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.OperatorResponseCode != 0)
+                );
+            }
+
+        }
+
+        public async Task<int> GetForeignOtpRequestCount(DateTime startDate, DateTime endDate, OperatorType @operator, bool isSuccess)
+        {
+            if (isSuccess)
+            {
+                
+                if (@operator == OperatorType.Turkcell)
+                {
+                    var foreignCount = await Context.Transactions.CountAsync(t =>
+                        t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode != 0 &&
+                            t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == OperatorType.Foreign && (r.ResponseCode == SendSmsResponseStatus.Success
+                            || r.ResponseCode != SendSmsResponseStatus.SimChange
+                            || r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                            || r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                            )
+                    );
+
+                    var turkcellCount = await Context.Transactions.CountAsync(t =>
+                        t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode != 0 &&
+                            t.Phone.CountryCode != 90 &&
+                            t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == OperatorType.Turkcell && (r.ResponseCode == SendSmsResponseStatus.Success
+                            || r.ResponseCode != SendSmsResponseStatus.SimChange
+                            || r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                            || r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                            )
+                    );
+
+                    return foreignCount + turkcellCount;
+                }
+
+                return await Context.Transactions.CountAsync(t =>
+                           t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode != 0 &&
+                            t.Phone.CountryCode != 90 &&
+                                t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && (r.ResponseCode == SendSmsResponseStatus.Success
+                            || r.ResponseCode != SendSmsResponseStatus.SimChange
+                            || r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                            || r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                            )
+                        );
+            }
+            else
+            {
+                if (@operator == OperatorType.Turkcell)
+                {
+                    var foreignCount = await Context.Transactions.CountAsync(t =>
+                        t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode != 0 &&
+                            t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == OperatorType.Foreign && r.ResponseCode != SendSmsResponseStatus.Success
+                            && r.ResponseCode != SendSmsResponseStatus.SimChange
+                            && r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                            && r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                    );
+
+                    var turkcellCount = await Context.Transactions.CountAsync(t =>
+                        t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode != 0 &&
+                            t.Phone.CountryCode != 90 &&
+                            t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == OperatorType.Turkcell && r.ResponseCode != SendSmsResponseStatus.Success
+                            && r.ResponseCode != SendSmsResponseStatus.SimChange
+                            && r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                            && r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                    );
+
+                    return foreignCount + turkcellCount;
+                }
+                
+
+                return await Context.Transactions.CountAsync(t =>
+                           t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode != 0 &&
+                            t.Phone.CountryCode != 90 &&
+                                t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.ResponseCode != SendSmsResponseStatus.Success
+                                && r.ResponseCode != SendSmsResponseStatus.SimChange
+                                && r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                                && r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                        );
+            }
+
+        }
+
+        public async Task<int> GetOtpRequestCount(DateTime startDate, DateTime endDate, OperatorType @operator, bool isSuccess)
+        {
+            if (isSuccess)
+            {
+                if (@operator == OperatorType.Foreign)
+                {
+                    var foreignCount = await Context.Transactions.CountAsync(t =>
+                        t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode != 0 &&
+                            t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && (r.ResponseCode == SendSmsResponseStatus.Success
+                            || r.ResponseCode != SendSmsResponseStatus.SimChange
+                            || r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                            || r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                            )
+                    );
+
+                    var turkcellCount = await Context.Transactions.CountAsync(t =>
+                        t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode != 0 &&
+                            t.Phone.CountryCode != 90 &&
+                            t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == OperatorType.Turkcell && (r.ResponseCode == SendSmsResponseStatus.Success
+                            || r.ResponseCode != SendSmsResponseStatus.SimChange
+                            || r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                            || r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                            )
+                    );
+
+                    return foreignCount + turkcellCount;
+                }
+                if (@operator == OperatorType.Turkcell)
+                {
+                    return await Context.Transactions.CountAsync(t =>
+                           t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                                t.Phone.CountryCode == 90 &&
+                                t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && (r.ResponseCode == SendSmsResponseStatus.Success
+                            || r.ResponseCode != SendSmsResponseStatus.SimChange
+                            || r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                            || r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                            )
+                        );
+                }
+
+                return await Context.Transactions.CountAsync(t =>
+                           t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                                t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && (r.ResponseCode == SendSmsResponseStatus.Success
+                            || r.ResponseCode != SendSmsResponseStatus.SimChange
+                            || r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                            || r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                            )
+                        );
+            }
+            else
+            {
+                if (@operator == OperatorType.Foreign)
+                {
+                    var foreignCount = await Context.Transactions.CountAsync(t =>
+                        t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode != 0 &&
+                            t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.ResponseCode != SendSmsResponseStatus.Success
+                            && r.ResponseCode != SendSmsResponseStatus.SimChange
+                            && r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                            && r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                    );
+
+                    var turkcellCount = await Context.Transactions.CountAsync(t =>
+                        t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode != 0 &&
+                            t.Phone.CountryCode != 90 &&
+                            t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == OperatorType.Turkcell && r.ResponseCode != SendSmsResponseStatus.Success
+                            && r.ResponseCode != SendSmsResponseStatus.SimChange
+                            && r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                            && r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                    );
+
+                    return foreignCount + turkcellCount;
+                }
+                if (@operator == OperatorType.Turkcell)
+                {
+                    return await Context.Transactions.CountAsync(t =>
+                           t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                                t.Phone.CountryCode == 90 &&
+                                t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.ResponseCode != SendSmsResponseStatus.Success
+                                && r.ResponseCode != SendSmsResponseStatus.SimChange
+                                && r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                                && r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                        );
+                }
+
+                return await Context.Transactions.CountAsync(t =>
+                           t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                                t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.ResponseCode != SendSmsResponseStatus.Success
+                                && r.ResponseCode != SendSmsResponseStatus.SimChange
+                                && r.ResponseCode != SendSmsResponseStatus.OperatorChange
+                                && r.ResponseCode != SendSmsResponseStatus.HasBlacklistRecord)
+                        );
+            }
+
+        }
+
+        public async Task<int> GetSuccessfullForeignSmsCount(DateTime startDate, DateTime endDate, OperatorType @operator)
+        {
+
+            return await Context.Transactions.CountAsync(t =>
+                t.CreatedAt.Date >= startDate.Date &&
+                        t.CreatedAt.Date <= endDate.Date &&
+                        t.Phone.Number != 90 && t.Phone.Number != 0 &&
+                    t.SmsRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.OperatorResponseCode == 0)
+            );
+
+        }
+
+        public async Task<int> GetSuccessfullSmsCount(DateTime startDate, DateTime endDate, OperatorType @operator)
+        {
+            
+                return await Context.Transactions.CountAsync(t =>
+                    t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                        t.SmsRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.OperatorResponseCode == 0)
+                );
+            
+        }
+
+        public async Task<int> GetSuccessfullForeignOtpCount(DateTime startDate, DateTime endDate, OperatorType @operator)
+        {
+            
+            if (@operator == OperatorType.Turkcell)
+            {
+                var foreignCount = await Context.Transactions.CountAsync(t =>
+                     t.CreatedAt.Date >= startDate.Date &&
+                             t.CreatedAt.Date <= endDate.Date &&
+                         t.Phone.CountryCode != 0 &&
+                         t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == OperatorType.Foreign && r.ResponseCode == SendSmsResponseStatus.Success)
+                 );
+
+                var turkcellCount = await Context.Transactions.CountAsync(t =>
+                    t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                        t.Phone.CountryCode != 0 &&
+                        t.Phone.CountryCode != 90 &&
+                        t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == OperatorType.Turkcell && r.ResponseCode == SendSmsResponseStatus.Success)
+                );
+
+                return foreignCount + turkcellCount;
+            }
+
+            return await Context.Transactions.CountAsync(t =>
+                       t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode != 0 &&
+                            t.Phone.CountryCode != 90 &&
+                            t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.ResponseCode == SendSmsResponseStatus.Success)
+                    );
+        }
+
+        public async Task<int> GetSuccessfullOtpCount(DateTime startDate, DateTime endDate, OperatorType @operator)
+        {
+            if (@operator == OperatorType.Foreign)
+            {
+                var foreignCount = await Context.Transactions.CountAsync(t =>
+                    t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                        t.Phone.CountryCode != 0 &&
+                        t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.ResponseCode == SendSmsResponseStatus.Success)
+                );
+
+                var turkcellCount = await Context.Transactions.CountAsync(t =>
+                    t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                        t.Phone.CountryCode != 0 &&
+                        t.Phone.CountryCode != 90 &&
+                        t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == OperatorType.Turkcell && r.ResponseCode == SendSmsResponseStatus.Success)
+                );
+
+                return foreignCount + turkcellCount;
+            }
+            if (@operator == OperatorType.Turkcell)
+            {
+                return await Context.Transactions.CountAsync(t =>
+                       t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.Phone.CountryCode == 90 &&
+                            t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.ResponseCode == SendSmsResponseStatus.Success)
+                    );
+            }
+
+            return await Context.Transactions.CountAsync(t =>
+                       t.CreatedAt.Date >= startDate.Date &&
+                            t.CreatedAt.Date <= endDate.Date &&
+                            t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.ResponseCode == SendSmsResponseStatus.Success)
+                    );
+        }
     }
 }
