@@ -3631,6 +3631,7 @@ namespace bbt.gateway.messaging.Api.Pusula.Model.GetCustomer
         public int EmailType { get; set; }
         [JsonProperty(PropertyName = "E-mail")]
         public string Email { get; set; }
+        public string IsVerified { get; set; }
     }
 
 }

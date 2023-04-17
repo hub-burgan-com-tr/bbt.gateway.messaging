@@ -22,7 +22,14 @@ namespace bbt.gateway.common.Repositories
         public Task<(IEnumerable<Transaction>, int)> GetPushMessagesWithCustomerNoAsync(string createdName, ulong customerNo, DateTime startDate, DateTime endDate, int page, int pageSize);
         public Task<(IEnumerable<Transaction>, int)> GetPushMessagesWithCitizenshipNoAsync(string createdName, string citizenshipNo, DateTime startDate, DateTime endDate, int page, int pageSize);
         public Task<IEnumerable<Transaction>> GetReportTransaction(int phoneNumber,string date,string message);
-
+        public Task<int> GetSuccessfullSmsCount(DateTime startDate, DateTime endDate, OperatorType @operator);
+        public Task<int> GetSuccessfullForeignSmsCount(DateTime startDate, DateTime endDate, OperatorType @operator);
+        public Task<int> GetSuccessfullOtpCount(DateTime startDate, DateTime endDate, OperatorType @operator);
+        public Task<int> GetSuccessfullForeignOtpCount(DateTime startDate, DateTime endDate, OperatorType @operator);
+        public Task<int> GetOtpRequestCount(DateTime startDate, DateTime endDate, OperatorType @operator, bool isSuccess);
+        public Task<int> GetForeignOtpRequestCount(DateTime startDate, DateTime endDate, OperatorType @operator, bool isSuccess);
+        public Task<int> GetSmsRequestCount(DateTime startDate, DateTime endDate, OperatorType @operator, bool isSuccess);
+        public Task<int> GetForeignSmsRequestCount(DateTime startDate, DateTime endDate, OperatorType @operator, bool isSuccess);
         public Task<Transaction> GetWithIdAsync(Guid TxnId);
         public Task<Transaction> GetWithIdAsNoTrackingAsync(Guid TxnId);
     }

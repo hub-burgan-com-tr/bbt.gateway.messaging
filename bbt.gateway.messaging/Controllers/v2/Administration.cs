@@ -43,6 +43,26 @@ namespace bbt.gateway.messaging.Controllers.v2
         }
 
         [SwaggerOperation(
+           Summary = "Returns Sms Counts And Success Rate",
+           Description = "Returns Sms Counts And Success Rate."
+           )]
+        [HttpGet("Report/Sms")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+
+        public async Task<IActionResult> SmsReportAsync([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            var smsReportResponse = new SmsReportResponse();
+
+            smsReportResponse.Turkcell = await GetOperatorInfo(startDate, endDate, OperatorType.Turkcell, true, false);
+            smsReportResponse.Vodafone = await GetOperatorInfo(startDate, endDate, OperatorType.Vodafone, true, false);
+            smsReportResponse.TurkTelekom = await GetOperatorInfo(startDate, endDate, OperatorType.TurkTelekom, true, false);
+            smsReportResponse.dEngage = await GetOperatorInfo(startDate, endDate, OperatorType.dEngageBurgan, false, true) + await GetOperatorInfo(startDate, endDate, OperatorType.dEngageOn, false, true);
+            smsReportResponse.Codec = await GetOperatorInfo(startDate, endDate, OperatorType.Codec, false, true);
+
+            return Ok(smsReportResponse);
+        }
+
+        [SwaggerOperation(
            Summary = "Check Fast Sms Message Status",
            Description = "Check Fast Sms Delivery Status."
            )]
@@ -1350,6 +1370,128 @@ namespace bbt.gateway.messaging.Controllers.v2
 
             return "Başarısız";
         }
+
+        private async Task<OperatorReport> GetOperatorInfo(DateTime startDate,DateTime endDate,OperatorType @operator, bool isOtp, bool isFast)
+        { 
+            var operatorReport = new OperatorReport();
+            if (isOtp)
+            {
+
+                try
+                {
+                    operatorReport.OtpCount = await _repositoryManager.Transactions.GetSuccessfullOtpCount(startDate,endDate,@operator);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                try
+                {
+                    operatorReport.ForeignOtpCount = await _repositoryManager.Transactions.GetSuccessfullForeignOtpCount(startDate, endDate, @operator);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                try
+                {
+                    operatorReport.SuccessfullOtpRequestCount = await _repositoryManager.Transactions.GetOtpRequestCount(startDate, endDate, @operator,true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                try
+                {
+                    operatorReport.UnsuccessfullOtpRequestCount = await _repositoryManager.Transactions.GetOtpRequestCount(startDate, endDate, @operator, false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                try
+                {
+                    operatorReport.SuccessfullForeignOtpRequestCount = await _repositoryManager.Transactions.GetForeignOtpRequestCount(startDate, endDate, @operator, true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                try
+                {
+                    operatorReport.UnsuccessfullForeignOtpRequestCount = await _repositoryManager.Transactions.GetForeignOtpRequestCount(startDate, endDate, @operator, false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+
+            if (isFast)
+            {
+                try
+                {
+                    operatorReport.FastCount = await _repositoryManager.Transactions.GetSuccessfullSmsCount(startDate, endDate, @operator);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                try
+                {
+                    operatorReport.ForeignFastCount = await _repositoryManager.Transactions.GetSuccessfullForeignSmsCount(startDate, endDate, @operator);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                try
+                {
+                    operatorReport.SuccessfullFastRequestCount = await _repositoryManager.Transactions.GetSmsRequestCount(startDate, endDate, @operator, true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                try
+                {
+                    operatorReport.UnsuccessfullFastRequestCount = await _repositoryManager.Transactions.GetSmsRequestCount(startDate, endDate, @operator, false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                try
+                {
+                    operatorReport.SuccessfullForeignFastRequestCount = await _repositoryManager.Transactions.GetForeignSmsRequestCount(startDate, endDate, @operator, true);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+
+                try
+                {
+                    operatorReport.UnsuccessfullForeignFastRequestCount = await _repositoryManager.Transactions.GetForeignSmsRequestCount(startDate, endDate, @operator, false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+            return operatorReport;
+        }
+
+
 
     }
 }

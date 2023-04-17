@@ -223,6 +223,10 @@ namespace bbt.gateway.messaging.Api.Pusula
                             xmlDocument.LoadXml("<root>" + mail + "</root>");
                             var serializedJson = JsonConvert.SerializeXmlNode(xmlDocument);
                             var pusulaMailInfo = JsonConvert.DeserializeObject<PusulaMailRoot>(serializedJson);
+                            if (pusulaMailInfo.root.IsVerified == "Evet")
+                            {
+                                getCustomerResponse.VerifiedMailAdresses.Add((pusulaMailInfo.root.Email));
+                            }
                             if (pusulaMailInfo.root.EmailType == 1)
                             {
                                 getCustomerResponse.MainEmail = pusulaMailInfo.root.Email;
