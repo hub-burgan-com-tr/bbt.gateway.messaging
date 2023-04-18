@@ -441,13 +441,12 @@ namespace bbt.gateway.messaging.Controllers.v1
 
             UserSettingsModel user = _userSettings.Users.Where(a => a.UserName == userName).FirstOrDefault();
             if (user == null)
-                return Ok(false);
+                return Ok(null);
             else
             {
-                return Ok(true);
 
+                return Ok(user.Pages);
             }
-
         }
     }
 }
