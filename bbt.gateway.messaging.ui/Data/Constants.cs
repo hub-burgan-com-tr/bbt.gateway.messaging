@@ -47,6 +47,16 @@ namespace bbt.gateway.messaging.ui.Data
             { BlacklistStatus.Resolved, "Çözüldü" },
             { BlacklistStatus.NotResolved, "Çözülmedi" },
         };
+        public static Dictionary<OperatorType, string> OperatorTypeMap = new()
+        {
+            { OperatorType.Codec, "Codec" },
+            { OperatorType.Vodafone, "Vodafone" },
+            { OperatorType.Turkcell, "Turkcell" },
+            { OperatorType.TurkTelekom, "Türk Telekom" },
+            { OperatorType.dEngageBurgan, "Dengage" },
+            { OperatorType.dEngageOn, "Dengage" },
+
+        };
         public static Dictionary<SmsTypeEnum, int> SmsTypeMap = new()
         {
             {

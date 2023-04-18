@@ -51,13 +51,13 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         public async Task<IActionResult> SmsReportAsync([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            var smsReportResponse = new SmsReportResponse();
+            var smsReportResponse = new List<OperatorReport>();
 
-            smsReportResponse.Turkcell = await GetOperatorInfo(startDate, endDate, OperatorType.Turkcell, true, false);
-            smsReportResponse.Vodafone = await GetOperatorInfo(startDate, endDate, OperatorType.Vodafone, true, false);
-            smsReportResponse.TurkTelekom = await GetOperatorInfo(startDate, endDate, OperatorType.TurkTelekom, true, false);
-            smsReportResponse.dEngage = await GetOperatorInfo(startDate, endDate, OperatorType.dEngageBurgan, false, true) + await GetOperatorInfo(startDate, endDate, OperatorType.dEngageOn, false, true);
-            smsReportResponse.Codec = await GetOperatorInfo(startDate, endDate, OperatorType.Codec, false, true);
+            smsReportResponse.Add( await GetOperatorInfo(startDate, endDate, OperatorType.Turkcell, true, false));
+            smsReportResponse.Add(await GetOperatorInfo(startDate, endDate, OperatorType.Vodafone, true, false));
+            smsReportResponse.Add(await GetOperatorInfo(startDate, endDate, OperatorType.TurkTelekom, true, false));
+            smsReportResponse.Add((await GetOperatorInfo(startDate, endDate, OperatorType.dEngageBurgan, false, true) + await GetOperatorInfo(startDate, endDate, OperatorType.dEngageOn, false, true)));
+            smsReportResponse.Add(await GetOperatorInfo(startDate, endDate, OperatorType.Codec, false, true));
 
             return Ok(smsReportResponse);
         }
@@ -1374,6 +1374,7 @@ namespace bbt.gateway.messaging.Controllers.v2
         private async Task<OperatorReport> GetOperatorInfo(DateTime startDate,DateTime endDate,OperatorType @operator, bool isOtp, bool isFast)
         { 
             var operatorReport = new OperatorReport();
+            operatorReport.Operator = @operator;
             if (isOtp)
             {
 

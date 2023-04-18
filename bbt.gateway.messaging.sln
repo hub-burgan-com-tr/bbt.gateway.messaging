@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bbt.gateway.worker.SmsRepor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bbt.gateway.worker.OtpReports", "bbt.gateway.worker.OtpReports\bbt.gateway.worker.OtpReports.csproj", "{E19C5E91-E408-44CA-A9ED-77F32BA053DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bbt.gateway.worker.MailReports", "bbt.gateway.worker.MailReports\bbt.gateway.worker.MailReports.csproj", "{BBF3AA01-BC16-47CC-B39E-FB02EDB233E6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "bbt.gateway.worker.MailReports", "bbt.gateway.worker.MailReports\bbt.gateway.worker.MailReports.csproj", "{BBF3AA01-BC16-47CC-B39E-FB02EDB233E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

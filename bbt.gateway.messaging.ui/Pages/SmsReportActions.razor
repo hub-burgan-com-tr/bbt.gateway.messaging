@@ -1,0 +1,200 @@
+﻿@page "/smsReportsActions"
+@using bbt.gateway.common.Models
+@using bbt.gateway.messaging.ui.Data
+@using bbt.gateway.common.Models.v2;
+@inject IMessagingGatewayService MessagingGateway
+@inherits bbt.gateway.messaging.ui.Pages.Base.BaseComponent
+<PageTitle>Sms Aksiyon Raporu</PageTitle>
+<h2>Sms Aksiyon Raporu</h2>
+  <div class="row mb-2">
+         
+
+            <div class="col-2">
+                <RadzenCard class="p-3">
+                    <h6 class="mb-1">Başlangıç Tarihi</h6>
+                    <RadzenDatePicker @bind-Value=@searchModel.StartDate DateFormat="d"  Class="w-100" />
+                </RadzenCard>
+            </div>
+            <div class="col-2">
+                <RadzenCard class="p-3">
+                    <h6 class="mb-1">Bitiş Tarihi</h6>
+                    <RadzenDatePicker @bind-Value=@searchModel.EndDate DateFormat="d" Class="w-100" />
+                </RadzenCard>
+            </div>
+        </div>
+        
+<div class="row mb-2">
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <RadzenButton Click=@(args => SearchSmsReports()) Text="Sorgula" ButtonStyle="ButtonStyle.Primary" />
+    </div>
+</div>
+  @if (searchCompleted==true)
+    {
+
+
+    <RadzenDataGrid @ref=@grid  Data="@ReportGrid"  AllowColumnResize="true" 
+    AllowPaging="true"  PagerHorizontalAlign="HorizontalAlign.Right" TItem="OperatorReport"  
+    >
+        <Columns>
+             <RadzenDataGridColumn TItem="OperatorReport" Title="Operator"  Filterable="false" >
+                <Template Context="data">
+               @Constants.OperatorTypeMap[data.Operator]
+                </Template>
+             
+                     <FooterTemplate>
+              Genel
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="OperatorReport" Property="FastCount" Filterable="false" >
+                 <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Fast İstek Sayısı</p>
+                </HeaderTemplate>
+                 <FooterTemplate>
+              @ReportGrid.Sum(s=>s.FastCount)
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+             <RadzenDataGridColumn TItem="OperatorReport" Property="SuccessfullFastRequestCount" Filterable="false" >
+                <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Fast Başarılı İstek Sayısı</p>
+                </HeaderTemplate>
+                 <FooterTemplate>
+              @ReportGrid.Sum(s=>s.SuccessfullFastRequestCount)
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+              <RadzenDataGridColumn TItem="OperatorReport"  Filterable="false" >
+                    <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Fast Gönderim Başarı Yüzdesi</p>
+                </HeaderTemplate>
+                   <Template Context="data">
+                   @Percent(@data.FastCount,@data.SuccessfullFastRequestCount)
+                </Template>
+                 <FooterTemplate>
+              @Percent(ReportGrid.Sum(s=>s.FastCount),ReportGrid.Sum(s=>s.SuccessfullFastRequestCount))
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+             
+             
+            <RadzenDataGridColumn TItem="OperatorReport" Property="OtpCount" Title="Otp"  >
+                  <FooterTemplate>
+               @ReportGrid.Sum(s=>s.OtpCount)
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+              <RadzenDataGridColumn TItem="OperatorReport" Property="SuccessfullOtpRequestCount" Filterable="false" Title="Otp Başarılı İstek Sayısı">
+                   <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Otp Başarılı İstek Sayısı</p>
+                </HeaderTemplate>
+                 <FooterTemplate>
+              @ReportGrid.Sum(s=>s.SuccessfullOtpRequestCount)
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+              <RadzenDataGridColumn TItem="OperatorReport"  Filterable="false" >
+                     <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Otp Gönderim Başarı Yüzdesi</p>
+                </HeaderTemplate>
+                   <Template Context="data">
+                   @Percent(@data.OtpCount,@data.SuccessfullOtpRequestCount)
+                </Template>
+                 <FooterTemplate>
+              @Percent(ReportGrid.Sum(s=>s.OtpCount),ReportGrid.Sum(s=>s.SuccessfullOtpRequestCount))
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+
+
+            <RadzenDataGridColumn TItem="OperatorReport" Property="ForeignFastCount" Title="Yurt Dışı Fast ">
+                 <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Yurt Dışı Fast</p>
+                </HeaderTemplate>
+                  <FooterTemplate>
+               @ReportGrid.Sum(s=>s.ForeignFastCount)
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+                 <RadzenDataGridColumn TItem="OperatorReport" Property="SuccessfullForeignFastRequestCount" Filterable="false" Title="Yurt Dışı Fast Başarılı İstek Sayısı">
+                          <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Yurt Dışı Fast Başarılı İstek Sayısı</p>
+                </HeaderTemplate>
+                 <FooterTemplate>
+              @ReportGrid.Sum(s=>s.SuccessfullForeignFastRequestCount)
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+              <RadzenDataGridColumn TItem="OperatorReport"  Filterable="false" Title="Yurt Dışı Fast Gönderim Başarı Yüzdesi">
+                   <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Yurt Dışı Fast Gönderim Başarı Yüzdesi</p>
+                </HeaderTemplate>
+                   <Template Context="data">
+                   @Percent(@data.ForeignFastCount,@data.SuccessfullForeignFastRequestCount)
+                </Template>
+                 <FooterTemplate>
+              @Percent(ReportGrid.Sum(s=>s.ForeignFastCount),ReportGrid.Sum(s=>s.SuccessfullForeignFastRequestCount))
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+
+
+
+              <RadzenDataGridColumn TItem="OperatorReport" Property="ForeignOtpCount" Title="Yurt Dışı Otp "  >
+                    <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Yurt Dışı Otp</p>
+                </HeaderTemplate>
+                    <FooterTemplate>
+               @ReportGrid.Sum(s=>s.ForeignOtpCount)
+            </FooterTemplate>
+              </RadzenDataGridColumn>
+                 <RadzenDataGridColumn TItem="OperatorReport" Property="SuccessfullForeignOtpRequestCount" Filterable="false" Title="Yurt Dışı Otp Başarılı İstek Sayısı">
+                       <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Yurt Dışı Otp Başarılı İstek Sayısı</p>
+                </HeaderTemplate>
+                 <FooterTemplate>
+              @ReportGrid.Sum(s=>s.SuccessfullForeignOtpRequestCount)
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+              <RadzenDataGridColumn TItem="OperatorReport"  Filterable="false" Title="Yurt Dışı Otp Gönderim Başarı Yüzdesi">
+                    <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Yurt Dışı Otp Gönderim Başarı Yüzdesi</p>
+                </HeaderTemplate>
+                   <Template Context="data">
+                   @Percent(@data.ForeignOtpCount,@data.SuccessfullForeignOtpRequestCount)
+                </Template>
+                 <FooterTemplate>
+              @Percent(ReportGrid.Sum(s=>s.ForeignOtpCount),ReportGrid.Sum(s=>s.SuccessfullForeignOtpRequestCount))
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+
+
+
+            <RadzenDataGridColumn TItem="OperatorReport" Title="Toplam İstek Sayısı"  Filterable="false" >
+                  <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Toplam İstek Sayısı</p>
+                </HeaderTemplate>
+                <Template Context="data">
+                   @Total(@data)
+                </Template>
+                 <FooterTemplate>
+               @ReportGrid.Sum(s=> Total(s))
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+
+               <RadzenDataGridColumn TItem="OperatorReport"  Filterable="false" Title="Toplam  Başarılı İstek Sayısı">
+                     <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Toplam  Başarılı İstek Sayısı</p>
+                </HeaderTemplate>
+                   <Template Context="data">
+                   @TotalSuccessFull(@data)
+                </Template>
+                 <FooterTemplate>
+              @ReportGrid.Sum(s=>TotalSuccessFull(s))
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+              <RadzenDataGridColumn TItem="OperatorReport"  Filterable="false" Title="Toplam Gönderim Başarı Yüzdesi">
+                    <HeaderTemplate>
+                   <p style="white-space:pre-wrap">Toplam Gönderim Başarı Yüzdesi</p>
+                </HeaderTemplate>
+                   <Template Context="data">
+                   @Percent(@Total(@data),@TotalSuccessFull(@data))
+                </Template>
+                 <FooterTemplate>
+              @Percent(ReportGrid.Sum(s=>Total(s)),ReportGrid.Sum(s=>TotalSuccessFull(s)))
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+
+    </Columns>
+    </RadzenDataGrid>
+    }
