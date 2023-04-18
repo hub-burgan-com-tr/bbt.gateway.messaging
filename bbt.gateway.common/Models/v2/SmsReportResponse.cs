@@ -1,17 +1,8 @@
 ﻿namespace bbt.gateway.common.Models.v2
 {
-    public class SmsReportResponse
-    {
-        public OperatorReport Turkcell { get; set; }
-        public OperatorReport Vodafone { get; set; }
 
-        public OperatorReport TurkTelekom { get; set; }
-        public OperatorReport dEngage { get; set; }
-        public OperatorReport Codec { get; set; }
 
-    }
-
-    public class OperatorReport
+    public partial class OperatorReport
     {
         public int OtpCount { get; set; } = 0;
         public int ForeignOtpCount { get; set; } = 0;
@@ -39,8 +30,10 @@
             r.UnsuccessfullFastRequestCount = a.UnsuccessfullFastRequestCount + b.UnsuccessfullFastRequestCount;
             r.SuccessfullForeignFastRequestCount = a.SuccessfullForeignFastRequestCount + b.SuccessfullForeignFastRequestCount;
             r.UnsuccessfullForeignFastRequestCount = a.UnsuccessfullForeignFastRequestCount + b.UnsuccessfullForeignFastRequestCount;
+            r.Operator=a.Operator|b.Operator;
             return r;
         }
+        public OperatorType Operator { get; set; }
 
     }
 

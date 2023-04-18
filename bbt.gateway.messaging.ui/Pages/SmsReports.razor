@@ -1,0 +1,79 @@
+﻿@page "/smsReports"
+@using bbt.gateway.common.Models
+@using bbt.gateway.messaging.ui.Data
+@using bbt.gateway.common.Models.v2;
+@inject IMessagingGatewayService MessagingGateway
+@inherits bbt.gateway.messaging.ui.Pages.Base.BaseComponent
+<PageTitle>Sms Rapor</PageTitle>
+
+  <div class="row mb-2">
+         
+
+            <div class="col-2">
+                <RadzenCard class="p-3">
+                    <h6 class="mb-1">Başlangıç Tarihi</h6>
+                    <RadzenDatePicker @bind-Value=@searchModel.StartDate DateFormat="d"  Class="w-100" />
+                </RadzenCard>
+            </div>
+            <div class="col-2">
+                <RadzenCard class="p-3">
+                    <h6 class="mb-1">Bitiş Tarihi</h6>
+                    <RadzenDatePicker @bind-Value=@searchModel.EndDate DateFormat="d" Class="w-100" />
+                </RadzenCard>
+            </div>
+        </div>
+        
+<div class="row mb-2">
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <RadzenButton Click=@(args => SearchSmsReports()) Text="Sorgula" ButtonStyle="ButtonStyle.Primary" />
+    </div>
+</div>
+  @if (searchCompleted==true)
+    {
+
+
+    <RadzenDataGrid @ref=@grid  Data="@ReportGrid"  
+    AllowPaging="true"  PagerHorizontalAlign="HorizontalAlign.Right" TItem="OperatorReport" ColumnWidth="50px"
+    >
+        <Columns>
+             <RadzenDataGridColumn TItem="OperatorReport" Title="Operator"  Filterable="false" Width="25px">
+                <Template Context="data">
+               @Constants.OperatorTypeMap[data.Operator]
+                </Template>
+                     <FooterTemplate>
+              Genel
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="OperatorReport" Property="FastCount" Filterable="false" Title="Fast"Width="40px">
+                 <FooterTemplate>
+              @ReportGrid.Sum(s=>s.FastCount)
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+             
+            <RadzenDataGridColumn TItem="OperatorReport" Property="OtpCount" Title="Otp"  >
+                  <FooterTemplate>
+               @ReportGrid.Sum(s=>s.OtpCount)
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="OperatorReport" Property="ForeignFastCount" Title="Yurt Dışı Fast ">
+                  <FooterTemplate>
+               @ReportGrid.Sum(s=>s.ForeignFastCount)
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+              <RadzenDataGridColumn TItem="OperatorReport" Property="ForeignOtpCount" Title="Yurt Dışı Otp "  >
+                    <FooterTemplate>
+               @ReportGrid.Sum(s=>s.ForeignOtpCount)
+            </FooterTemplate>
+              </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="OperatorReport" Title="Toplam"  Filterable="false" Width="25px">
+                <Template Context="data">
+                   @Total(@data)
+                </Template>
+                 <FooterTemplate>
+               @ReportGrid.Sum(s=> Total(s))
+            </FooterTemplate>
+            </RadzenDataGridColumn>
+
+    </Columns>
+    </RadzenDataGrid>
+    }
