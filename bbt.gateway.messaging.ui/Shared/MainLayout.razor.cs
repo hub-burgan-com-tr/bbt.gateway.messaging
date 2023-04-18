@@ -18,6 +18,7 @@ namespace bbt.gateway.messaging.ui.Shared
         public bbt.gateway.messaging.ui.Data.HttpContextAccessor httpContext { get; set; }
         [Inject]
         public NavigationManager navigationManager { get; set; }
+        public Dictionary<string, string> NavItems { get; set; }
         protected override async Task OnParametersSetAsync()
             {
             var user = (await AuthenticationState).User;
@@ -36,6 +37,11 @@ namespace bbt.gateway.messaging.ui.Shared
            
 
 
+        }
+        public async Task HandelNavItemsAsync(
+           Dictionary<string, string> items)
+        {
+            NavItems = items;
         }
         protected override void OnInitialized()
         {

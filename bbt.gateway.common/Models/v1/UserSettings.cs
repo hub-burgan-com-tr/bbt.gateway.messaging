@@ -13,5 +13,6 @@ namespace bbt.gateway.common.Models.v1
     public class UserSettingsModel
     {
         public string UserName { get; set; }
+        public Dictionary<string,string> Pages { get; set; }
     }
 }

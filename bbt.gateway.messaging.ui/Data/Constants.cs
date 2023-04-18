@@ -57,6 +57,7 @@ namespace bbt.gateway.messaging.ui.Data
             { OperatorType.dEngageOn, "Dengage" },
 
         };
+
         public static Dictionary<SmsTypeEnum, int> SmsTypeMap = new()
         {
             {

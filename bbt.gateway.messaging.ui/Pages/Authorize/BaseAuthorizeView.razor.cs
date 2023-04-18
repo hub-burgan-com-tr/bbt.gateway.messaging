@@ -21,6 +21,11 @@ namespace bbt.gateway.messaging.ui.Pages.Authorize
         public RenderFragment AuthorizedControl { get; set; }
         [Parameter]
         public RenderFragment NotAuthorizedControl { get; set; }
+        [Parameter]
+        public EventCallback<Dictionary<string, string>> navItems
+        {
+            get; set;
+        }
 
         public RenderFragment Display { get; set; }
 
@@ -75,11 +80,31 @@ namespace bbt.gateway.messaging.ui.Pages.Authorize
                   
                     if (!string.IsNullOrEmpty(sicil))
                     {
-                        await JS.InvokeVoidAsync("console.log", sicil);
                         var res = await MessagingGateway.GetUserControl(sicil);
-                        if (res != null && res)
+                        if (res !=null&&res.Count>0)
                         {
-                            Display = AuthorizedControl;
+                            navItems.InvokeAsync(res);
+                            string url = System.Text.RegularExpressions.Regex.Replace(navigationManager.Uri, @"/+", @"/");
+                            string baseUrl = System.Text.RegularExpressions.Regex.Replace(navigationManager.BaseUri, @"/+", @"/");
+                            if( url != baseUrl)
+                            {
+                                string value;
+                                url = url.Replace(baseUrl, "");
+
+                                if (res.TryGetValue(url, out value))
+                                {
+                                    Display = AuthorizedControl;
+                                }
+                                else
+                                {
+                                    Display = NotAuthorizedControl;
+                                }
+                            }
+                            else
+                            {
+                                Display = AuthorizedControl;
+                            }
+                            
                         }
                         else
                         {

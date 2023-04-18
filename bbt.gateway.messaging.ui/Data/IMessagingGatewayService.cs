@@ -23,7 +23,7 @@ namespace bbt.gateway.messaging.ui.Data
         [Headers("Authorization","Bearer")]
         Task<BlackListEntriesDto> GetBlackListEntriesByPhone(int countryCode, int prefix, int number, QueryParams queryParams);
         [Get("/api/v1/Administration/user/control/{userName}")]
-        Task<bool> GetUserControl(string userName);
+        Task<Dictionary<string, string>> GetUserControl(string userName);
         [Post("/api/v2/Administration/sms/check-message")]
         Task<SmsTrackingLog> CheckSmsStatus(common.Models.v2.CheckFastSmsRequest data);
         [Post("/api/v2/Administration/otp/check-message")]

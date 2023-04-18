@@ -5,11 +5,11 @@
 <AuthorizeView>
     <Authorized>
         <div class="page">
-              <BaseAuthorizeView>
+              <BaseAuthorizeView  navItems=@HandelNavItemsAsync>
             <AuthorizedControl>
     <RadzenDialog />
     <div class="sidebar">
-        <NavMenu />
+        <NavMenu NavItems="NavItems"/>
     </div>
 
     <main>
