@@ -135,7 +135,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             return pushContentsResponse;
         }
 
-        public async Task<MailResponseLog> SendMail(string to, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments,string? cc,string? bcc)
+        public async Task<MailResponseLog> SendMail(string to, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments,string? cc,string? bcc,string?[] tags)
         {
             await Auth();
 
@@ -223,7 +223,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             return pushNotificationResponseLog;
         }
 
-        public async Task<SmsResponseLog> SendSms(Phone phone, SmsTypes smsType, string content, string templateId, string templateParams)
+        public async Task<SmsResponseLog> SendSms(Phone phone, SmsTypes smsType, string content, string templateId, string templateParams, string?[] tags)
         {
             await Auth();
             SmsResponseLog smsResponseLog = new()
@@ -276,7 +276,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             throw new NotImplementedException();
         }
 
-        public async Task<List<MailResponseLog>> SendBulkMail(string to, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc)
+        public async Task<List<MailResponseLog>> SendBulkMail(string to, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc, string?[] tags)
         {
             await Task.CompletedTask;
             return new List<MailResponseLog>();

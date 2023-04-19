@@ -345,7 +345,7 @@ namespace bbt.gateway.messaging.Workers
 
             _transactionManager.Transaction.SmsRequestLog = smsRequest;
 
-            var response = await _operatordEngage.SendSms(sendMessageSmsRequest.Phone, sendMessageSmsRequest.SmsType, header.BuildContentForSms(sendMessageSmsRequest.Content), null, null);
+            var response = await _operatordEngage.SendSms(sendMessageSmsRequest.Phone, sendMessageSmsRequest.SmsType, header.BuildContentForSms(sendMessageSmsRequest.Content), null, null,null);
 
             smsRequest.ResponseLogs.Add(response);
 
@@ -390,7 +390,7 @@ namespace bbt.gateway.messaging.Workers
             smsRequest.PhoneConfiguration = _transactionManager.SmsRequestInfo.PhoneConfiguration;
             _transactionManager.Transaction.SmsRequestLog = smsRequest;
 
-            var response = await _operatordEngage.SendSms(sendTemplatedSmsRequest.Phone, SmsTypes.Fast, null, contentInfo.publicId, sendTemplatedSmsRequest.TemplateParams);
+            var response = await _operatordEngage.SendSms(sendTemplatedSmsRequest.Phone, SmsTypes.Fast, null, contentInfo.publicId, sendTemplatedSmsRequest.TemplateParams,null);
 
             smsRequest.ResponseLogs.Add(response);
 
@@ -426,7 +426,7 @@ namespace bbt.gateway.messaging.Workers
 
             if (!sendMessageEmailRequest.Email.Contains(';') && !sendMessageEmailRequest.Cc.Contains(';') && !sendMessageEmailRequest.Bcc.Contains(';'))
             {
-                var response = await _operatordEngage.SendMail(sendMessageEmailRequest.Email, sendMessageEmailRequest.From, sendMessageEmailRequest.Subject, sendMessageEmailRequest.Content, null, null, sendMessageEmailRequest.Attachments, sendMessageEmailRequest.Cc, sendMessageEmailRequest.Bcc);
+                var response = await _operatordEngage.SendMail(sendMessageEmailRequest.Email, sendMessageEmailRequest.From, sendMessageEmailRequest.Subject, sendMessageEmailRequest.Content, null, null, sendMessageEmailRequest.Attachments, sendMessageEmailRequest.Cc, sendMessageEmailRequest.Bcc,null);
 
                 mailRequest.ResponseLogs.Add(response);
 
@@ -434,7 +434,7 @@ namespace bbt.gateway.messaging.Workers
             }
             else
             {
-                var response = await _operatordEngage.SendBulkMail(sendMessageEmailRequest.Email, sendMessageEmailRequest.From, sendMessageEmailRequest.Subject, sendMessageEmailRequest.Content, null, null, sendMessageEmailRequest.Attachments, sendMessageEmailRequest.Cc, sendMessageEmailRequest.Bcc);
+                var response = await _operatordEngage.SendBulkMail(sendMessageEmailRequest.Email, sendMessageEmailRequest.From, sendMessageEmailRequest.Subject, sendMessageEmailRequest.Content, null, null, sendMessageEmailRequest.Attachments, sendMessageEmailRequest.Cc, sendMessageEmailRequest.Bcc,null);
 
                 mailRequest.ResponseLogs = response;
 
@@ -489,7 +489,7 @@ namespace bbt.gateway.messaging.Workers
 
             _transactionManager.Transaction.MailRequestLog = mailRequest;
 
-            var response = await _operatordEngage.SendMail(sendTemplatedEmailRequest.Email, null, null, null, contentInfo.publicId, sendTemplatedEmailRequest.TemplateParams, sendTemplatedEmailRequest.Attachments, sendTemplatedEmailRequest.Cc, sendTemplatedEmailRequest.Bcc);
+            var response = await _operatordEngage.SendMail(sendTemplatedEmailRequest.Email, null, null, null, contentInfo.publicId, sendTemplatedEmailRequest.TemplateParams, sendTemplatedEmailRequest.Attachments, sendTemplatedEmailRequest.Cc, sendTemplatedEmailRequest.Bcc,null);
 
             mailRequest.ResponseLogs.Add(response);
 
@@ -614,7 +614,7 @@ namespace bbt.gateway.messaging.Workers
             smsRequest.PhoneConfiguration = _transactionManager.SmsRequestInfo.PhoneConfiguration;
             _transactionManager.Transaction.SmsRequestLog = smsRequest;
 
-            var response = await _operatordEngage.SendSms(templatedSmsRequest.Phone.MapTo<Phone>(), SmsTypes.Fast, null, contentInfo.publicId, templatedSmsRequest.TemplateParams);
+            var response = await _operatordEngage.SendSms(templatedSmsRequest.Phone.MapTo<Phone>(), SmsTypes.Fast, null, contentInfo.publicId, templatedSmsRequest.TemplateParams, templatedSmsRequest.Tags);
 
             smsRequest.ResponseLogs.Add(response);
 
@@ -656,7 +656,7 @@ namespace bbt.gateway.messaging.Workers
             smsRequest.PhoneConfiguration = _transactionManager.SmsRequestInfo.PhoneConfiguration;
             _transactionManager.Transaction.SmsRequestLog = smsRequest;
 
-            var response = await _operatordEngage.SendSms(sendSmsRequest.Phone.MapTo<Phone>(), (SmsTypes)sendSmsRequest.SmsType, header.BuildContentForSms(sendSmsRequest.Content), null, null);
+            var response = await _operatordEngage.SendSms(sendSmsRequest.Phone.MapTo<Phone>(), (SmsTypes)sendSmsRequest.SmsType, header.BuildContentForSms(sendSmsRequest.Content), null, null,sendSmsRequest.Tags);
 
             smsRequest.ResponseLogs.Add(response);
 
@@ -706,7 +706,7 @@ namespace bbt.gateway.messaging.Workers
 
             _transactionManager.Transaction.MailRequestLog = mailRequest;
 
-            var response = await _operatordEngage.SendMail(mailRequestDto.Email, mailRequestDto.From, mailRequestDto.Subject, mailRequestDto.Content, null, null, mailRequestDto.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>(), mailRequestDto.Cc, mailRequestDto.Bcc);
+            var response = await _operatordEngage.SendMail(mailRequestDto.Email, mailRequestDto.From, mailRequestDto.Subject, mailRequestDto.Content, null, null, mailRequestDto.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>(), mailRequestDto.Cc, mailRequestDto.Bcc,mailRequestDto.Tags);
 
             mailRequest.ResponseLogs.Add(response);
 
@@ -780,7 +780,7 @@ namespace bbt.gateway.messaging.Workers
 
             _transactionManager.Transaction.MailRequestLog = mailRequest;
 
-            var response = await _operatordEngage.SendMail(templatedMailRequest.Email, null, null, null, contentInfo.publicId, templatedMailRequest.TemplateParams, templatedMailRequest.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>(), templatedMailRequest.Cc, templatedMailRequest.Bcc);
+            var response = await _operatordEngage.SendMail(templatedMailRequest.Email, null, null, null, contentInfo.publicId, templatedMailRequest.TemplateParams, templatedMailRequest.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>(), templatedMailRequest.Cc, templatedMailRequest.Bcc,templatedMailRequest.Tags);
 
             mailRequest.ResponseLogs.Add(response);
 

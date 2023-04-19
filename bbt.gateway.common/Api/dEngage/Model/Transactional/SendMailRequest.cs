@@ -9,6 +9,7 @@ namespace bbt.gateway.common.Api.dEngage.Model.Transactional
         public List<Attachment> attachments { get; set; }
         public string current { get; set; }
         public string replyTo { get; set; }
+        public List<string> tags { get; set; }
     }
 
     public class ContentMail

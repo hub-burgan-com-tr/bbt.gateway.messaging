@@ -12,5 +12,6 @@ namespace bbt.gateway.common.Repositories
         Task<(IEnumerable<BlackListEntry>, int)> GetBlackListByCustomerNoAsync(ulong customerNo, int page, int pageSiz);
 
         Task<BlackListEntry> GetLastBlacklistRecord(int countryCode, int prefix, int number);
+        Task<BlackListEntry> GetLastBlacklistEntry(int countryCode, int prefix, int number);
     }
 }

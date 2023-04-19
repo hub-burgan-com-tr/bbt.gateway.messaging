@@ -7,8 +7,8 @@ namespace bbt.gateway.messaging.Api.Pusula.Model.GetByPhone
 {
     public class GetByPhoneNumberRequest
     {
-        public int CountryCode { get; set; }
-        public int CityCode { get; set; }
-        public int TelephoneNumber { get; set; }
+        public string CountryCode { get; set; }
+        public string CityCode { get; set; }
+        public string TelephoneNumber { get; set; }
     }
 }

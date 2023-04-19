@@ -2,7 +2,9 @@
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
+using bbt.gateway.messaging.Authorization;
 using bbt.gateway.messaging.Workers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
@@ -47,6 +49,7 @@ namespace bbt.gateway.messaging.Controllers.v2
            Description = "Returns Sms Counts And Success Rate."
            )]
         [HttpGet("Report/Sms")]
+        [ApiKey]
         [ApiExplorerSettings(IgnoreApi = true)]
 
         public async Task<IActionResult> SmsReportAsync([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
@@ -207,6 +210,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             return BadRequest();
         }
 
+        [Authorize]
         [SwaggerOperation(Summary = "Returns content headers configuration",
             Tags = new[] { "Header Management" })]
         [HttpGet("headers")]
@@ -256,6 +260,52 @@ namespace bbt.gateway.messaging.Controllers.v2
             return Ok();
         }
 
+        [SwaggerOperation(Summary = "Resolve Blacklist Entry",
+            Tags = new[] { "Phone Management" })]
+        [HttpPost("blacklist/resolve")]
+        [SwaggerResponse(200, "Record was updated successfully", typeof(void))]
+
+        public async Task<IActionResult> ResolveBlacklistRecord(ResolveBlacklistEntryFromPhoneRequest resolveBlacklistEntryFromPhoneRequest)
+        {
+            var blacklistRecord = await _repositoryManager.BlackListEntries.GetLastBlacklistEntry(
+             Convert.ToInt32(resolveBlacklistEntryFromPhoneRequest.Phone.CountryCode),
+             Convert.ToInt32(resolveBlacklistEntryFromPhoneRequest.Phone.Prefix),
+             Convert.ToInt32(resolveBlacklistEntryFromPhoneRequest.Phone.Number));
+
+            if (blacklistRecord != null)
+            {
+                if (blacklistRecord.Status == BlacklistStatus.NotResolved)
+                {
+                    blacklistRecord.Status = BlacklistStatus.Resolved;
+                    blacklistRecord.Source = "BbtGatewayMessaging";
+                    blacklistRecord.Reason = resolveBlacklistEntryFromPhoneRequest.Reason;
+                    blacklistRecord.ResolvedAt = DateTime.Now;
+                    blacklistRecord.ResolvedBy = resolveBlacklistEntryFromPhoneRequest.ResolvedBy;
+
+                    await _repositoryManager.SaveChangesAsync();
+
+                    if (blacklistRecord.SmsId > 0)
+                    {
+                        var oldBlacklistRecord = await _repositoryManager.DirectBlacklists.FirstOrDefaultAsync(b => b.SmsId == blacklistRecord.SmsId);
+                        oldBlacklistRecord.VerifyDate = DateTime.Now;
+                        oldBlacklistRecord.VerifiedBy = resolveBlacklistEntryFromPhoneRequest.ResolvedBy.Name;
+                        oldBlacklistRecord.Explanation = resolveBlacklistEntryFromPhoneRequest.Reason;
+                        oldBlacklistRecord.IsVerified = true;
+                    }
+
+                    
+                }
+                else
+                {
+
+                }
+            }
+            else
+            { 
+                
+            }
+            return Ok();
+        }
 
         [SwaggerOperation(Summary = "Returns phone activities",
             Tags = new[] { "Phone Management" })]
