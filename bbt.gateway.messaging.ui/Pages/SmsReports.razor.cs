@@ -21,16 +21,20 @@ namespace bbt.gateway.messaging.ui.Pages
         private int FastCount { get; set; } = 0;
         void SearchSmsReports(LoadDataArgs args = null)
         {
+            ReportGrid = new List<OperatorReport>();
             if (searchModel.StartDate.Date > searchModel.EndDate.Date)
             {
                 if (!IsFirstLoad)
                     OpenModal("Başlangıç Tarihi Bitiş tarihinden büyük  olamaz");
             }
-            var res = MessagingGateway.SmsReportAsync(CreateQueryParams());
-            ReportGrid = res.Result;
+            else
+            {
+                var res = MessagingGatewayService.SmsReportAsync(CreateQueryParams());
+                ReportGrid = res.Result;
 
-             searchCompleted = true;
-            StateHasChanged();
+                searchCompleted = true;
+                StateHasChanged();
+            }
 
         }
     
