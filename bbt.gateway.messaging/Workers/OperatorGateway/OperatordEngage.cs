@@ -203,7 +203,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             return ("0", "");
         }
 
-        public async Task<MailResponseLog> SendMail(string to, string? from, string? subject, string? html, string? templateId, string? templateParams, List<common.Models.Attachment> attachments, string? cc, string? bcc)
+        public async Task<MailResponseLog> SendMail(string to, string? from, string? subject, string? html, string? templateId, string? templateParams, List<common.Models.Attachment> attachments, string? cc, string? bcc, string?[] tags)
         {
             var mailResponseLog = new MailResponseLog()
             {
@@ -255,7 +255,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
                 try
                 {
-                    var req = CreateMailRequest(to, mailFrom.fromName, from, subject, html, templateId, templateParams, attachments, cc, bcc);
+                    var req = CreateMailRequest(to, mailFrom.fromName, from, subject, html, templateId, templateParams, attachments, cc, bcc, tags);
                     try
                     {
 
@@ -275,7 +275,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                                 _authTryCount++;
                                 if (_authTryCount < 3)
                                 {
-                                    return await SendMail(to, from, subject, html, templateId, templateParams, attachments, cc, bcc);
+                                    return await SendMail(to, from, subject, html, templateId, templateParams, attachments, cc, bcc,tags);
                                 }
                                 else
                                 {
@@ -327,7 +327,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
         }
 
-        public async Task<List<MailResponseLog>> SendBulkMail(string to, string? from, string? subject, string? html, string? templateId, string? templateParams, List<common.Models.Attachment> attachments, string? cc, string? bcc)
+        public async Task<List<MailResponseLog>> SendBulkMail(string to, string? from, string? subject, string? html, string? templateId, string? templateParams, List<common.Models.Attachment> attachments, string? cc, string? bcc, string?[] tags)
         {
             var mailResponseLogs = new List<MailResponseLog>();
             var mailResponseLog = new MailResponseLog()
@@ -380,7 +380,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
                 try
                 {
-                    var req = CreateBulkMailRequest(to, mailFrom.fromName, from, subject, html, templateId, templateParams, attachments, cc, bcc);
+                    var req = CreateBulkMailRequest(to, mailFrom.fromName, from, subject, html, templateId, templateParams, attachments, cc, bcc, tags);
                     try
                     {
 
@@ -422,7 +422,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                                 _authTryCount++;
                                 if (_authTryCount < 3)
                                 {
-                                    return await SendBulkMail(to, from, subject, html, templateId, templateParams, attachments, cc, bcc);
+                                    return await SendBulkMail(to, from, subject, html, templateId, templateParams, attachments, cc, bcc, tags);
                                 }
                                 else
                                 {
@@ -478,7 +478,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
         }
 
-        public async Task<PushNotificationResponseLog> SendPush(string contactId, string template, string templateParams, string customParameters, bool? saveInbox,string[] tags)
+        public async Task<PushNotificationResponseLog> SendPush(string contactId, string template, string templateParams, string customParameters, bool? saveInbox,string?[] tags)
         {
             var pushNotificationResponseLog = new PushNotificationResponseLog()
             {
@@ -559,7 +559,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
         }
 
-        public async Task<SmsResponseLog> SendSms(Phone phone, SmsTypes smsType, string? content, string? templateId, string? templateParams)
+        public async Task<SmsResponseLog> SendSms(Phone phone, SmsTypes smsType, string? content, string? templateId, string? templateParams, string?[] tags)
         {
             var smsLog = new SmsResponseLog()
             {
@@ -629,7 +629,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                                 _authTryCount++;
                                 if (_authTryCount < 3)
                                 {
-                                    return await SendSms(phone, smsType, content, templateId, templateParams);
+                                    return await SendSms(phone, smsType, content, templateId, templateParams, tags);
                                 }
                                 else
                                 {
@@ -680,7 +680,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             }
         }
 
-        private SendMailRequest CreateMailRequest(string to, string fromName, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc)
+        private SendMailRequest CreateMailRequest(string to, string fromName, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc,string[] tags)
         {
             SendMailRequest sendMailRequest = new();
             sendMailRequest.send.to = to;
@@ -723,10 +723,18 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                 }
 
             }
+            if (tags != null && tags.Count() > 0)
+            {
+                sendMailRequest.tags = tags.ToList();
+            }
+            else
+            {
+                sendMailRequest.tags = null;
+            }
             return sendMailRequest;
         }
 
-        private SendBulkMailRequest CreateBulkMailRequest(string to, string fromName, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc)
+        private SendBulkMailRequest CreateBulkMailRequest(string to, string fromName, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc, string[] tags)
         {
             SendBulkMailRequest sendBulkMailRequest = new();
 
@@ -872,7 +880,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             return sendPushRequest;
         }
 
-        private common.Api.dEngage.Model.Transactional.SendSmsRequest CreateSmsRequest(Phone phone, SmsTypes smsType, string content = null, string templateId = null, string templateParams = null)
+        private common.Api.dEngage.Model.Transactional.SendSmsRequest CreateSmsRequest(Phone phone, SmsTypes smsType, string content = null, string templateId = null, string templateParams = null, string[] tags = null)
         {
             common.Api.dEngage.Model.Transactional.SendSmsRequest sendSmsRequest = new();
             if (TransactionManager.StringSend)
@@ -907,6 +915,14 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                     //Critical Error
                 }
 
+            }
+            if (tags != null && tags.Count() > 0)
+            {
+                sendSmsRequest.tags = tags.ToList();
+            }
+            else
+            {
+                sendSmsRequest.tags = null;
             }
             return sendSmsRequest;
         }

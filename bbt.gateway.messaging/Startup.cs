@@ -29,6 +29,12 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.Json;
+using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace bbt.gateway.messaging
 {
@@ -50,6 +56,46 @@ namespace bbt.gateway.messaging
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Security:Key"]));
+            var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+            var jwtSecurityToken = new JwtSecurityToken(
+                    issuer:"BbtGatewayMessaging12",
+                    audience:"BbtGatewayMessaging",
+                    claims:new List<Claim>(),
+                    expires:DateTime.Now.AddMinutes(1),
+                    signingCredentials:signinCredentials
+                );
+            var jwt = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+
+            services.AddAuthentication(opt =>
+            {
+                opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(opt =>
+            {
+                opt.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = (context) =>
+                    {
+                        return System.Threading.Tasks.Task.CompletedTask;
+                    },
+                    OnMessageReceived = (context) => {
+                        return System.Threading.Tasks.Task.CompletedTask;
+                    }
+                };
+                opt.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+
+                    ValidIssuer = Configuration["Security:Issuer"],
+                    ValidAudiences = Configuration.GetSection("Security:Audiences").Get<IEnumerable<string>>(),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Security:Key"]))
+                };
+            });
+                
             services.AddHealthChecks();
 
             services.AddControllers()
@@ -80,6 +126,7 @@ namespace bbt.gateway.messaging
 
             services.AddSwaggerGen(c =>
             {
+                
                 c.EnableAnnotations();
                 c.UseInlineDefinitionsForEnums();
                 c.CustomSchemaIds(type => type.FullName);
@@ -99,6 +146,30 @@ namespace bbt.gateway.messaging
                 {
                     Version = "v2",
                     Title = "Bbt.Gateway.Messaging",
+                });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please Enter a Valid Token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement 
+                {
+                    { 
+                        new OpenApiSecurityScheme
+                        { 
+                            Reference = new OpenApiReference
+                            { 
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[]{ }
+                    }    
                 });
             });
             
@@ -264,7 +335,8 @@ namespace bbt.gateway.messaging
             });
 
             app.UseRouting();
-           
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

@@ -58,5 +58,15 @@ namespace bbt.gateway.common.Repositories
                                 .CountAsync(b => b.PhoneConfiguration.CustomerNo == customerNo);
             return (list, count);
         }
+
+        public async Task<BlackListEntry> GetLastBlacklistEntry(int countryCode, int prefix, int number)
+        {
+            return await Context.BlackListEntries.Where(b => b.PhoneConfiguration.Phone.CountryCode == countryCode
+            && b.PhoneConfiguration.Phone.Prefix == prefix
+            && b.PhoneConfiguration.Phone.Number == number)
+                .OrderByDescending(b => b.CreatedAt)
+                .FirstOrDefaultAsync();
+               
+        }
     }
 }

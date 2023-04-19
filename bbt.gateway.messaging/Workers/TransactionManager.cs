@@ -114,9 +114,9 @@ namespace bbt.gateway.messaging.Workers
         {
             var customer = await _pusulaClient.GetCustomerByPhoneNumber(new GetByPhoneNumberRequest()
             {
-                CountryCode = Transaction.Phone.CountryCode,
-                CityCode = Transaction.Phone.Prefix,
-                TelephoneNumber = Transaction.Phone.Number
+                CountryCode = Transaction.Phone.CountryCode.ToString(),
+                CityCode = Transaction.Phone.Prefix.ToString(),
+                TelephoneNumber = StringSend ? Transaction.Phone.Number.ToString().PadLeft(NumberLength, '0') : (Transaction.Phone.CountryCode == 90 ? Transaction.Phone.Number.ToString().PadLeft(7,'0') : Transaction.Phone.Number.ToString())
             });
 
             if (customer.IsSuccess)

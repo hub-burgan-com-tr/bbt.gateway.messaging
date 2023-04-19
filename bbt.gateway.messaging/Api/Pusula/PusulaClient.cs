@@ -73,9 +73,9 @@ namespace bbt.gateway.messaging.Api.Pusula
             {
                 var queryParams = new Dictionary<string, string>()
                 {
-                    {"CountryCode", getByPhoneNumberRequest.CountryCode.ToString()},
-                    {"CityCode",getByPhoneNumberRequest.CityCode.ToString()},
-                    {"TelephoneNumber",getByPhoneNumberRequest.TelephoneNumber.ToString()}
+                    {"CountryCode", getByPhoneNumberRequest.CountryCode},
+                    {"CityCode",getByPhoneNumberRequest.CityCode},
+                    {"TelephoneNumber",getByPhoneNumberRequest.TelephoneNumber}
                 };
 
                 var httpResponse = await _httpClient.GetAsync(
