@@ -12,5 +12,10 @@ namespace bbt.gateway.common.Repositories
             
         }
 
+        public async Task<SmsDirectBlacklist> GetLastBlacklistEntry(string number)
+        {
+            return await Context.SmsDirectBlackList.Where(b => b.GsmNumber == number)
+                .OrderByDescending(b => b.RecordDate).FirstOrDefaultAsync();
+        }
     }
 }

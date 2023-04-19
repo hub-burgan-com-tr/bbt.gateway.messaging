@@ -5,6 +5,8 @@ namespace bbt.gateway.common.Api.MessagingGateway
 {
     public interface IMessagingGatewayApi
     {
+        [Post("/api/v2/Messaging/email/templated")]
+        Task<Models.v2.TemplatedMailResponse> SendTemplatedMailMultiple(Models.v2.TemplatedMailRequest request);
         [Post("/api/v2/Administration/otp/check-message")]
         Task<OtpTrackingLog> CheckOtpStatus(CheckSmsRequest request);
         [Post("/api/v2/Administration/sms/check-message")]

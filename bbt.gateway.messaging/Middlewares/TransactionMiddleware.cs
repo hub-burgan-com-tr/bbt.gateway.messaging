@@ -173,7 +173,14 @@ namespace bbt.gateway.messaging.Middlewares
 
                 if (path.Contains("templated"))
                 {
-                    SetTransactionAsTemplatedMail(_transactionManager);
+                    if (path.Contains("multiple"))
+                    {
+                        SetTransactionAsTemplatedMultipleMail(_transactionManager);
+                    }
+                    else
+                    {
+                        SetTransactionAsTemplatedMail(_transactionManager);
+                    }
                 }
                 else
                 {
@@ -237,6 +244,15 @@ namespace bbt.gateway.messaging.Middlewares
             _transactionManager.MailRequestInfo.TemplateId = _middlewareRequest.Template;
             _transactionManager.MailRequestInfo.TemplateParams = _middlewareRequest.TemplateParams?.MaskFields();
             _transactionManager.MailRequestInfo.Email = _middlewareRequest.Email;
+        }
+
+        private void SetTransactionAsTemplatedMultipleMail(ITransactionManager _transactionManager)
+        {
+            _transactionManager.Transaction.TransactionType = TransactionType.TransactionalTemplatedMailMultiple;
+            _transactionManager.MailRequestInfo.Process = _middlewareRequest.Process;
+            _transactionManager.MailRequestInfo.TemplateId = _middlewareRequest.Template;
+            _transactionManager.MailRequestInfo.TemplateParams = _middlewareRequest.TemplateParams?.MaskFields();
+            _transactionManager.MailRequestInfo.Email = "";
         }
 
         private void SetTransactionAsPushNotification(ITransactionManager _transactionManager)

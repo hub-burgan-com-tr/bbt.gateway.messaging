@@ -5,6 +5,6 @@ namespace bbt.gateway.common.Repositories
 {
     public interface IDirectBlacklistRepository : IRepository<SmsDirectBlacklist>
     {
-        
+        Task<SmsDirectBlacklist> GetLastBlacklistEntry(string number);
     }
 }

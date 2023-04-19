@@ -35,6 +35,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using bbt.gateway.common.Api.MessagingGateway;
 
 namespace bbt.gateway.messaging
 {
@@ -56,16 +57,16 @@ namespace bbt.gateway.messaging
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Security:Key"]));
-            var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-            var jwtSecurityToken = new JwtSecurityToken(
-                    issuer:"BbtGatewayMessaging12",
-                    audience:"BbtGatewayMessaging",
-                    claims:new List<Claim>(),
-                    expires:DateTime.Now.AddMinutes(1),
-                    signingCredentials:signinCredentials
-                );
-            var jwt = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+            //var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Security:Key"]));
+            //var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+            //var jwtSecurityToken = new JwtSecurityToken(
+            //        issuer:"BbtGatewayMessaging12",
+            //        audience:"BbtGatewayMessaging",
+            //        claims:new List<Claim>(),
+            //        expires:DateTime.Now.AddMinutes(1),
+            //        signingCredentials:signinCredentials
+            //    );
+            //var jwt = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
 
             services.AddAuthentication(opt =>
             {
@@ -195,6 +196,8 @@ namespace bbt.gateway.messaging
             services.Configure<common.Models.v2.InboxExpireSettings>(Configuration.GetSection(nameof(common.Models.v2.InboxExpireSettings)));
             services.AddScoped<IRepositoryManager, RepositoryManager>();
 
+            services.AddRefitClient<IMessagingGatewayApi>()
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri(Configuration["Api:MessagingGateway:BaseAddress"]));
 
             services.AddRefitClient<IdEngageClient>(new RefitSettings
             {
