@@ -265,7 +265,7 @@ namespace bbt.gateway.messaging.Controllers.v2
         [HttpPost("blacklist/resolve")]
         [SwaggerResponse(200, "Record was updated successfully", typeof(void))]
 
-        public async Task<IActionResult> ResolveBlacklistRecord(ResolveBlacklistEntryFromPhoneRequest resolveBlacklistEntryFromPhoneRequest)
+        public async Task<IActionResult> ResolveBlacklistRecordAsync(ResolveBlacklistEntryFromPhoneRequest resolveBlacklistEntryFromPhoneRequest)
         {
             var blacklistRecord = await _repositoryManager.BlackListEntries.GetLastBlacklistEntry(
              Convert.ToInt32(resolveBlacklistEntryFromPhoneRequest.Phone.CountryCode),
@@ -291,20 +291,32 @@ namespace bbt.gateway.messaging.Controllers.v2
                         oldBlacklistRecord.VerifiedBy = resolveBlacklistEntryFromPhoneRequest.ResolvedBy.Name;
                         oldBlacklistRecord.Explanation = resolveBlacklistEntryFromPhoneRequest.Reason;
                         oldBlacklistRecord.IsVerified = true;
+                        await _repositoryManager.SaveSmsBankingChangesAsync();
                     }
-
-                    
                 }
                 else
                 {
-
+                    return NotFound();
                 }
             }
             else
-            { 
-                
+            {
+                var oldBlacklistRecord = await _repositoryManager.DirectBlacklists.GetLastBlacklistEntry(resolveBlacklistEntryFromPhoneRequest.Phone.ToOldBlacklistNumber());
+                if (oldBlacklistRecord != null)
+                {
+                    oldBlacklistRecord.VerifyDate = DateTime.Now;
+                    oldBlacklistRecord.VerifiedBy = resolveBlacklistEntryFromPhoneRequest.ResolvedBy.Name;
+                    oldBlacklistRecord.Explanation = resolveBlacklistEntryFromPhoneRequest.Reason;
+                    oldBlacklistRecord.IsVerified = true;
+                    await _repositoryManager.SaveSmsBankingChangesAsync();
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
-            return Ok();
+            return BadRequest();
         }
 
         [SwaggerOperation(Summary = "Returns phone activities",
@@ -1542,6 +1554,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             return operatorReport;
         }
 
+        
 
 
     }

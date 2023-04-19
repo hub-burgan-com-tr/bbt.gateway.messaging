@@ -1,13 +1,19 @@
-﻿using bbt.gateway.common.Extensions;
+﻿using bbt.gateway.common.Api.MessagingGateway;
+using bbt.gateway.common.Extensions;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
 using bbt.gateway.messaging.Workers;
 using Elastic.Apm.Api;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Refit;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace bbt.gateway.messaging.Controllers.v2
@@ -23,14 +29,18 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly CodecSender _codecSender;
         private readonly IRepositoryManager _repositoryManager;
         private readonly ITracer _tracer;
+        private readonly IConfiguration _configuration;
+        private readonly IMessagingGatewayApi _messagingGatewayApi;
         public Messaging(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender
-            , IRepositoryManager repositoryManager, CodecSender codecSender)
+            , IRepositoryManager repositoryManager, CodecSender codecSender,IConfiguration configuration,IMessagingGatewayApi messagingGatewayApi)
         {
             _transactionManager = transactionManager;
             _otpSender = otpSender;
             _dEngageSender = dEngageSender;
             _codecSender = codecSender;
             _repositoryManager = repositoryManager;
+            _configuration = configuration;
+            _messagingGatewayApi = messagingGatewayApi;
             _tracer = Elastic.Apm.Agent.Tracer;
         }
 
@@ -429,6 +439,79 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerOperation(
            Summary = "Send templated Email message",
            Description = ""
+            + "<div>To Send Multiple E-Mail With Template Which Defined On dEngage Use This Method</div>"
+            + "<div>Sender,Template,E-Mail,Process Fields are Mandatory</div>"
+            + "<div>When Customer Type(Burgan/On) is Not Known, Sender Field Must Be Set To AutoDetect"
+            + " <br />Otherwise This Field Must Be Set Burgan or On</div>"
+            + "<div>Given Template Must Be Defined On Both Of dEngage Tenants(On And Burgan) With Same Content Name</div>"
+            + "<div>Template Params Must Be Set As JsonString Which Serialized From Dynamic Fields That Given Template Contains"
+            + "<br />Example : Let's Assume template content is 'Welcome {%=$Current.Name%} {%=$Current.Surname%}.' "
+            + "<br />In This Case Template Params Must Be Set To {\"Name\":\"Actual Name\",\"Surname\":\"Actual Surname\"}</div>"
+            + "<div>TemplateParams Field Will Be Logged After This Method Called. If You Need To Masking Critical Information You Should Surround"
+            + " Critical Information with &lt;Mask&gt;&lt;/Mask&gt; . "
+            + "<br />Example : {\"Password\",\"&lt;Mask&gt;123456&lt;/Mask&gt;\"}</div>"
+            + "<div>If You Want Send Attachments With Mail You Can Use Attachments Field"
+            + "<br />Attachments.Name must be set Filename and Attachment.Data must be set to Base64 String Encoded From File Byte Array</div>"
+            + "",
+           Tags = new[] { "E-Mail" }
+           )]
+        [HttpPost("email/templated/multiple")]
+        [SwaggerResponse(200, "Email was sent successfully", typeof(TemplatedMailResponse))]
+        [SwaggerResponse(400, "Bad Request", typeof(TemplatedMailResponse))]
+        [SwaggerResponse(401, "Unauthorized", typeof(TemplatedMailResponse))]
+        [SwaggerResponse(403, "Not Allowed", typeof(TemplatedMailResponse))]
+        [SwaggerResponse(404, "Not Found", typeof(TemplatedMailResponse))]
+        [SwaggerResponse(429, "Too Many Request", typeof(TemplatedMailResponse))]
+        [SwaggerResponse(450, "Given template is not found on dEngage", typeof(void))]
+        [SwaggerResponse(451, "Customer Not Found.", typeof(void))]
+        [SwaggerResponse(500, "Internal Server Error. Get Contact With Integration", typeof(void))]
+        public async Task<IActionResult> SendTemplatedEmailMultiple([FromBody] TemplatedMailMultipleRequest data)
+        {
+            var response = new TemplatedMailMultipleResponse();
+            
+            List<Task> taskList = new List<Task>();
+            ConcurrentBag<(string, TemplatedMailResponse)> bag = new ConcurrentBag<(string, TemplatedMailResponse)>();
+
+            foreach (var address in data.MailAdresses)
+            {
+                var templatedMailRequest = new TemplatedMailRequest()
+                {
+                    Attachments = data.Attachments,
+                    Bcc = address.Bcc,
+                    Cc = address.Cc,
+                    CheckIsVerified = data.CheckIsVerified,
+                    CitizenshipNo = "",
+                    CustomerNo = 0,
+                    Email = address.Email,
+                    Process = data.Process,
+                    Sender = data.Sender,
+                    Tags = data.Tags,
+                    Template = data.Template,
+                    TemplateParams = data.TemplateParams
+                };
+
+                taskList.Add(ProcessRefitRequest(bag, templatedMailRequest));
+            }
+
+            await Task.WhenAll(taskList);
+
+            foreach (var bagData in bag)
+            {
+                response.TemplatedMailResponse.Add(new TemplatedMailMultipleResponseData
+                {
+                    MailAddress = bagData.Item1,
+                    Status = bagData.Item2.Status,
+                    StatusMessage = bagData.Item2.StatusMessage,
+                    TxnId = bagData.Item2.TxnId
+                });
+            }
+
+            return Ok(response);
+        }
+
+        [SwaggerOperation(
+           Summary = "Send templated Email message",
+           Description = ""
             + "<div>To Send E-Mail With Template Which Defined On dEngage Use This Method</div>"
             + "<div>Sender,Template,E-Mail,Process Fields are Mandatory</div>"
             + "<div>When Customer Type(Burgan/On) is Not Known, Sender Field Must Be Set To AutoDetect"
@@ -459,7 +542,7 @@ namespace bbt.gateway.messaging.Controllers.v2
         {
             if ((data.CheckIsVerified ?? false) && !_transactionManager.MailRequestInfo.IsMailVerified)
             {
-                return Unauthorized("Mail Adress Is Not Verified");
+                return Unauthorized(new { Status = dEngageResponseCodes.Unauthorized, StatusMessage = "Mail Adress is Not Verified" });
             }
 
             if (data.Email == null)
@@ -499,10 +582,11 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerResponse(500, "Internal Server Error. Get Contact With Integration", typeof(void))]
         public async Task<IActionResult> SendMessageEmail([FromBody] MailRequest data)
         {
-            if((data.CheckIsVerified ?? false) && !_transactionManager.MailRequestInfo.IsMailVerified)
+            if ((data.CheckIsVerified ?? false) && !_transactionManager.MailRequestInfo.IsMailVerified)
             {
-                return Forbid("Mail Adress Is Not Verified");
+                return Unauthorized(new { Status = dEngageResponseCodes.Unauthorized, StatusMessage = "Mail Adress is Not Verified" });
             }
+
             if (data.Email == null)
             {
                 data.Email = _transactionManager.CustomerRequestInfo.MainEmail;
@@ -578,6 +662,29 @@ namespace bbt.gateway.messaging.Controllers.v2
         }
 
 
-        
+
+        private async Task ProcessRefitRequest(ConcurrentBag<(string,TemplatedMailResponse)> bag,TemplatedMailRequest request)
+        {
+            try
+            {
+                var response = await _messagingGatewayApi.SendTemplatedMailMultiple(request);
+                bag.Add((request.Email, response));
+            }
+            catch (ApiException ex)
+            {
+                var templatedMailResponse = new TemplatedMailResponse();
+                templatedMailResponse.Status = dEngageResponseCodes.BadRequest;
+                templatedMailResponse.StatusMessage = await ex.GetContentAsAsync<string>();
+                bag.Add((request.Email, templatedMailResponse));
+            }
+            catch (Exception ex)
+            {
+                var templatedMailResponse = new TemplatedMailResponse();
+                templatedMailResponse.Status = dEngageResponseCodes.BadRequest;
+                templatedMailResponse.StatusMessage = "Internal Server Error";
+                bag.Add((request.Email, templatedMailResponse));
+            }
+            
+        }
     }
 }

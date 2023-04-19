@@ -11,6 +11,9 @@ namespace bbt.gateway.common.Models.v2
         [Required(ErrorMessage = "This Field is Mandatory")]
         public string Number { get; set; }
 
-
+        public string ToOldBlacklistNumber()
+        {
+            return $"+{CountryCode}{Prefix}{Number}";
+        }
     }
 }

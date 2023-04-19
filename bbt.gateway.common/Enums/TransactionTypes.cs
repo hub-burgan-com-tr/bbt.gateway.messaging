@@ -15,6 +15,8 @@ namespace bbt.gateway.common.Models
         TransactionalTemplatedMail,
         TransactionalPush,
         TransactionalTemplatedPush,
+        TransactionalMailMultiple,
+        TransactionalTemplatedMailMultiple
 
     }
 }
