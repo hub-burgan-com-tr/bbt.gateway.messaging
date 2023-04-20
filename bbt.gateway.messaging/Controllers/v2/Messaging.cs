@@ -436,8 +436,10 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         }
 
+
+
         [SwaggerOperation(
-           Summary = "Send templated Email message",
+           Summary = "Send Multiple templated Email message",
            Description = ""
             + "<div>To Send Multiple E-Mail With Template Which Defined On dEngage Use This Method</div>"
             + "<div>Sender,Template,E-Mail,Process Fields are Mandatory</div>"
@@ -490,14 +492,14 @@ namespace bbt.gateway.messaging.Controllers.v2
                     TemplateParams = data.TemplateParams
                 };
 
-                taskList.Add(ProcessRefitRequest(bag, templatedMailRequest));
+                taskList.Add(ProcessTemplatedMailRequest(bag, templatedMailRequest));
             }
 
             await Task.WhenAll(taskList);
 
             foreach (var bagData in bag)
             {
-                response.TemplatedMailResponse.Add(new TemplatedMailMultipleResponseData
+                response.Response.Add(new TemplatedMailMultipleResponseData
                 {
                     MailAddress = bagData.Item1,
                     Status = bagData.Item2.Status,
@@ -554,6 +556,75 @@ namespace bbt.gateway.messaging.Controllers.v2
             return Ok(response);
         }
 
+        [SwaggerOperation(
+           Summary = "Send Multiple Email message",
+           Description = ""
+            + "<div>To Send E-Mail With Plain Text or Html Use This Method</div>"
+            + "<div>Sender,From,Subject,Content,Email,Process Fields are Mandatory</div>"
+            + "<div>When Customer Type(Burgan/On) is Not Known, Sender Field Should Be Set To AutoDetect"
+            + " <br />Otherwise This Field Must Be Set Burgan or On</div>"
+            + "<div>From Field Must Be Contains Just FromName Not Domain."
+            + "<br/> System Will Decide Domain Part Depends On Customer Type"
+            + "Example : (noreply | Correct Usage) - (noreply@burgan.com.tr | Wrong Usage) </div>"
+            + "<div>Content and Subject Fields Will Be Logged After This Method Called. If You Need To Masking Critical Information You Should Surround"
+            + " Critical Information with &lt;Mask&gt;&lt;/Mask&gt; . "
+            + "<br />Example : \"Content\" : \"Your password is &lt;Mask&gt;1000&lt;/Mask&gt;.\"</div>"
+            + "",
+           Tags = new[] { "E-Mail" }
+           )]
+        [HttpPost("email/message/multiple")]
+        [SwaggerResponse(200, "Email was sent successfully", typeof(MailResponse))]
+        [SwaggerResponse(400, "Bad Request", typeof(MailResponse))]
+        [SwaggerResponse(401, "Unauthorized", typeof(MailResponse))]
+        [SwaggerResponse(403, "Not Allowed", typeof(MailResponse))]
+        [SwaggerResponse(404, "Not Found", typeof(MailResponse))]
+        [SwaggerResponse(429, "Too Many Request", typeof(MailResponse))]
+        [SwaggerResponse(451, "Customer Not Found.", typeof(void))]
+        [SwaggerResponse(500, "Internal Server Error. Get Contact With Integration", typeof(void))]
+        public async Task<IActionResult> SendMessageEmailMultiple([FromBody] MailMultipleRequest data)
+        {
+            var response = new MailMultipleResponse();
+
+            List<Task> taskList = new List<Task>();
+            ConcurrentBag<(string, MailResponse)> bag = new ConcurrentBag<(string, MailResponse)>();
+
+            foreach (var address in data.MailAdresses)
+            {
+                var mailRequest = new MailRequest()
+                {
+                    Attachments = data.Attachments,
+                    Bcc = address.Bcc,
+                    Cc = address.Cc,
+                    CheckIsVerified = data.CheckIsVerified,
+                    CitizenshipNo = "",
+                    CustomerNo = 0,
+                    Email = address.Email,
+                    Process = data.Process,
+                    Sender = data.Sender,
+                    Tags = data.Tags,
+                    Content = data.Content,
+                    From = data.From,
+                    Subject = data.Subject
+                };
+
+                taskList.Add(ProcessMailRequest(bag, mailRequest));
+            }
+
+            await Task.WhenAll(taskList);
+
+            foreach (var bagData in bag)
+            {
+                response.Response.Add(new TemplatedMailMultipleResponseData
+                {
+                    MailAddress = bagData.Item1,
+                    Status = bagData.Item2.Status,
+                    StatusMessage = bagData.Item2.StatusMessage,
+                    TxnId = bagData.Item2.TxnId
+                });
+            }
+
+            return Ok(response);
+        }
 
         [SwaggerOperation(
            Summary = "Send Email message",
@@ -663,11 +734,11 @@ namespace bbt.gateway.messaging.Controllers.v2
 
 
 
-        private async Task ProcessRefitRequest(ConcurrentBag<(string,TemplatedMailResponse)> bag,TemplatedMailRequest request)
+        private async Task ProcessTemplatedMailRequest(ConcurrentBag<(string,TemplatedMailResponse)> bag,TemplatedMailRequest request)
         {
             try
             {
-                var response = await _messagingGatewayApi.SendTemplatedMailMultiple(request);
+                var response = await _messagingGatewayApi.SendTemplatedMail(request);
                 bag.Add((request.Email, response));
             }
             catch (ApiException ex)
@@ -685,6 +756,30 @@ namespace bbt.gateway.messaging.Controllers.v2
                 bag.Add((request.Email, templatedMailResponse));
             }
             
+        }
+
+        private async Task ProcessMailRequest(ConcurrentBag<(string, MailResponse)> bag, MailRequest request)
+        {
+            try
+            {
+                var response = await _messagingGatewayApi.SendMail(request);
+                bag.Add((request.Email, response));
+            }
+            catch (ApiException ex)
+            {
+                var mailResponse = new MailResponse();
+                mailResponse.Status = dEngageResponseCodes.BadRequest;
+                mailResponse.StatusMessage = await ex.GetContentAsAsync<string>();
+                bag.Add((request.Email, mailResponse));
+            }
+            catch (Exception ex)
+            {
+                var mailResponse = new MailResponse();
+                mailResponse.Status = dEngageResponseCodes.BadRequest;
+                mailResponse.StatusMessage = "Internal Server Error";
+                bag.Add((request.Email, mailResponse));
+            }
+
         }
     }
 }
