@@ -20,7 +20,7 @@
     public class MailTo
     {
         public string email { get; set; }
-        public string transactionId { get; set; }
+        public string trackingId { get; set; }
     }
 
 }
