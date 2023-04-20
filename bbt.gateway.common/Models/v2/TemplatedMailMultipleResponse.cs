@@ -2,7 +2,7 @@
 {
     public class TemplatedMailMultipleResponse
     {
-        public List<TemplatedMailMultipleResponseData> TemplatedMailResponse { get; set; } = new();
+        public List<TemplatedMailMultipleResponseData> Response { get; set; } = new();
     }
 
     public class TemplatedMailMultipleResponseData
