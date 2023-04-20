@@ -20,7 +20,7 @@ namespace bbt.gateway.common.Api.dEngage
         [Post("/transactional/sms")]
         Task<SendSmsResponse> SendSms(SendSmsRequest sendSmsRequest, [Authorize("Bearer")] string token);
         [Post("/transactional/email")]
-        Task<SendSmsResponse> SendMail(SendMailRequest sendMailRequest, [Authorize("Bearer")] string token);
+        Task<SendMailResponse> SendMail(SendMailRequest sendMailRequest, [Authorize("Bearer")] string token);
         [Post("/transactional/email/bulkV2")]
         Task<SendBulkMailResponse> SendBulkMail(SendBulkMailRequest sendBulkMailRequest, [Authorize("Bearer")] string token);
         [Post("/transactional/push")]
