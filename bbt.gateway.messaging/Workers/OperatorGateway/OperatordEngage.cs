@@ -262,9 +262,9 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                         var sendMailResponse = await _dEngageClient.SendMail(req, _authToken);
                         mailResponseLog.ResponseCode = sendMailResponse.code.ToString();
                         mailResponseLog.ResponseMessage = sendMailResponse.message;
-                        mailResponseLog.StatusQueryId = sendMailResponse.data.to?.transactionId;
-                        mailResponseLog.CcStatusQueryId = sendMailResponse.data.cc?.transactionId;
-                        mailResponseLog.BccStatusQueryId = sendMailResponse.data.bcc?.transactionId;
+                        mailResponseLog.StatusQueryId = sendMailResponse.data.to?.trackingId;
+                        mailResponseLog.CcStatusQueryId = sendMailResponse.data.cc?.trackingId;
+                        mailResponseLog.BccStatusQueryId = sendMailResponse.data.bcc?.trackingId;
                     }
                     catch (ApiException ex)
                     {
