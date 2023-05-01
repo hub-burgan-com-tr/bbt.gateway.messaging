@@ -60,11 +60,11 @@ namespace bbt.gateway.messaging
             //var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Security:Key"]));
             //var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
             //var jwtSecurityToken = new JwtSecurityToken(
-            //        issuer:"BbtGatewayMessaging12",
-            //        audience:"BbtGatewayMessaging",
-            //        claims:new List<Claim>(),
-            //        expires:DateTime.Now.AddMinutes(1),
-            //        signingCredentials:signinCredentials
+            //        issuer: "XXX",
+            //        audience: "XXXX",
+            //        claims: new List<Claim>(),
+            //        expires: DateTime.Now.AddMinutes(1),
+            //        signingCredentials: signinCredentials
             //    );
             //var jwt = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
 
@@ -81,14 +81,16 @@ namespace bbt.gateway.messaging
                         return System.Threading.Tasks.Task.CompletedTask;
                     },
                     OnMessageReceived = (context) => {
+
                         return System.Threading.Tasks.Task.CompletedTask;
                     }
                 };
                 opt.TokenValidationParameters = new TokenValidationParameters
                 {
+                    ClockSkew = TimeSpan.Zero,
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidateLifetime = true,
+                    ValidateLifetime = false,
                     ValidateIssuerSigningKey = true,
 
                     ValidIssuer = Configuration["Security:Issuer"],
