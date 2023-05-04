@@ -59,9 +59,20 @@ namespace bbt.gateway.worker.MailReports
                             var taskList = new List<Task>();
                             mailResponseLogsParts.ForEach(mailResponseLog =>
                             {
-                                var rLog = mailResponseLog.ResponseLogs.FirstOrDefault();
-                                rLog.Operator = mailResponseLog.Operator;
-                                taskList.Add(GetDeliveryStatus(rLog, concurrentBag));
+                                if (mailResponseLog.ResponseLogs.Count > 0)
+                                {
+                                    try
+                                    {
+                                        var rLog = mailResponseLog.ResponseLogs.FirstOrDefault();
+                                        rLog.Operator = mailResponseLog.Operator;
+                                        taskList.Add(GetDeliveryStatus(rLog, concurrentBag));
+                                    }
+                                    catch (Exception ex)
+                                    {
+
+                                    }
+                                    
+                                }
                             });
                             await Task.WhenAll(taskList);
                         }
