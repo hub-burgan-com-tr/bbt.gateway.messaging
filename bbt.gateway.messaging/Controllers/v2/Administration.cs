@@ -49,7 +49,6 @@ namespace bbt.gateway.messaging.Controllers.v2
            Description = "Returns Sms Counts And Success Rate."
            )]
         [HttpGet("Report/Sms")]
-        [ApiKey]
         [ApiExplorerSettings(IgnoreApi = true)]
 
         public async Task<IActionResult> SmsReportAsync([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
