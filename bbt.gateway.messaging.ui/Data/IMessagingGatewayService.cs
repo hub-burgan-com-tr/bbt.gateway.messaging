@@ -42,8 +42,8 @@ namespace bbt.gateway.messaging.ui.Data
         Task<string> GetTransactionsExcelReportWithCitizenshipNo(string citizenshipNo, int messageType, QueryParams queryParams);
         [Get("/api/v2/Administration/report/mail/{mail}")]
         Task<string> GetTransactionsExcelReportWithMail(string mail, QueryParams queryParams);
-        [Get("/api/v2/Administration/Report/Sms")]
-        Task<List<common.Models.v2.OperatorReport>> SmsReportAsync(QueryParams queryParams);
+        [Get("/api/v2/Administration/Report/Sms/{operator}")]
+        Task<common.Models.v2.OperatorReport> SmsReportAsync(int @operator,QueryParams queryParams);
 
 
 

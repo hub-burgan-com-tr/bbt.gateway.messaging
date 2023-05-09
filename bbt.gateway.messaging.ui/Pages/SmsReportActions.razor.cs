@@ -4,6 +4,8 @@ using bbt.gateway.messaging.ui.Pages.Base;
 using Radzen;
 using Radzen.Blazor;
 using bbt.gateway.common.Models.v2;
+using bbt.gateway.common.GlobalConstants;
+using System.Collections.Concurrent;
 
 namespace bbt.gateway.messaging.ui.Pages
 {
@@ -19,7 +21,7 @@ namespace bbt.gateway.messaging.ui.Pages
         private RadzenDataGrid<OperatorReport> grid;
         private int OtpCount { get; set; } = 0;
         private int FastCount { get; set; } = 0;
-        void SearchSmsReports(LoadDataArgs args = null)
+        async void SearchSmsReports(LoadDataArgs args = null)
         {
             ReportGrid = new List<OperatorReport>();
             if (searchModel.StartDate.Date > searchModel.EndDate.Date)
@@ -30,14 +32,28 @@ namespace bbt.gateway.messaging.ui.Pages
             }
             else
             {
-                var res = MessagingGatewayService.SmsReportAsync(CreateQueryParams());
-                ReportGrid = res.Result;
+                ConcurrentBag<OperatorReport> operatorReports = new ConcurrentBag<OperatorReport>();
+                var taskList = new List<Task>();
+
+                foreach (var @operator in GlobalConstants.reportOperators.Keys)
+                {
+                    taskList.Add(OperatorReportProcess(operatorReports,@operator));
+                }
+
+                await Task.WhenAll(taskList);
+
+                ReportGrid = operatorReports.ToList();
 
                 searchCompleted = true;
                 StateHasChanged();
             }
            
 
+        }
+
+        public async Task OperatorReportProcess(ConcurrentBag<OperatorReport> operatorReports, int @operator)
+        {
+            operatorReports.Add(await MessagingGatewayService.SmsReportAsync(@operator, CreateQueryParams()));
         }
 
         public int Total(common.Models.v2.OperatorReport data)

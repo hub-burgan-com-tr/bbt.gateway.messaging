@@ -1,4 +1,5 @@
 ﻿using bbt.gateway.common.Extensions;
+using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
@@ -48,20 +49,28 @@ namespace bbt.gateway.messaging.Controllers.v2
            Summary = "Returns Sms Counts And Success Rate",
            Description = "Returns Sms Counts And Success Rate."
            )]
-        [HttpGet("Report/Sms")]
+        [HttpGet("Report/Sms/{operator}")]
         [ApiExplorerSettings(IgnoreApi = true)]
 
-        public async Task<IActionResult> SmsReportAsync([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<IActionResult> SmsReportAsync(int @operator,[FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            var smsReportResponse = new List<OperatorReport>();
+            try
+            {
+                OperatorReportInfo operatorReportInfo = GlobalConstants.reportOperators[@operator];
+                var res = await GetOperatorInfo(startDate, endDate, operatorReportInfo.OperatorType, operatorReportInfo.isOtp, operatorReportInfo.isFast);
+                while (operatorReportInfo.AdditionalOperatorType != null)
+                {
+                    operatorReportInfo = operatorReportInfo.AdditionalOperatorType;
+                    res += await GetOperatorInfo(startDate, endDate, operatorReportInfo.OperatorType, operatorReportInfo.isOtp, operatorReportInfo.isFast);
+                }
 
-            smsReportResponse.Add( await GetOperatorInfo(startDate, endDate, OperatorType.Turkcell, true, false));
-            smsReportResponse.Add(await GetOperatorInfo(startDate, endDate, OperatorType.Vodafone, true, false));
-            smsReportResponse.Add(await GetOperatorInfo(startDate, endDate, OperatorType.TurkTelekom, true, false));
-            smsReportResponse.Add((await GetOperatorInfo(startDate, endDate, OperatorType.dEngageBurgan, false, true) + await GetOperatorInfo(startDate, endDate, OperatorType.dEngageOn, false, true)));
-            smsReportResponse.Add(await GetOperatorInfo(startDate, endDate, OperatorType.Codec, false, true));
-
-            return Ok(smsReportResponse);
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+            
         }
 
         [SwaggerOperation(
