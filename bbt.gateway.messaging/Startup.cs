@@ -309,6 +309,7 @@ namespace bbt.gateway.messaging
             app.UseAllElasticApm(Configuration);
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Mock")
             {
+                app.UseGatewayMiddleware();
                 app.UseTransactionMiddleware();
                 app.UseCustomerInfoMiddleware();
                 app.UseWhitelistMiddleware();
