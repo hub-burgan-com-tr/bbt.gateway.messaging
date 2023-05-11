@@ -135,7 +135,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             return pushContentsResponse;
         }
 
-        public async Task<MailResponseLog> SendMail(string to, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments,string? cc,string? bcc,string?[] tags)
+        public async Task<MailResponseLog> SendMail(string to, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments,string? cc,string? bcc,string?[] tags,bool? checkIsVerified)
         {
             await Auth();
 

@@ -13,6 +13,7 @@ namespace bbt.gateway.messaging
             { "403", dEngageResponseCodes.NotAllowed },
             { "404", dEngageResponseCodes.NotFound },
             { "429", dEngageResponseCodes.TooManyRequest },
+            { "435", dEngageResponseCodes.NotVerified}
         };
 
         public static readonly Dictionary<int, CodecResponseCodes> CodecStatusCodes = new()

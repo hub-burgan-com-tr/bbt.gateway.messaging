@@ -7,7 +7,7 @@
         Unauthorized = 401,
         NotAllowed = 403,
         NotFound = 404,
-        TooManyRequest = 429
-
+        TooManyRequest = 429,
+        NotVerified = 435
     }
 }
