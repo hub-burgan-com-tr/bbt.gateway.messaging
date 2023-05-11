@@ -3,7 +3,6 @@ using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
-using bbt.gateway.messaging.Authorization;
 using bbt.gateway.messaging.Workers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -52,7 +51,7 @@ namespace bbt.gateway.messaging.Controllers.v2
         [HttpGet("Report/Sms/{operator}")]
         [ApiExplorerSettings(IgnoreApi = true)]
 
-        public async Task<IActionResult> SmsReportAsync(int @operator,[FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<IActionResult> SmsReportAsync(int @operator, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             try
             {
@@ -70,7 +69,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
                 return StatusCode(500);
             }
-            
+
         }
 
         [SwaggerOperation(
@@ -171,8 +170,8 @@ namespace bbt.gateway.messaging.Controllers.v2
 
             if (transaction.TransactionType == TransactionType.TransactionalSms
                 || transaction.TransactionType == TransactionType.TransactionalTemplatedSms)
-            { 
-            
+            {
+
             }
 
             if (transaction.TransactionType == TransactionType.Otp)
@@ -185,7 +184,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
                 if (transaction.MailRequestLog == null)
                 {
-                    return Ok(new CheckTransactionStatusResponse { Status = TransactionStatus.NotDelivered , Detail = "MailRequestLog Not Found"});
+                    return Ok(new CheckTransactionStatusResponse { Status = TransactionStatus.NotDelivered, Detail = "MailRequestLog Not Found" });
                 }
 
                 if (transaction.MailRequestLog?.ResponseLogs == null)
@@ -218,7 +217,6 @@ namespace bbt.gateway.messaging.Controllers.v2
             return BadRequest();
         }
 
-        [Authorize]
         [SwaggerOperation(Summary = "Returns content headers configuration",
             Tags = new[] { "Header Management" })]
         [HttpGet("headers")]
@@ -352,7 +350,7 @@ namespace bbt.gateway.messaging.Controllers.v2
 
             if (blacklistRecord == null)
                 return NotFound();
-            
+
 
             if (blacklistRecord.Status == BlacklistStatus.NotResolved)
                 return Ok();
@@ -381,7 +379,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             Guid newOtpBlackListEntryId = Guid.NewGuid();
 
             var config = (await _repositoryManager.PhoneConfigurations
-                .FindAsync(c => c.Phone.CountryCode == Convert.ToInt32(data.Phone.CountryCode) && 
+                .FindAsync(c => c.Phone.CountryCode == Convert.ToInt32(data.Phone.CountryCode) &&
                 c.Phone.Prefix == Convert.ToInt32(data.Phone.Prefix) &&
                 c.Phone.Number == Convert.ToInt32(data.Phone.Number)))
                 .FirstOrDefault();
@@ -391,8 +389,12 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
                 config = new PhoneConfiguration
                 {
-                    Phone = new common.Models.Phone { CountryCode = Convert.ToInt32(data.Phone.CountryCode) , Prefix = Convert.ToInt32(data.Phone.Prefix),
-                    Number = Convert.ToInt32(data.Phone.Number)},
+                    Phone = new common.Models.Phone
+                    {
+                        CountryCode = Convert.ToInt32(data.Phone.CountryCode),
+                        Prefix = Convert.ToInt32(data.Phone.Prefix),
+                        Number = Convert.ToInt32(data.Phone.Number)
+                    },
                     Logs = new List<PhoneConfigurationLog>(),
                     BlacklistEntries = new List<BlackListEntry>()
                 };
@@ -706,7 +708,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 return NotFound();
         }
 
-        
+
 
         [SwaggerOperation(Summary = "Returns phones otp sending logs",
             Tags = new[] { "Phone Management" })]
@@ -1441,8 +1443,8 @@ namespace bbt.gateway.messaging.Controllers.v2
             return "Başarısız";
         }
 
-        private async Task<OperatorReport> GetOperatorInfo(DateTime startDate,DateTime endDate,OperatorType @operator, bool isOtp, bool isFast)
-        { 
+        private async Task<OperatorReport> GetOperatorInfo(DateTime startDate, DateTime endDate, OperatorType @operator, bool isOtp, bool isFast)
+        {
             var operatorReport = new OperatorReport();
             operatorReport.Operator = @operator;
             if (isOtp)
@@ -1450,7 +1452,7 @@ namespace bbt.gateway.messaging.Controllers.v2
 
                 try
                 {
-                    operatorReport.OtpCount = await _repositoryManager.Transactions.GetSuccessfullOtpCount(startDate,endDate,@operator);
+                    operatorReport.OtpCount = await _repositoryManager.Transactions.GetSuccessfullOtpCount(startDate, endDate, @operator);
                 }
                 catch (Exception ex)
                 {
@@ -1468,7 +1470,7 @@ namespace bbt.gateway.messaging.Controllers.v2
 
                 try
                 {
-                    operatorReport.SuccessfullOtpRequestCount = await _repositoryManager.Transactions.GetOtpRequestCount(startDate, endDate, @operator,true);
+                    operatorReport.SuccessfullOtpRequestCount = await _repositoryManager.Transactions.GetOtpRequestCount(startDate, endDate, @operator, true);
                 }
                 catch (Exception ex)
                 {
@@ -1562,7 +1564,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             return operatorReport;
         }
 
-        
+
 
 
     }

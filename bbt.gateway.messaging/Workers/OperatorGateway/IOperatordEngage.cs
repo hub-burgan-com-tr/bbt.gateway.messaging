@@ -8,7 +8,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 {
     public interface IOperatordEngage : IOperatorGatewayBase
     {
-        public Task<MailResponseLog> SendMail(string to, string? from, string? subject, string? html, string? templateId, string? templateParams, List<common.Models.Attachment> attachments, string? cc, string? bcc, string?[] tags);
+        public Task<MailResponseLog> SendMail(string to, string? from, string? subject, string? html, string? templateId, string? templateParams, List<common.Models.Attachment> attachments, string? cc, string? bcc, string?[] tags,bool? checkIsVerified);
         public Task<List<MailResponseLog>> SendBulkMail(string to, string? from, string? subject, string? html, string? templateId, string? templateParams, List<common.Models.Attachment> attachments, string? cc, string? bcc, string?[] tags);
         public Task<SmsResponseLog> SendSms(Phone phone, SmsTypes smsType, string? content, string? templateId, string? templateParams, string?[] tags);
         public Task<PushNotificationResponseLog> SendPush(string contactId, string template, string templateParams, string customParameters, bool? saveInbox, string[] tags);

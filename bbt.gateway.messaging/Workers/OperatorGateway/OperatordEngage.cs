@@ -1,12 +1,12 @@
-﻿using bbt.gateway.common.Models;
-using bbt.gateway.messaging.Api;
-using bbt.gateway.common.Api.dEngage;
+﻿using bbt.gateway.common.Api.dEngage;
 using bbt.gateway.common.Api.dEngage.Model.Contents;
 using bbt.gateway.common.Api.dEngage.Model.Login;
 using bbt.gateway.common.Api.dEngage.Model.Settings;
 using bbt.gateway.common.Api.dEngage.Model.Transactional;
+using bbt.gateway.common.GlobalConstants;
+using bbt.gateway.common.Models;
+using bbt.gateway.messaging.Api;
 using Dapr.Client;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Refit;
@@ -14,7 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using bbt.gateway.common.GlobalConstants;
 
 
 namespace bbt.gateway.messaging.Workers.OperatorGateway
@@ -27,16 +26,14 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
         private int _authTryCount;
         private string _authToken;
         private readonly IdEngageClient _dEngageClient;
-        private IDistributedCache _distrubitedCache;
         private IConfiguration _configuration;
         private DaprClient _daprClient;
 
         public OperatordEngage(IdEngageClient dEngageClient, IConfiguration configuration,
-            ITransactionManager transactionManager, IDistributedCache distributedCache, DaprClient daprClient) : base(configuration, transactionManager)
+            ITransactionManager transactionManager, DaprClient daprClient) : base(configuration, transactionManager)
         {
             _authTryCount = 0;
             _dEngageClient = dEngageClient;
-            _distrubitedCache = distributedCache;
             _configuration = configuration;
             _daprClient = daprClient;
         }
@@ -203,13 +200,20 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             return ("0", "");
         }
 
-        public async Task<MailResponseLog> SendMail(string to, string? from, string? subject, string? html, string? templateId, string? templateParams, List<common.Models.Attachment> attachments, string? cc, string? bcc, string?[] tags)
+        public async Task<MailResponseLog> SendMail(string to, string? from, string? subject, string? html, string? templateId, string? templateParams, List<common.Models.Attachment> attachments, string? cc, string? bcc, string?[] tags, bool? checkIsVerified)
         {
             var mailResponseLog = new MailResponseLog()
             {
                 Topic = "dEngage Mail Sending",
                 Operator = Type
             };
+
+            if ((checkIsVerified ?? false) && !TransactionManager.MailRequestInfo.IsMailVerified)
+            {
+                mailResponseLog.ResponseCode = "435";
+                mailResponseLog.ResponseMessage = "Mail Address is Not Verified";
+                return mailResponseLog;
+            }
 
             MailFrom mailFrom = new MailFrom();
             var authResponse = await Auth();
@@ -276,7 +280,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                                 _authTryCount++;
                                 if (_authTryCount < 3)
                                 {
-                                    return await SendMail(to, from, subject, html, templateId, templateParams, attachments, cc, bcc,tags);
+                                    return await SendMail(to, from, subject, html, templateId, templateParams, attachments, cc, bcc, tags, checkIsVerified);
                                 }
                                 else
                                 {
@@ -408,7 +412,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                                     }
                                     mailResponseLogs.Add(mailResponseLog);
                                 }
-                                
+
                             }
                         }
 
@@ -479,7 +483,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
         }
 
-        public async Task<PushNotificationResponseLog> SendPush(string contactId, string template, string templateParams, string customParameters, bool? saveInbox,string?[] tags)
+        public async Task<PushNotificationResponseLog> SendPush(string contactId, string template, string templateParams, string customParameters, bool? saveInbox, string?[] tags)
         {
             var pushNotificationResponseLog = new PushNotificationResponseLog()
             {
@@ -491,7 +495,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             {
                 try
                 {
-                    var req = CreatePushRequest(contactId, template, templateParams, customParameters, saveInbox,tags);
+                    var req = CreatePushRequest(contactId, template, templateParams, customParameters, saveInbox, tags);
                     try
                     {
                         var sendPushResponse = await _dEngageClient.SendPush(req, _authToken);
@@ -508,7 +512,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                                 _authTryCount++;
                                 if (_authTryCount < 3)
                                 {
-                                    return await SendPush(contactId, template, templateParams, customParameters,saveInbox,tags);
+                                    return await SendPush(contactId, template, templateParams, customParameters, saveInbox, tags);
                                 }
                                 else
                                 {
@@ -681,7 +685,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             }
         }
 
-        private SendMailRequest CreateMailRequest(string to, string fromName, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc,string[] tags)
+        private SendMailRequest CreateMailRequest(string to, string fromName, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc, string[] tags)
         {
             SendMailRequest sendMailRequest = new();
             sendMailRequest.send.to = to;
@@ -767,7 +771,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
             BulkMailItem bulkMailItem = new();
             bulkMailItem.content = new ContentMail();
-             
+
             if (!string.IsNullOrEmpty(templateId))
             {
                 bulkMailItem.content.templateId = templateId;
@@ -795,7 +799,8 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                 {
                     attachments = mailAttachments,
                     current = mailCurrent,
-                    send = new() { 
+                    send = new()
+                    {
                         to = toMail,
                     }
                 });
@@ -832,7 +837,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             return sendBulkMailRequest;
         }
 
-        private SendPushRequest CreatePushRequest(string contactId, string template, string templateParams, string customParameters, bool?  saveInbox,string[] tags)
+        private SendPushRequest CreatePushRequest(string contactId, string template, string templateParams, string customParameters, bool? saveInbox, string[] tags)
         {
             SendPushRequest sendPushRequest = new();
             sendPushRequest.contactKey = contactId;
@@ -848,7 +853,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                 inboxParams.expire.periodType = _configuration["InboxExpireSettings:periodType"].ToString();
                 sendPushRequest.inboxParams = inboxParams;
             }
-               
+
             else
             {
                 sendPushRequest.inboxParams = null;
@@ -966,5 +971,5 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
     }
 
-    
+
 }
