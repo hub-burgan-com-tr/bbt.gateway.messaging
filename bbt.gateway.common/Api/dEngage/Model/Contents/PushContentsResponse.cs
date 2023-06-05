@@ -22,6 +22,7 @@ namespace bbt.gateway.common.Api.dEngage.Model.Contents
         public string name { get; set; }
         public string id { get; set; }
         public string location { get; set; }
+        public bool is_transactional_content { get; set; }
         public string GetPath(bool isAbsolutePath)
         {
             if (isAbsolutePath)
