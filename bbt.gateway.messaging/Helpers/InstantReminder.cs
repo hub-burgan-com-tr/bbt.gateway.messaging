@@ -19,7 +19,10 @@ namespace bbt.gateway.messaging.Helpers
 
         public async Task RemindAsync(string subject, string content, List<common.Models.Attachment> attachments)
         {
-            await _operatordEngage.SendMail(_configuration["InstantReminder:To"],"no_replay",subject,content,null,null,attachments:attachments,null,null,null,checkIsVerified:false);
+            if (System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Test")
+            {
+                await _operatordEngage.SendMail(_configuration["InstantReminder:To"], "no_replay", subject, content, null, null, attachments: attachments, null, null, null, checkIsVerified: false);
+            }
         }
     }
 }
