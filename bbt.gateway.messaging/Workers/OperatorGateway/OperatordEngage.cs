@@ -688,55 +688,64 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
         private SendMailRequest CreateMailRequest(string to, string fromName, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc, string[] tags)
         {
             SendMailRequest sendMailRequest = new();
-            sendMailRequest.send.to = to;
-
-            sendMailRequest.send.cc = string.IsNullOrEmpty(cc) ? null : cc;
-            sendMailRequest.send.bcc = string.IsNullOrEmpty(bcc) ? null : bcc;
-
-            if (attachments != null)
+            try
             {
-                sendMailRequest.attachments = new();
-                foreach (common.Models.Attachment attachment in attachments)
+                sendMailRequest.send.to = to;
+
+                sendMailRequest.send.cc = string.IsNullOrEmpty(cc) ? null : cc;
+                sendMailRequest.send.bcc = string.IsNullOrEmpty(bcc) ? null : bcc;
+
+                if (attachments != null)
                 {
-                    sendMailRequest.attachments.Add(new()
+                    sendMailRequest.attachments = new();
+                    foreach (common.Models.Attachment attachment in attachments)
                     {
-                        fileName = attachment.Name,
-                        fileContent = attachment.Data
-                    });
+                        sendMailRequest.attachments.Add(new()
+                        {
+                            fileName = attachment.Name,
+                            fileContent = attachment.Data
+                        });
+                    }
                 }
-            }
-            if (!string.IsNullOrEmpty(templateId))
-            {
-                sendMailRequest.content.templateId = templateId;
-                if (!string.IsNullOrEmpty(templateParams))
+                if (!string.IsNullOrEmpty(templateId))
                 {
-                    sendMailRequest.current = templateParams.ClearMaskingFields();
-                }
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(html))
-                {
-                    sendMailRequest.content.FromAddress = from;
-                    sendMailRequest.content.FromName = fromName;
-                    sendMailRequest.content.html = html.ClearMaskingFields();
-                    sendMailRequest.content.subject = subject.ClearMaskingFields();
+                    sendMailRequest.content.templateId = templateId;
+                    if (!string.IsNullOrEmpty(templateParams))
+                    {
+                        sendMailRequest.current = templateParams.ClearMaskingFields();
+                    }
                 }
                 else
                 {
-                    //Critical Error
-                }
+                    if (!string.IsNullOrEmpty(html))
+                    {
+                        sendMailRequest.content.FromAddress = from;
+                        sendMailRequest.content.FromName = fromName;
+                        sendMailRequest.content.html = html.ClearMaskingFields();
+                        sendMailRequest.content.subject = subject.ClearMaskingFields();
+                    }
+                    else
+                    {
+                        //Critical Error
+                    }
 
+                }
+                if (tags != null && tags.Count() > 0)
+                {
+                    sendMailRequest.tags = tags.ToList();
+                }
+                else
+                {
+                    sendMailRequest.tags = null;
+                }
+                return sendMailRequest;
             }
-            if (tags != null && tags.Count() > 0)
+            catch (Exception ex)
             {
-                sendMailRequest.tags = tags.ToList();
+                Console.WriteLine("CreateMailRequest Error : "+ex.Message);
             }
-            else
-            {
-                sendMailRequest.tags = null;
-            }
-            return sendMailRequest;
+            
+            
         }
 
         private SendBulkMailRequest CreateBulkMailRequest(string to, string fromName, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc, string[] tags)
