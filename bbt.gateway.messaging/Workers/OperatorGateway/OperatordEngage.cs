@@ -738,14 +738,14 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                 {
                     sendMailRequest.tags = null;
                 }
-                return sendMailRequest;
+                
             }
             catch (Exception ex)
             {
                 Console.WriteLine("CreateMailRequest Error : "+ex.Message);
             }
-            
-            
+
+            return sendMailRequest;
         }
 
         private SendBulkMailRequest CreateBulkMailRequest(string to, string fromName, string from, string subject, string html, string templateId, string templateParams, List<common.Models.Attachment> attachments, string cc, string bcc, string[] tags)
