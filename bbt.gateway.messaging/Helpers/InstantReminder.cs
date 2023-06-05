@@ -1,6 +1,7 @@
 ﻿using bbt.gateway.messaging.Workers.OperatorGateway;
 using Dapr.Client;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -21,8 +22,19 @@ namespace bbt.gateway.messaging.Helpers
         {
             if (System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Test")
             {
-                _operatordEngage.Type = common.Models.OperatorType.dEngageBurgan;
-                await _operatordEngage.SendMail(_configuration["InstantReminder:To"], "no_replay", subject, content, null, null, attachments: attachments, null, null, null, checkIsVerified: false);
+                try
+                {
+                    Console.WriteLine("Reminder initialized");
+                    _operatordEngage.Type = common.Models.OperatorType.dEngageBurgan;
+                    var rt = await _operatordEngage.SendMail(_configuration["InstantReminder:To"], "no_replay", subject, content, null, null, attachments: attachments, null, null, null, checkIsVerified: false);
+                    Console.WriteLine("Response Message:" + rt.ResponseMessage);
+                    Console.WriteLine("Response Status:" + rt.Status);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Exception Reminder:" + ex.Message);
+                }
+                
             }
         }
     }
