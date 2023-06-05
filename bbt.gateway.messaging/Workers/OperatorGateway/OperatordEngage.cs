@@ -259,6 +259,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
                 try
                 {
+                    Console.WriteLine("CreateMailRequest Log:"+JsonConvert.SerializeObject(mailFrom));
                     var req = CreateMailRequest(to, mailFrom.fromName, from, subject, html, templateId, templateParams, attachments, cc, bcc, tags);
                     try
                     {

@@ -26,9 +26,9 @@ namespace bbt.gateway.messaging.Helpers
                 {
                     Console.WriteLine("Reminder initialized");
                     _operatordEngage.Type = common.Models.OperatorType.dEngageBurgan;
-                    var rt = await _operatordEngage.SendMail(_configuration["InstantReminder:To"], "noreplay", subject, content, null, null, attachments: attachments, null, null, null, checkIsVerified: false);
+                    var rt = await _operatordEngage.SendMail(_configuration["InstantReminder:To"], "noreplay", subject, content, null, null, attachments, null, null, null, checkIsVerified: false);
                     Console.WriteLine("Response Message:" + rt.ResponseMessage);
-                    Console.WriteLine("Response Status:" + rt.Status);
+                    Console.WriteLine("Response Status:" + rt.ResponseCode);
                 }
                 catch (Exception ex)
                 {
