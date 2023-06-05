@@ -21,6 +21,7 @@ namespace bbt.gateway.messaging.Helpers
         {
             if (System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Test")
             {
+                _operatordEngage.Type = common.Models.OperatorType.dEngageBurgan;
                 await _operatordEngage.SendMail(_configuration["InstantReminder:To"], "no_replay", subject, content, null, null, attachments: attachments, null, null, null, checkIsVerified: false);
             }
         }
