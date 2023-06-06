@@ -768,7 +768,7 @@ namespace bbt.gateway.messaging.Workers
             if (templateDetail != null)
             {
                 var templateContent = templateDetail.contents.FirstOrDefault();
-                _transactionManager.LogInformation("Template Content:" + JsonConvert.SerializeObject(templateContent));
+                
                 if (!string.IsNullOrWhiteSpace(mailRequest.TemplateParams))
                 {
                     mailRequest.content = templateContent.content;
