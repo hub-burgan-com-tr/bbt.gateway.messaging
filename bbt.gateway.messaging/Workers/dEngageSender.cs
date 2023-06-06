@@ -770,6 +770,7 @@ namespace bbt.gateway.messaging.Workers
                 if (!string.IsNullOrWhiteSpace(mailRequest.TemplateParams))
                 {
                     mailRequest.content = templateContent.content;
+                    mailRequest.subject = templateContent.subject;
                     var templateParamsJson = JsonConvert.DeserializeObject<JObject>(mailRequest.TemplateParams);
                     var templateParamsList = templateContent?.content.GetWithRegexMultiple("({%=)(.*?)(%})", 2);
 
@@ -789,6 +790,7 @@ namespace bbt.gateway.messaging.Workers
                 else
                 {
                     mailRequest.content = templateContent.content;
+                    mailRequest.subject = templateContent.subject;
                 }
             }
 
