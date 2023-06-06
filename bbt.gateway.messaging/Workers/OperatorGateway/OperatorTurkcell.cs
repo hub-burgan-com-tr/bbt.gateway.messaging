@@ -2,6 +2,7 @@
 using bbt.gateway.messaging.Api;
 using bbt.gateway.messaging.Api.Turkcell;
 using bbt.gateway.messaging.Api.Turkcell.Model;
+using bbt.gateway.messaging.Helpers;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Concurrent;
@@ -14,6 +15,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
     {
         private readonly ITurkcellApi _turkcellApi;
         private string _authToken;
+        
         public OperatorTurkcell(TurkcellApiFactory turkcellApiFactory, IConfiguration configuration,
             ITransactionManager transactionManager) : base(configuration, transactionManager)
         {
@@ -93,6 +95,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                 }
 
                 var response = turkcellResponse.BuildOperatorApiResponse();
+                
                 responses.Add(response);
 
                 await ExtendToken();

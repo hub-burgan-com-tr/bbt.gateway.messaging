@@ -119,7 +119,7 @@ namespace bbt.gateway.worker
 
                     if (smsContents.data?.result.Count > 0)
                     {
-                        smsContentList.AddRange(smsContents.data.result);
+                        smsContentList.AddRange(smsContents.data.result.Where(c => c.isTransactionalContent == true));
                     }
 
                     if (smsContents.data.queryForNextPage)
@@ -187,7 +187,7 @@ namespace bbt.gateway.worker
 
                     if (mailContents.data?.result.Count > 0)
                     {
-                        mailContentList.AddRange(mailContents.data.result);
+                        mailContentList.AddRange(mailContents.data.result.Where(c => c.isTransactionalContent == true));
                     }
 
                     if (mailContents.data.queryForNextPage)
@@ -257,7 +257,7 @@ namespace bbt.gateway.worker
 
                     if (pushContents.data?.result.Count > 0)
                     {
-                        pushContentList.AddRange(pushContents.data.result);
+                        pushContentList.AddRange(pushContents.data.result.Where(c => c.is_transactional_content == true));
                     }
 
                     if (pushContents.data.queryForNextPage)

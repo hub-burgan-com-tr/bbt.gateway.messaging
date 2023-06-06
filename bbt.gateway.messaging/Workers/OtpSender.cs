@@ -1,6 +1,7 @@
 ﻿using bbt.gateway.common.Extensions;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Repositories;
+using bbt.gateway.messaging.Helpers;
 using bbt.gateway.messaging.Workers.OperatorGateway;
 using System;
 using System.Collections.Concurrent;
@@ -16,6 +17,7 @@ namespace bbt.gateway.messaging.Workers
         private readonly Func<OperatorType, IOperatorGateway> _operatorRepository;
         private readonly IRepositoryManager _repositoryManager;
         private readonly ITransactionManager _transactionManager;
+        private readonly InstantReminder _instantReminder;
 
         SendMessageSmsRequest _data;
         common.Models.v2.SmsRequest _dataV2;
@@ -32,12 +34,14 @@ namespace bbt.gateway.messaging.Workers
         public OtpSender(HeaderManager headerManager,
             Func<OperatorType, IOperatorGateway> operatorRepository,
             IRepositoryManager repositoryManager,
-            ITransactionManager transactionManager)
+            ITransactionManager transactionManager,
+            InstantReminder instantReminder)
         {
             _headerManager = headerManager;
             _operatorRepository = operatorRepository;
             _repositoryManager = repositoryManager;
             _transactionManager = transactionManager;
+            _instantReminder = instantReminder;
         }
 
         public async Task<SendSmsOtpResponse> SendMessage(SendMessageSmsRequest sendMessageSmsRequest)
@@ -479,6 +483,12 @@ namespace bbt.gateway.messaging.Workers
             _transactionManager.Transaction.OtpRequestLog = _requestLog;
 
             sendSmsOtpResponse.Status = returnValue;
+
+            if (sendSmsOtpResponse.Status == SendSmsResponseStatus.Success)
+            {
+                await _instantReminder.RemindAsync($"Otp Sms | {phoneConfiguration.Operator} | {_requestLog.Phone.Concatenate()}", smsRequest.Content,null);
+            }
+
             return sendSmsOtpResponse;
         }
 

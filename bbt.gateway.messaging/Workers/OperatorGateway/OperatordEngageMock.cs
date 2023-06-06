@@ -146,6 +146,13 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                 Topic = "dEngage Mock Mail"
             };
 
+            if ((checkIsVerified ?? false) && !TransactionManager.MailRequestInfo.IsMailVerified)
+            {
+                mailResponseLog.ResponseCode = "435";
+                mailResponseLog.ResponseMessage = "Mail Address is Not Verified";
+                return mailResponseLog;
+            }
+
             var attachmentList = new List<System.Net.Mail.Attachment>();
             if (attachments != null)
             {

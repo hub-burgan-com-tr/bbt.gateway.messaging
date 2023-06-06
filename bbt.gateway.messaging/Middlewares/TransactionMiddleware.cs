@@ -64,6 +64,7 @@ namespace bbt.gateway.messaging.Middlewares
                 _transactionManager.HeaderInfo = _middlewareRequest.HeaderInfo;
                 _transactionManager.Sender = _middlewareRequest.Sender;
                 _transactionManager.SmsType = _middlewareRequest.SmsType;
+                _transactionManager.InstantReminder = _middlewareRequest.InstantReminder;
 
                 SetTransaction(context,_transactionManager);
 

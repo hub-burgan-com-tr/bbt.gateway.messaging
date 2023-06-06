@@ -228,6 +228,7 @@ namespace bbt.gateway.messaging
                 };
             });
 
+            services.AddScoped<InstantReminder>();
             services.AddScoped<IFakeSmtpHelper, FakeSmtpHelper>();
             services.AddScoped<ITransactionManager, TransactionManager>();
             services.AddScoped<OperatorTurkTelekom>();

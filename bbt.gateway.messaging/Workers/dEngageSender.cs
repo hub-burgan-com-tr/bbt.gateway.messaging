@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using bbt.gateway.messaging.Helpers;
 
 namespace bbt.gateway.messaging.Workers
 {
@@ -25,6 +26,7 @@ namespace bbt.gateway.messaging.Workers
         private readonly IOperatordEngage _operatordEngage;
         private readonly IDistributedCache _distributedCache;
         private readonly DaprClient _daprClient;
+        private readonly InstantReminder _instantReminder;
 
         private const string DEFAULT_TEMPLATE_NAME = "Default";
         private const string BURGAN_MAIL_SUFFIX = "@m.burgan.com.tr";
@@ -35,7 +37,8 @@ namespace bbt.gateway.messaging.Workers
             ITransactionManager transactionManager,
             dEngageFactory dEngageFactory,
             IDistributedCache distributedCache,
-            DaprClient daprClient)
+            DaprClient daprClient,
+            InstantReminder instantReminder)
         {
             _headerManager = headerManager;
             _repositoryManager = repositoryManager;
@@ -43,7 +46,7 @@ namespace bbt.gateway.messaging.Workers
             _operatordEngage = dEngageFactory(_transactionManager.UseFakeSmtp);
             _distributedCache = distributedCache;
             _daprClient = daprClient;
-
+            _instantReminder = instantReminder;
         }
 
         public async Task<List<ContentInfo>> SetMailContents(OperatorType type)
@@ -616,6 +619,11 @@ namespace bbt.gateway.messaging.Workers
 
             var response = await _operatordEngage.SendSms(templatedSmsRequest.Phone.MapTo<Phone>(), SmsTypes.Fast, null, contentInfo.publicId, templatedSmsRequest.TemplateParams, templatedSmsRequest.Tags);
 
+            if (response != null && response.OperatorResponseCode == 0)
+            {
+                await _instantReminder.RemindAsync($"{_operatordEngage.Type} Fast Sms | {templatedSmsRequest.Phone.MapTo<Phone>().Concatenate()}",smsRequest.content,null);
+            }
+
             smsRequest.ResponseLogs.Add(response);
 
 
@@ -657,7 +665,10 @@ namespace bbt.gateway.messaging.Workers
             _transactionManager.Transaction.SmsRequestLog = smsRequest;
 
             var response = await _operatordEngage.SendSms(sendSmsRequest.Phone.MapTo<Phone>(), (SmsTypes)sendSmsRequest.SmsType, header.BuildContentForSms(sendSmsRequest.Content), null, null,sendSmsRequest.Tags);
-
+            if (response != null && response.OperatorResponseCode == 0)
+            {
+                await _instantReminder.RemindAsync($"{_operatordEngage.Type} Fast Sms | {sendSmsRequest.Phone.MapTo<Phone>().Concatenate()}", sendSmsRequest.Content, null);
+            }
             smsRequest.ResponseLogs.Add(response);
 
 
@@ -708,6 +719,11 @@ namespace bbt.gateway.messaging.Workers
 
             var response = await _operatordEngage.SendMail(mailRequestDto.Email, mailRequestDto.From, mailRequestDto.Subject, mailRequestDto.Content, null, null, mailRequestDto.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>(), mailRequestDto.Cc, mailRequestDto.Bcc,mailRequestDto.Tags,mailRequestDto.CheckIsVerified);
 
+            if (response != null && response.ResponseCode == "0")
+            {
+                await _instantReminder.RemindAsync(mailRequestDto.Subject, mailRequestDto.Content, mailRequestDto.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>());
+            }
+
             mailRequest.ResponseLogs.Add(response);
 
             sendEmailResponse.Status = (common.Models.v2.dEngageResponseCodes)response.GetdEngageStatus();
@@ -745,14 +761,18 @@ namespace bbt.gateway.messaging.Workers
                 CreatedBy = templatedMailRequest.Process.MapTo<Process>()
             };
 
+            
             var templateDetail = await GetContentDetail<MailContentDetail>(
                 GlobalConstants.MAIL_CONTENTS_SUFFIX + "_" + contentInfo.publicId);
+            
             if (templateDetail != null)
             {
                 var templateContent = templateDetail.contents.FirstOrDefault();
+                
                 if (!string.IsNullOrWhiteSpace(mailRequest.TemplateParams))
                 {
                     mailRequest.content = templateContent.content;
+                    mailRequest.subject = templateContent.subject;
                     var templateParamsJson = JsonConvert.DeserializeObject<JObject>(mailRequest.TemplateParams);
                     var templateParamsList = templateContent?.content.GetWithRegexMultiple("({%=)(.*?)(%})", 2);
 
@@ -766,11 +786,13 @@ namespace bbt.gateway.messaging.Workers
                     foreach (string templateParam in templateParamsList)
                     {
                         mailRequest.content = mailRequest.content.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
+                        mailRequest.subject = mailRequest.subject.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
                     }
                 }
                 else
                 {
                     mailRequest.content = templateContent.content;
+                    mailRequest.subject = templateContent.subject;
                 }
             }
 
@@ -781,6 +803,11 @@ namespace bbt.gateway.messaging.Workers
             _transactionManager.Transaction.MailRequestLog = mailRequest;
 
             var response = await _operatordEngage.SendMail(templatedMailRequest.Email, null, null, null, contentInfo.publicId, templatedMailRequest.TemplateParams, templatedMailRequest.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>(), templatedMailRequest.Cc, templatedMailRequest.Bcc,templatedMailRequest.Tags,templatedMailRequest.CheckIsVerified);
+
+            if (response != null && response.ResponseCode == "0")
+            {
+                await _instantReminder.RemindAsync(mailRequest.subject, mailRequest.content, templatedMailRequest.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>());
+            }
 
             mailRequest.ResponseLogs.Add(response);
 
