@@ -619,7 +619,7 @@ namespace bbt.gateway.messaging.Workers
 
             var response = await _operatordEngage.SendSms(templatedSmsRequest.Phone.MapTo<Phone>(), SmsTypes.Fast, null, contentInfo.publicId, templatedSmsRequest.TemplateParams, templatedSmsRequest.Tags);
 
-            if (response != null && response.Status == "0")
+            if (response != null && response.OperatorResponseCode == 0)
             {
                 await _instantReminder.RemindAsync($"{_operatordEngage.Type} Fast Sms | {templatedSmsRequest.Phone.MapTo<Phone>().Concatenate()}",smsRequest.content,null);
             }
@@ -665,7 +665,7 @@ namespace bbt.gateway.messaging.Workers
             _transactionManager.Transaction.SmsRequestLog = smsRequest;
 
             var response = await _operatordEngage.SendSms(sendSmsRequest.Phone.MapTo<Phone>(), (SmsTypes)sendSmsRequest.SmsType, header.BuildContentForSms(sendSmsRequest.Content), null, null,sendSmsRequest.Tags);
-            if (response != null && response.Status == "0")
+            if (response != null && response.OperatorResponseCode == 0)
             {
                 await _instantReminder.RemindAsync($"{_operatordEngage.Type} Fast Sms | {sendSmsRequest.Phone.MapTo<Phone>().Concatenate()}", sendSmsRequest.Content, null);
             }
@@ -719,7 +719,7 @@ namespace bbt.gateway.messaging.Workers
 
             var response = await _operatordEngage.SendMail(mailRequestDto.Email, mailRequestDto.From, mailRequestDto.Subject, mailRequestDto.Content, null, null, mailRequestDto.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>(), mailRequestDto.Cc, mailRequestDto.Bcc,mailRequestDto.Tags,mailRequestDto.CheckIsVerified);
 
-            if (response != null && response.Status == "0")
+            if (response != null && response.ResponseCode == "0")
             {
                 await _instantReminder.RemindAsync(mailRequestDto.Subject, mailRequestDto.Content, mailRequestDto.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>());
             }
@@ -800,7 +800,7 @@ namespace bbt.gateway.messaging.Workers
 
             var response = await _operatordEngage.SendMail(templatedMailRequest.Email, null, null, null, contentInfo.publicId, templatedMailRequest.TemplateParams, templatedMailRequest.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>(), templatedMailRequest.Cc, templatedMailRequest.Bcc,templatedMailRequest.Tags,templatedMailRequest.CheckIsVerified);
 
-            if (response != null && response.Status == "0")
+            if (response != null && response.ResponseCode == "0")
             {
                 await _instantReminder.RemindAsync(mailRequest.subject, mailRequest.content, templatedMailRequest.Attachments.ListMapTo<common.Models.v2.Attachment, Attachment>());
             }
