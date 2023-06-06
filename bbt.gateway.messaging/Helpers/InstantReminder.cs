@@ -1,4 +1,5 @@
-﻿using bbt.gateway.messaging.Workers.OperatorGateway;
+﻿using bbt.gateway.messaging.Workers;
+using bbt.gateway.messaging.Workers.OperatorGateway;
 using Dapr.Client;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -12,10 +13,13 @@ namespace bbt.gateway.messaging.Helpers
     {
         private readonly IOperatordEngage _operatordEngage;
         private readonly IConfiguration _configuration;
-        public InstantReminder(DaprClient daprClient,dEngageFactory dEngageFactory,IConfiguration configuration)
+        private readonly ITransactionManager _transactionManager;
+        public InstantReminder(DaprClient daprClient,dEngageFactory dEngageFactory,
+            ITransactionManager transactionManager,IConfiguration configuration)
         {
             _operatordEngage = dEngageFactory(false);
             _configuration = configuration;
+            _transactionManager = transactionManager;
         }
 
         public async Task RemindAsync(string subject, string content, List<common.Models.Attachment> attachments)
@@ -24,11 +28,11 @@ namespace bbt.gateway.messaging.Helpers
             {
                 try
                 {
-                    Console.WriteLine("Reminder initialized");
+                    _transactionManager.LogInformation("Reminder initialized");
                     _operatordEngage.Type = common.Models.OperatorType.dEngageBurgan;
                     var rt = await _operatordEngage.SendMail(_configuration["InstantReminder:To"], "noreplay", subject, content, null, null, attachments, null, null, null, checkIsVerified: false);
-                    Console.WriteLine("Response Message:" + rt.ResponseMessage);
-                    Console.WriteLine("Response Status:" + rt.ResponseCode);
+                    _transactionManager.LogInformation("Reminder Response Message:" + rt.ResponseMessage);
+                    _transactionManager.LogInformation("Reminder Response Status:" + rt.ResponseCode);
                 }
                 catch (Exception ex)
                 {

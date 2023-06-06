@@ -259,7 +259,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
                 try
                 {
-                    Console.WriteLine("CreateMailRequest Log:"+JsonConvert.SerializeObject(mailFrom));
+                    TransactionManager.LogInformation("CreateMailRequest Log:"+JsonConvert.SerializeObject(mailFrom));
                     var req = CreateMailRequest(to, mailFrom.fromName, from, subject, html, templateId, templateParams, attachments, cc, bcc, tags);
                     try
                     {
@@ -743,7 +743,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             }
             catch (Exception ex)
             {
-                Console.WriteLine("CreateMailRequest Error : "+ex.Message);
+                TransactionManager.LogError("CreateMailRequest Error : "+ex.Message);
             }
 
             return sendMailRequest;
