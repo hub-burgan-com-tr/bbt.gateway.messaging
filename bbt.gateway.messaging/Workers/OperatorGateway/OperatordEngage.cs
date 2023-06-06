@@ -237,8 +237,6 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                         }
                     }
 
-                    TransactionManager.LogInformation("dEngage Mail Adresses : " + JsonConvert.SerializeObject(_mailIds));
-                    TransactionManager.LogInformation("dEngage Requested From : " + from);
                     mailFrom = _mailIds.data.emailFroms.Where(m => m.fromAddress == from).FirstOrDefault();
                     if (mailFrom == null)
                     {
@@ -256,12 +254,10 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                             mailResponseLog.ResponseMessage = "Mail From is Not Found";
                         }
                     }
-                    TransactionManager.LogInformation("dEngage Mail From :" + JsonConvert.SerializeObject(_mailIds));
                 }
 
                 try
                 {
-                    TransactionManager.LogInformation("CreateMailRequest Log:"+JsonConvert.SerializeObject(mailFrom));
                     var req = CreateMailRequest(to, mailFrom.fromName, from, subject, html, templateId, templateParams, attachments, cc, bcc, tags);
                     try
                     {
