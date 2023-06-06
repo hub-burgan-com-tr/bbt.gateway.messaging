@@ -764,9 +764,11 @@ namespace bbt.gateway.messaging.Workers
             
             var templateDetail = await GetContentDetail<MailContentDetail>(
                 GlobalConstants.MAIL_CONTENTS_SUFFIX + "_" + contentInfo.publicId);
+            
             if (templateDetail != null)
             {
                 var templateContent = templateDetail.contents.FirstOrDefault();
+                _transactionManager.LogInformation("Template Content:" + JsonConvert.SerializeObject(templateContent));
                 if (!string.IsNullOrWhiteSpace(mailRequest.TemplateParams))
                 {
                     mailRequest.content = templateContent.content;

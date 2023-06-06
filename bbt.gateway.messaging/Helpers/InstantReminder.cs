@@ -24,7 +24,7 @@ namespace bbt.gateway.messaging.Helpers
 
         public async Task RemindAsync(string subject, string content, List<common.Models.Attachment> attachments)
         {
-            if (System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Test")
+            if (System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Test" && (_transactionManager.InstantReminder ?? false))
             {
                 try
                 {
