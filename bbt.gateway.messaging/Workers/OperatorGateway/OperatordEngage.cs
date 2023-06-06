@@ -222,7 +222,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                 if (html != null)
                 {
                     var mailFromsByteArray = await _daprClient.GetStateAsync<byte[]>(GlobalConstants.DAPR_STATE_STORE, OperatorConfig.Type.ToString() + "_mailFroms");
-                    //var mailFromsByteArray = await _distrubitedCache.GetAsync(OperatorConfig.Type.ToString() + "_mailFroms");
+                    
                     if (mailFromsByteArray != null)
                     {
                         _mailIds = JsonConvert.DeserializeObject<GetMailFromsResponse>(System.Text.Encoding.UTF8.GetString(mailFromsByteArray));
@@ -237,6 +237,8 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                         }
                     }
 
+                    TransactionManager.LogInformation("dEngage Mail Adresses : " + JsonConvert.SerializeObject(_mailIds));
+                    TransactionManager.LogInformation("dEngage Requested From : " + from);
                     mailFrom = _mailIds.data.emailFroms.Where(m => m.fromAddress == from).FirstOrDefault();
                     if (mailFrom == null)
                     {
@@ -254,7 +256,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                             mailResponseLog.ResponseMessage = "Mail From is Not Found";
                         }
                     }
-
+                    TransactionManager.LogInformation("dEngage Mail From :" + JsonConvert.SerializeObject(_mailIds));
                 }
 
                 try
