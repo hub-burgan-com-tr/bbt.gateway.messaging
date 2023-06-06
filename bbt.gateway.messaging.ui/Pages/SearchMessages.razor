@@ -130,7 +130,13 @@
             }
             <RadzenDataGridColumn TItem="Transaction" Title="Gönderen Sistem" Sortable="true"  Width="25px">
                 <Template Context="data">
-                   @data.CreatedBy.Name
+                    @if(data.CreatedBy!=null)
+                    {
+                         @data.CreatedBy.Name
+                    }
+                  
+                
+
                 </Template>
             </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="Transaction" Title="Durumu" Sortable="true">
