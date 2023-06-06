@@ -806,7 +806,7 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         [SwaggerOperation(Summary = "Returns transactions info",
             Tags = new[] { "Transaction Management" })]
-        [HttpGet("transactions/mail/{email}")]
+        [HttpGet("transactions/mail/{mail}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(Transaction[]))]
         public async Task<IActionResult> GetTransactionsWithEmail(string mail, string createdName, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {

@@ -80,7 +80,9 @@ namespace bbt.gateway.messaging.ui.Pages.Authorize
                   
                     if (!string.IsNullOrEmpty(sicil))
                     {
+                        await JS.InvokeVoidAsync("console.log", sicil);
                         var res = await MessagingGateway.GetUserControl(sicil);
+
                         if (res !=null&&res.Count>0)
                         {
                             navItems.InvokeAsync(res);
