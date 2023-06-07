@@ -28,52 +28,148 @@
                 <RadzenIcon Icon="text_snippet" Class="mr-1" /><b>Response Logs</b>
             </span>
         </HeaderTemplate>
-        <ChildContent>
-        @if (responseLogs.Count > 0)
+        <ChildContent> 
+            @if (Txn.TransactionType == TransactionType.Otp || Txn.TransactionType == TransactionType.TransactionalSms)
         {
-            @foreach (var responseLog in responseLogs)
+            @if (responseLogs.Count > 0)
             {
-                <div class="row">
-                    <div class="col-4">
-                        <RadzenCard>
-                            <span>Operator Cevap Kodu</span>
-                            <RadzenTextBox ReadOnly Value="@responseLog.ResponseCode.ToString()" />
-                        </RadzenCard>
-                    </div>
-                 
-                     <div class="col-4">
-                        <RadzenCard>
-                            <span>Response ID</span>
-                            <RadzenTextBox ReadOnly Value="@responseLog.StatusQueryId" />
-                        </RadzenCard>
-                    </div>
+                @foreach (var responseLog in responseLogs)
+                {
+                    <div class="row">
+                        <div class="col-4">
+                            <RadzenCard>
+                                <span>Operator Cevap Kodu</span>
+                                <RadzenTextBox ReadOnly Value="@responseLog.ResponseCode.ToString()" />
+                            </RadzenCard>
+                        </div>
 
-                      <div class="col-4">
-                        <RadzenCard>
-                            <span>Tracking Status</span>
-                            <RadzenTextBox ReadOnly Value="@responseLog.TrackingStatus.ToString()" />
-                        </RadzenCard>
+                        <div class="col-4">
+                            <RadzenCard>
+                                <span>Response ID</span>
+                                <RadzenTextBox ReadOnly Value="@responseLog.StatusQueryId" />
+                            </RadzenCard>
+                        </div>
+
+                        <div class="col-4">
+                            <RadzenCard>
+                                <span>Tracking Status</span>
+                                <RadzenTextBox ReadOnly Value="@responseLog.TrackingStatus.ToString()" />
+                            </RadzenCard>
+                        </div>
                     </div>
+                    <div class="row mt-1">
+                        <div class="col-12">
+                            <RadzenCard>
+                                <span>Operator Cevap Açıklama</span>
+                                <RadzenTextArea ReadOnly Value="@responseLog.ResponseMessage" />
+                            </RadzenCard>
+                        </div>
+                    </div>
+                }
+
+            }
+            else
+            {
+                <div class="col-12">
+                    <RadzenCard>
+                        <span>Response Log Bulunamadı.</span>
+                    </RadzenCard>
                 </div>
-                 <div class="row mt-1">
-                   <div class="col-12">
-                        <RadzenCard>
-                            <span>Operator Cevap Açıklama</span>
-                            <RadzenTextArea ReadOnly Value="@responseLog.ResponseMessage" />
-                        </RadzenCard>
+            }
+
+        }
+        else  @if (Txn.TransactionType == TransactionType.TransactionalMail || Txn.TransactionType == TransactionType.TransactionalTemplatedMail
+        || Txn.TransactionType == TransactionType.TransactionalMailMultiple)
+        {
+            @if (responseLogsMail.Count > 0)
+            {
+                @foreach (var responseLogMail in responseLogsMail)
+                {
+                    <div class="row">
+                         <div class="col-4">
+                            <RadzenCard>
+                                <span>Mail Subject</span>
+                                <RadzenTextArea ReadOnly Value="@Txn.MailRequestLog.subject" />
+                            </RadzenCard>
+                        </div>
+                        <div class="col-4">
+                            <RadzenCard>
+                                <span>Mail Cevap Kodu</span>
+                                <RadzenTextBox ReadOnly Value="@responseLogMail.ResponseCode.ToString()" />
+                            </RadzenCard>
+                        </div>
+
+                        <div class="col-4">
+                            <RadzenCard>
+                                <span>Response ID</span>
+                                <RadzenTextBox ReadOnly Value="@responseLogMail.StatusQueryId" />
+                            </RadzenCard>
+                        </div>
+
                     </div>
-                     </div>
+                    <div class="row mt-1">
+                        <div class="col-12">
+                            <RadzenCard>
+                                <span>Mail Cevap Açıklama</span>
+                                <RadzenTextArea ReadOnly Value="@responseLogMail.ResponseMessage" />
+                            </RadzenCard>
+                        </div>
+                    </div>
+                }
+
+            }
+            else
+            {
+                <div class="col-12">
+                    <RadzenCard>
+                        <span>Response Log Bulunamadı.</span>
+                    </RadzenCard>
+                </div>
             }
         }
-        else
+        else  @if (Txn.TransactionType == TransactionType.TransactionalPush || Txn.TransactionType == TransactionType.TransactionalTemplatedPush)
         {
-            <div class="col-12">
-                <RadzenCard>
-                    <span>Response Log Bulunamadı.</span>
-                </RadzenCard>
-            </div>
+            @if (responseLogsPush.Count > 0)
+            {
+                @foreach (var responseLogPush in responseLogsPush)
+                {
+                    <div class="row">
+                        <div class="col-4">
+                            <RadzenCard>
+                                <span>Push Cevap Kodu</span>
+                                <RadzenTextBox ReadOnly Value="@responseLogPush.ResponseCode.ToString()" />
+                            </RadzenCard>
+                        </div>
+
+                        <div class="col-4">
+                            <RadzenCard>
+                                <span>Response ID</span>
+                                <RadzenTextBox ReadOnly Value="@responseLogPush.StatusQueryId" />
+                            </RadzenCard>
+                        </div>
+
+                    </div>
+                    <div class="row mt-1">
+                        <div class="col-12">
+                            <RadzenCard>
+                                <span>Push Cevap Açıklama</span>
+                                <RadzenTextArea ReadOnly Value="@responseLogPush.ResponseMessage" />
+                            </RadzenCard>
+                        </div>
+                    </div>
+                }
+
+            }
+            else
+            {
+                <div class="col-12">
+                    <RadzenCard>
+                        <span>Response Log Bulunamadı.</span>
+                    </RadzenCard>
+                </div>
+            }
         }
-        </ChildContent>
+    </ChildContent>
         <SummaryTemplate>
             <RadzenCard class="mt-3">
                 <b>@responseLogs.Count Response Logs</b>

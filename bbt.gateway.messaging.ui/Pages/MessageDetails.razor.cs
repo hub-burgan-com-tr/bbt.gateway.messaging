@@ -10,6 +10,8 @@ namespace bbt.gateway.messaging.ui.Pages
         [Parameter] public Transaction Txn { get; set; }
 
         private ICollection<OtpResponseLog> responseLogs;
+        private ICollection<MailResponseLog> responseLogsMail;
+        private ICollection<PushNotificationResponseLog> responseLogsPush;
         private ICollection<OtpTrackingLog> trackingsLogs;
         private string message { get; set; }
         private string template { get; set; }
@@ -19,6 +21,8 @@ namespace bbt.gateway.messaging.ui.Pages
         {
             message = Txn.OtpRequestLog == null ? "" : (Txn.OtpRequestLog.Content ?? "");  
             responseLogs = GetOtpResponseLogs();
+            responseLogsMail = GetMailResponseLogs();
+            responseLogsPush=GetPushResponseLogs();
             trackingsLogs = GetOtpTrackingLogs();
         }
 
@@ -74,7 +78,18 @@ namespace bbt.gateway.messaging.ui.Pages
                 return new List<OtpResponseLog>();
             return Txn.OtpRequestLog.ResponseLogs ?? new List<OtpResponseLog>();
         }
-
+        private ICollection<MailResponseLog> GetMailResponseLogs()
+        {
+            if (Txn.MailRequestLog == null)
+                return new List<MailResponseLog>();
+            return Txn.MailRequestLog.ResponseLogs ?? new List<MailResponseLog>();
+        }
+        private ICollection<PushNotificationResponseLog> GetPushResponseLogs()
+        {
+            if (Txn.PushNotificationRequestLog == null)
+                return new List<PushNotificationResponseLog>();
+            return Txn.PushNotificationRequestLog.ResponseLogs ?? new List<PushNotificationResponseLog>();
+        }
         private ICollection<OtpTrackingLog> GetOtpTrackingLogs()
         {
             if (Txn.OtpRequestLog == null)
