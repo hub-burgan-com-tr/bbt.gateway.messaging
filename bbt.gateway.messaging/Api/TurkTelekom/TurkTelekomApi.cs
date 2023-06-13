@@ -56,6 +56,11 @@ namespace bbt.gateway.messaging.Api.TurkTelekom
             catch (HttpRequestException ex)
             {
                 TransactionManager.LogError($"Critical Error Occured at TurkTelekom Otp Services | Network Related | ErrorCode:499 | Exception : {ex.ToString()}");
+                operatorApiResponse.ResponseCode = "-99999";
+                operatorApiResponse.ResponseMessage = ex.ToString();
+                operatorApiResponse.MessageId = "";
+                operatorApiResponse.RequestBody = turkTelekomSmsRequest.SerializeXml();
+                operatorApiResponse.ResponseBody = "";
             }
             catch (System.Exception ex)
             {

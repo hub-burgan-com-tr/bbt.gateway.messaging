@@ -140,8 +140,9 @@ namespace bbt.gateway.messaging.Api.Turkcell
 
                 if (httpResponse.IsSuccessStatusCode)
                 {
+                    
                     var parsedXml = response.DeserializeXml<Model.SmsStatus.SuccessXml.Envelope>();
-                    var textResponse = parsedXml.Body.getStatusResponse.result;
+                    var textResponse = parsedXml.Body.getStatusResponse.@return;
                     if (textResponse.Contains("NOK"))
                     {
                         turkcellSmsStatusResponse.ResponseCode = textResponse.Split(",")[1];
@@ -170,6 +171,9 @@ namespace bbt.gateway.messaging.Api.Turkcell
             catch (HttpRequestException ex)
             {
                 TransactionManager.LogError($"Critical Error Occured at Turkcell Otp Services | Network Related | ErrorCode:498 | Exception : {ex.ToString()}");
+                turkcellSmsStatusResponse.ResponseCode = "-99999";
+                turkcellSmsStatusResponse.ResponseMessage = ex.ToString();
+                turkcellSmsStatusResponse.ResponseBody = "";
             }
             catch (Exception ex)
             {

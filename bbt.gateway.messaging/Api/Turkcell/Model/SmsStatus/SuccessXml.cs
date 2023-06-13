@@ -100,7 +100,7 @@ namespace bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus
 
             /// <remarks/>
             [System.Xml.Serialization.XmlElementAttribute(Namespace = "")]
-            public string result
+            public string @return
             {
                 get
                 {
