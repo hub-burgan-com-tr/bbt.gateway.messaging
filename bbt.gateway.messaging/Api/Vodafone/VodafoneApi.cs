@@ -56,7 +56,7 @@ namespace bbt.gateway.messaging.Api.Vodafone
             {
                 TransactionManager.LogError($"Critical Error Occured at Vodafone Otp Services | Network Related | ErrorCode:499 | Exception : {ex.ToString()}");
                 vodafoneSmsResponse.ResponseCode = "-99999";
-                vodafoneSmsResponse.ResponseBody = ex.ToString();
+                vodafoneSmsResponse.ResponseMessage = ex.ToString();
                 vodafoneSmsResponse.MessageId = "";
                 vodafoneSmsResponse.ResponseBody = "";
                 vodafoneSmsResponse.RequestBody = requests.Item2;
@@ -64,7 +64,7 @@ namespace bbt.gateway.messaging.Api.Vodafone
             catch (System.Exception ex)
             {
                 vodafoneSmsResponse.ResponseCode = "-99999";
-                vodafoneSmsResponse.ResponseBody = ex.ToString();
+                vodafoneSmsResponse.ResponseMessage = ex.ToString();
                 vodafoneSmsResponse.MessageId = "";
                 vodafoneSmsResponse.ResponseBody = response;
                 vodafoneSmsResponse.RequestBody = requests.Item2;

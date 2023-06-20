@@ -2,6 +2,7 @@
 using bbt.gateway.messaging.ui.Pages.Base;
 using Microsoft.AspNetCore.Components;
 using Radzen;
+using System.Text.Json;
 
 namespace bbt.gateway.messaging.ui.Pages
 {
@@ -16,6 +17,7 @@ namespace bbt.gateway.messaging.ui.Pages
         private string message { get; set; }
         private string template { get; set; }
         private string templateParams { get; set; }
+        public string ErrorDetail { get;set; }
 
         protected override void OnInitialized()
         {
@@ -24,6 +26,17 @@ namespace bbt.gateway.messaging.ui.Pages
             responseLogsMail = GetMailResponseLogs();
             responseLogsPush=GetPushResponseLogs();
             trackingsLogs = GetOtpTrackingLogs();
+
+            try
+            {
+                var response = JsonSerializer.Deserialize<Dictionary<string, string>>(Txn.Response);
+                ErrorDetail = response["status"];
+            }
+            catch (Exception)
+            {
+                ErrorDetail = Txn.Response;
+            }
+            
         }
 
         private string GetTemplate()

@@ -200,7 +200,21 @@ namespace bbt.gateway.messaging.Workers
                     {
                         if (response.data.result.Count() > 0)
                         {
-                            return response.BuilddEngageTrackingResponse(checkFastSmsRequest);
+                            if (response.data.result[0].event_type != null)
+                            {
+                                return response.BuilddEngageTrackingResponse(checkFastSmsRequest);
+                            }
+                            else
+                            {
+                                return new SmsTrackingLog()
+                                {
+                                    Id = Guid.NewGuid(),
+                                    LogId = checkFastSmsRequest.SmsRequestLogId,
+                                    Status = SmsTrackingStatus.Pending,
+                                    Detail = "",
+                                    StatusReason = $"İletim raporu henüz hazır değil",
+                                };
+                            }
                         }
                         else
                         {
