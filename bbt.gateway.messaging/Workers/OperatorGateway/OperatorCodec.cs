@@ -67,7 +67,14 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
                       smsLog.OperatorResponseCode = parsedResponse.ResultSet.Code;
                       smsLog.OperatorResponseMessage = parsedResponse.ResultSet.Description;
-                      smsLog.StatusQueryId = parsedResponse.ResultList.FirstOrDefault()?.SmsRefId ?? String.Empty;
+                      if (parsedResponse.ResultList != null && parsedResponse.ResultList.Count() > 0)
+                      {
+                          smsLog.StatusQueryId = parsedResponse.ResultList.FirstOrDefault()?.SmsRefId ?? String.Empty;
+                      }
+                      else
+                      {
+                          smsLog.StatusQueryId = String.Empty;
+                      }
                       smsLog.Status = String.Empty;
                   });
 

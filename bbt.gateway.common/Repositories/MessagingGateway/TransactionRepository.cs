@@ -67,7 +67,8 @@ namespace bbt.gateway.common.Repositories
                    Phone = s.Phone,
                    Mail = s.Mail,
                    TransactionType = s.TransactionType,
-                   OtpRequestLog = s.OtpRequestLog
+                   OtpRequestLog = s.OtpRequestLog,
+                   Response = s.Response
                })
                 .Skip(page * pageSize)
                 .Take(pageSize)
@@ -118,7 +119,8 @@ namespace bbt.gateway.common.Repositories
                     Phone = s.Phone,
                     Mail = s.Mail,
                     TransactionType = s.TransactionType,
-                    OtpRequestLog = s.OtpRequestLog
+                    OtpRequestLog = s.OtpRequestLog,
+                    Response = s.Response
                 })
                 .Skip(page * pageSize)
                 .Take(pageSize)
@@ -170,7 +172,8 @@ namespace bbt.gateway.common.Repositories
                     Phone = s.Phone,
                     Mail = s.Mail,
                     TransactionType = s.TransactionType,
-                    OtpRequestLog = s.OtpRequestLog
+                    OtpRequestLog = s.OtpRequestLog,
+                    Response = s.Response
                 })
                 .Skip(page * pageSize)
                 .Take(pageSize)
@@ -221,7 +224,8 @@ namespace bbt.gateway.common.Repositories
                      Phone = s.Phone,
                      Mail = s.Mail,
                      TransactionType = s.TransactionType,
-                     SmsRequestLog = s.SmsRequestLog
+                     SmsRequestLog = s.SmsRequestLog,
+                     Response = s.Response
                  })
                 .Skip(page * pageSize)
                 .Take(pageSize)
@@ -275,7 +279,8 @@ namespace bbt.gateway.common.Repositories
                       Phone = s.Phone,
                       Mail = s.Mail,
                       TransactionType = s.TransactionType,
-                      SmsRequestLog = s.SmsRequestLog
+                      SmsRequestLog = s.SmsRequestLog,
+                      Response = s.Response
                  })
                 .Skip(page * pageSize)
                 .Take(pageSize)
@@ -331,7 +336,8 @@ namespace bbt.gateway.common.Repositories
                     Phone = s.Phone,
                     Mail = s.Mail,
                     TransactionType = s.TransactionType,
-                    SmsRequestLog = s.SmsRequestLog
+                    SmsRequestLog = s.SmsRequestLog,
+                    Response = s.Response
                 })
                 .Skip(page * pageSize)
                 .Take(pageSize)
@@ -401,7 +407,8 @@ namespace bbt.gateway.common.Repositories
                 Phone = s.Phone,
                 Mail = s.Mail,
                 TransactionType = s.TransactionType,
-                MailRequestLog = s.MailRequestLog
+                MailRequestLog = s.MailRequestLog,
+                Response = s.Response
             })
                 .Skip(page * pageSize)
                 .Take(pageSize)
@@ -468,7 +475,8 @@ namespace bbt.gateway.common.Repositories
                 Phone=s.Phone,
                 Mail=s.Mail,
                 TransactionType=s.TransactionType,
-                MailRequestLog=s.MailRequestLog
+                MailRequestLog=s.MailRequestLog,
+                Response = s.Response
             })
             .OrderByDescending(t => t.CreatedAt)
                 .Skip(page * pageSize)
@@ -496,7 +504,8 @@ namespace bbt.gateway.common.Repositories
                      Phone = s.Phone,
                      Mail = s.Mail,
                      TransactionType = s.TransactionType,
-                     PushNotificationRequestLog = s.PushNotificationRequestLog
+                     PushNotificationRequestLog = s.PushNotificationRequestLog,
+                     Response = s.Response
                  })
                 .Skip(page * pageSize)
                 .Take(pageSize)
@@ -531,7 +540,8 @@ namespace bbt.gateway.common.Repositories
                     Phone = s.Phone,
                     Mail = s.Mail,
                     TransactionType = s.TransactionType,
-                    PushNotificationRequestLog = s.PushNotificationRequestLog
+                    PushNotificationRequestLog = s.PushNotificationRequestLog,
+                    Response = s.Response
                 })
                 .Skip(page * pageSize)
                 .Take(pageSize)
