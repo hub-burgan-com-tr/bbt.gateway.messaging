@@ -176,7 +176,7 @@ namespace bbt.gateway.messaging
             { "-446", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
             { "-447", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
             { "-448", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
-            { "-449", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
+            { "-449", new SmsApiResponse { ReturnMessage = "Sms 160 karakterden fazla olamaz", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
             { "-450", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
             { "-451", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
             { "-461", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
