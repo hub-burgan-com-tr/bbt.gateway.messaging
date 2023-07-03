@@ -237,7 +237,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                         }
                     }
 
-                    mailFrom = _mailIds.data.emailFroms.Where(m => m.fromAddress == from).FirstOrDefault();
+                    mailFrom = _mailIds.data.emailFroms.Where(m => m.fromAddress.Trim() == from.Trim()).FirstOrDefault();
                     if (mailFrom == null)
                     {
                         var res = await SetMailFromsToCache();
@@ -247,7 +247,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                             mailResponseLog.ResponseMessage = res.Item2;
                         }
 
-                        mailFrom = _mailIds.data.emailFroms.Where(m => m.fromAddress == from).FirstOrDefault();
+                        mailFrom = _mailIds.data.emailFroms.Where(m => m.fromAddress.Trim() == from.Trim()).FirstOrDefault();
                         if (mailFrom == null)
                         {
                             mailResponseLog.ResponseCode = "99999";
