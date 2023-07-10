@@ -96,7 +96,8 @@ namespace bbt.gateway.messaging
 
         public static string BuildContentForSms(this Header header, string content)
         {
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Prod")
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (env != "Prod" && env != "Drc")
             {
                 return $"[Test] {header.SmsPrefix} {content} {header.SmsSuffix} [Dikkate Almayiniz]";
             }
