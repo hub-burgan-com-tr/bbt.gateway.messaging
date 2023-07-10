@@ -410,7 +410,8 @@ namespace bbt.gateway.messaging.Controllers.v2
                 await _repositoryManager.PhoneConfigurations.AddAsync(config);
             }
 
-            var now = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Prod" ? DateTime.Now : (data.CreatedAt ?? DateTime.Now);
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var now = (env == "Prod" || env == "Drc") ? DateTime.Now : (data.CreatedAt ?? DateTime.Now);
 
             var oldOtpBlacklistEntry = new SmsDirectBlacklist
             {
@@ -456,7 +457,8 @@ namespace bbt.gateway.messaging.Controllers.v2
             var config = await _repositoryManager.BlackListEntries.FirstOrDefaultAsync(b => b.Id == entryId);
             if (config == null)
                 return NotFound(entryId);
-            var resolvedAt = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Prod" ? DateTime.Now : (data.ResolvedAt ?? DateTime.Now);
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var resolvedAt = (env == "Prod" || env == "Drc") ? DateTime.Now : (data.ResolvedAt ?? DateTime.Now);
             config.ResolvedBy = data.ResolvedBy;
             config.Status = BlacklistStatus.Resolved;
             config.ResolvedAt = resolvedAt;
@@ -484,8 +486,9 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         public async Task<IActionResult> GetPhoneMonitorRecords(int countryCode, int prefix, int number)
         {
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Prod" &&
-                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Production")
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (env != "Prod" &&
+                env != "Production" && env != "Drc")
             {
                 var phoneConfigurations = await _repositoryManager.PhoneConfigurations.FindAsync(p =>
                 p.Phone.CountryCode == countryCode &&

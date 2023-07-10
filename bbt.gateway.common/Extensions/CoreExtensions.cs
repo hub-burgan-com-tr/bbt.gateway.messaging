@@ -83,7 +83,7 @@ namespace bbt.gateway.common
                 
                 Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
                 ApiKeyAuthenticationCredentials k = new ApiKeyAuthenticationCredentials(configuration["ElasticSearch:ApiKey"]);
-                indexFormat = (environmentName != "Prod" ? "nonprod-" : "prod-") + indexFormat;
+                indexFormat = (environmentName != "Prod" ? ( environmentName != "Drc" ? "nonprod-" : "drc") : "prod-") + indexFormat;
                 Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .Enrich.WithEnvironmentName()
@@ -93,7 +93,8 @@ namespace bbt.gateway.common
                 .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(configuration["ElasticSearch:Url"]))
                 {
                     IndexFormat = indexFormat + "-{0:yyyy-MM}",
-                    ModifyConnectionSettings = c => c.ApiKeyAuthentication(k)
+                    ModifyConnectionSettings = c => c.ApiKeyAuthentication(k),
+                    TypeName = null
                 })
                 .ReadFrom.Configuration(configuration)
                 .CreateLogger();
