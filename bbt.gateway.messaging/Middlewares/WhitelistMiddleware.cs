@@ -26,7 +26,7 @@ namespace bbt.gateway.messaging.Middlewares
             
             _transactionManager.UseFakeSmtp = false;
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            if (environment != "Prod")
+            if (environment != "Prod" && environment != "Drc")
             {
                 if (environment == "Mock")
                 {
