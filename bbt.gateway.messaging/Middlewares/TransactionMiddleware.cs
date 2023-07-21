@@ -139,7 +139,6 @@ namespace bbt.gateway.messaging.Middlewares
                 }
                 catch (Exception ex)
                 {
-
                     _transactionManager.LogError("An Error Occured | Detail :" + ex.ToString());
                 }
                 
