@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System;
 using bbt.gateway.messaging.Workers;
 using Newtonsoft.Json;
+using Polly;
 
 namespace bbt.gateway.messaging.Api.Turkcell
 {
@@ -27,49 +28,59 @@ namespace bbt.gateway.messaging.Api.Turkcell
                 HttpContent httpRequest = new StringContent(requests.Item1, Encoding.UTF8, "text/xml");
 
                 using var httpClient = _httpClientFactory.CreateClient("default");
-                var httpResponse = await httpClient.PostAsync(OperatorConfig.SendService, httpRequest);
-                response = httpResponse.Content.ReadAsStringAsync().Result;
-                
-                
-                if (httpResponse.IsSuccessStatusCode)
+                httpClient.Timeout = TimeSpan.FromSeconds(10);
+
+                HttpResponseMessage httpResponse;
+                await Policy.Handle<HttpRequestException>().RetryAsync(3, (e, r) =>
                 {
-                    var parsedXml = response.DeserializeXml<Model.SendSms.SuccessXml.Envelope>();
-                    var textResponse = parsedXml.Body.sendSMSResponse.result;
-                    
-                    if (textResponse.Contains("NOK"))
+                    TransactionManager.LogInformation("Turkcell Polly Retry : "+r);
+                }).ExecuteAsync(async () =>
+                {
+                    httpResponse = await httpClient.PostAsync(OperatorConfig.SendService, httpRequest);
+                    response = httpResponse.Content.ReadAsStringAsync().Result;
+
+
+                    if (httpResponse.IsSuccessStatusCode)
                     {
-                        turkcellSmsResponse.ResponseCode = textResponse.Split(",")[1];
-                        turkcellSmsResponse.ResponseMessage = textResponse.Split(",")[2];
+                        var parsedXml = response.DeserializeXml<Model.SendSms.SuccessXml.Envelope>();
+                        var textResponse = parsedXml.Body.sendSMSResponse.result;
+
+                        if (textResponse.Contains("NOK"))
+                        {
+                            turkcellSmsResponse.ResponseCode = textResponse.Split(",")[1];
+                            turkcellSmsResponse.ResponseMessage = textResponse.Split(",")[2];
+                            turkcellSmsResponse.MessageId = "";
+                            turkcellSmsResponse.RequestBody = requests.Item2;
+                            turkcellSmsResponse.ResponseBody = response;
+                            TransactionManager.LogCritical("Turkcell Otp Failed | " + JsonConvert.SerializeObject(turkcellSmsResponse));
+                        }
+                        else
+                        {
+                            textResponse = textResponse.Replace("&lt;", "<");
+                            textResponse = textResponse.Replace("&gt;", ">");
+
+                            var parsedResponse = textResponse.DeserializeXml<Model.SendSms.BodyXml.MSGIDRETURN>();
+                            turkcellSmsResponse.ResponseCode = parsedResponse.MSGID_LIST.MSGID > 0 ? "0" : parsedResponse.MSGID_LIST.MSGID.ToString();
+                            turkcellSmsResponse.ResponseMessage = "";
+                            turkcellSmsResponse.MessageId = parsedResponse.MSGID_LIST.MSGID > 0 ? parsedResponse.MSGID_LIST.MSGID.ToString() : "";
+                            turkcellSmsResponse.RequestBody = requests.Item2;
+                            turkcellSmsResponse.ResponseBody = response;
+
+                        }
+
+                    }
+                    else
+                    {
+                        var parsedXml = response.DeserializeXml<Model.SendSms.ErrorXml.Envelope>();
+                        turkcellSmsResponse.ResponseCode = parsedXml.Body.Fault.faultcode;
+                        turkcellSmsResponse.ResponseMessage = parsedXml.Body.Fault.faultstring;
                         turkcellSmsResponse.MessageId = "";
                         turkcellSmsResponse.RequestBody = requests.Item2;
                         turkcellSmsResponse.ResponseBody = response;
                         TransactionManager.LogCritical("Turkcell Otp Failed | " + JsonConvert.SerializeObject(turkcellSmsResponse));
                     }
-                    else
-                    {
-                        textResponse = textResponse.Replace("&lt;", "<");
-                        textResponse = textResponse.Replace("&gt;", ">");
-                        
-                        var parsedResponse = textResponse.DeserializeXml<Model.SendSms.BodyXml.MSGIDRETURN>();
-                        turkcellSmsResponse.ResponseCode = parsedResponse.MSGID_LIST.MSGID > 0 ? "0" : parsedResponse.MSGID_LIST.MSGID.ToString();
-                        turkcellSmsResponse.ResponseMessage = "";
-                        turkcellSmsResponse.MessageId = parsedResponse.MSGID_LIST.MSGID > 0 ? parsedResponse.MSGID_LIST.MSGID.ToString() : "";
-                        turkcellSmsResponse.RequestBody = requests.Item2;
-                        turkcellSmsResponse.ResponseBody = response;
-
-                    }
-
-                }
-                else
-                {
-                    var parsedXml = response.DeserializeXml<Model.SendSms.ErrorXml.Envelope>();
-                    turkcellSmsResponse.ResponseCode = parsedXml.Body.Fault.faultcode;
-                    turkcellSmsResponse.ResponseMessage = parsedXml.Body.Fault.faultstring;
-                    turkcellSmsResponse.MessageId = "";
-                    turkcellSmsResponse.RequestBody = requests.Item2;
-                    turkcellSmsResponse.ResponseBody = response;
-                    TransactionManager.LogCritical("Turkcell Otp Failed | " + JsonConvert.SerializeObject(turkcellSmsResponse));
-                }
+                });
+                
             }
             catch (Exception ex)
             {
@@ -135,38 +146,47 @@ namespace bbt.gateway.messaging.Api.Turkcell
             {
                 HttpContent httpRequest = new StringContent(getSmsStatusXml(turkcellSmsStatusRequest), Encoding.UTF8, "text/xml");
                 using var httpClient = _httpClientFactory.CreateClient("default");
-                var httpResponse = await httpClient.PostAsync(OperatorConfig.QueryService, httpRequest);
-                response = httpResponse.Content.ReadAsStringAsync().Result;
-
-                if (httpResponse.IsSuccessStatusCode)
+                httpClient.Timeout = TimeSpan.FromSeconds(10);
+                HttpResponseMessage httpResponse;
+                await Policy.Handle<HttpRequestException>().RetryAsync(3, (e, r) =>
                 {
-                    
-                    var parsedXml = response.DeserializeXml<Model.SmsStatus.SuccessXml.Envelope>();
-                    var textResponse = parsedXml.Body.getStatusResponse.@return;
-                    if (textResponse.Contains("NOK"))
+                    TransactionManager.LogInformation("Turkcell Polly Retry : " + r);
+                }).ExecuteAsync(async () =>
+                {
+                    httpResponse = await httpClient.PostAsync(OperatorConfig.QueryService, httpRequest);
+                    response = httpResponse.Content.ReadAsStringAsync().Result;
+
+                    if (httpResponse.IsSuccessStatusCode)
                     {
-                        turkcellSmsStatusResponse.ResponseCode = textResponse.Split(",")[1];
-                        turkcellSmsStatusResponse.ResponseMessage = textResponse.Split(",")[2];
-                        turkcellSmsStatusResponse.ResponseBody = response;
+
+                        var parsedXml = response.DeserializeXml<Model.SmsStatus.SuccessXml.Envelope>();
+                        var textResponse = parsedXml.Body.getStatusResponse.@return;
+                        if (textResponse.Contains("NOK"))
+                        {
+                            turkcellSmsStatusResponse.ResponseCode = textResponse.Split(",")[1];
+                            turkcellSmsStatusResponse.ResponseMessage = textResponse.Split(",")[2];
+                            turkcellSmsStatusResponse.ResponseBody = response;
+                        }
+                        else
+                        {
+                            textResponse = textResponse.Replace("&lt;", "<");
+                            textResponse = textResponse.Replace("&gt;", ">");
+                            var parsedResponse = textResponse.DeserializeXml<Model.SmsStatus.BodyXml.STATUSRETURN>();
+                            turkcellSmsStatusResponse.ResponseCode = parsedResponse.STATUS_LIST.STATUS.MSGSTAT.ToString();
+                            turkcellSmsStatusResponse.ResponseMessage = parsedResponse.STATUS_LIST.STATUS.REASON.ToString();
+                            turkcellSmsStatusResponse.ResponseBody = response;
+                        }
+
                     }
                     else
                     {
-                        textResponse = textResponse.Replace("&lt;", "<");
-                        textResponse = textResponse.Replace("&gt;", ">");
-                        var parsedResponse = textResponse.DeserializeXml<Model.SmsStatus.BodyXml.STATUSRETURN>();
-                        turkcellSmsStatusResponse.ResponseCode = parsedResponse.STATUS_LIST.STATUS.MSGSTAT.ToString();
-                        turkcellSmsStatusResponse.ResponseMessage = parsedResponse.STATUS_LIST.STATUS.REASON.ToString();
+                        var parsedXml = response.DeserializeXml<Model.SmsStatus.ErrorXml.Envelope>();
+                        turkcellSmsStatusResponse.ResponseCode = parsedXml.Body.Fault.faultcode;
+                        turkcellSmsStatusResponse.ResponseMessage = parsedXml.Body.Fault.faultstring;
                         turkcellSmsStatusResponse.ResponseBody = response;
                     }
-
-                }
-                else
-                {
-                    var parsedXml = response.DeserializeXml<Model.SmsStatus.ErrorXml.Envelope>();
-                    turkcellSmsStatusResponse.ResponseCode = parsedXml.Body.Fault.faultcode;
-                    turkcellSmsStatusResponse.ResponseMessage = parsedXml.Body.Fault.faultstring;
-                    turkcellSmsStatusResponse.ResponseBody = response;
-                }
+                });
+                
             }
             catch (HttpRequestException ex)
             {

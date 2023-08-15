@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using bbt.gateway.messaging.Workers;
 using Newtonsoft.Json;
+using Polly;
+using System;
 
 namespace bbt.gateway.messaging.Api.Vodafone
 {
@@ -28,29 +30,38 @@ namespace bbt.gateway.messaging.Api.Vodafone
             {
                 var httpRequest = new StringContent(requests.Item1, Encoding.UTF8, "application/soap+xml");
                 using var httpClient = _httpClientFactory.CreateClient("default");
-                var httpResponse = await httpClient.PostAsync(OperatorConfig.SendService, httpRequest);
-                response = httpResponse.Content.ReadAsStringAsync().Result;
+                httpClient.Timeout = TimeSpan.FromSeconds(10);
 
-                if (httpResponse.IsSuccessStatusCode)
+                HttpResponseMessage httpResponse;
+                await Policy.Handle<HttpRequestException>().RetryAsync(3, (e, r) =>
                 {
-                    var parsedXml = response.DeserializeXml<Model.SendSms.SuccessXml.Envelope>();
-                    vodafoneSmsResponse.ResponseCode = parsedXml.Body.sendSMSPacketResponse.@return.deliveryResponseList.deliveryResponse.deliveryInfoList.deliveryInfo.errorCode.ToString();
-                    vodafoneSmsResponse.ResponseMessage = "";
-                    vodafoneSmsResponse.MessageId = parsedXml.Body.sendSMSPacketResponse.@return.deliveryResponseList.deliveryResponse.messageId;
-                    vodafoneSmsResponse.ResponseBody = response;
-                    vodafoneSmsResponse.RequestBody = requests.Item2;
-                }
-                else
+                    TransactionManager.LogInformation("Vofafone Polly Retry : " + r);
+                }).ExecuteAsync(async () =>
                 {
-                    var parsedXml = response.DeserializeXml<Model.SendSms.ErrorXml.Envelope>();
-                    vodafoneSmsResponse.ResponseCode = parsedXml.Body.Fault.Code.Value.Split(":")[1];
-                    vodafoneSmsResponse.ResponseMessage = parsedXml.Body.Fault.Reason.Text.Value;
-                    vodafoneSmsResponse.MessageId = "";
-                    vodafoneSmsResponse.ResponseBody = response;
-                    vodafoneSmsResponse.RequestBody = requests.Item2;
-                    TransactionManager.LogCritical("Vodafone Otp Failed | " + JsonConvert.SerializeObject(vodafoneSmsResponse));
+                    httpResponse = await httpClient.PostAsync(OperatorConfig.SendService, httpRequest);
+                    response = httpResponse.Content.ReadAsStringAsync().Result;
 
-                }
+                    if (httpResponse.IsSuccessStatusCode)
+                    {
+                        var parsedXml = response.DeserializeXml<Model.SendSms.SuccessXml.Envelope>();
+                        vodafoneSmsResponse.ResponseCode = parsedXml.Body.sendSMSPacketResponse.@return.deliveryResponseList.deliveryResponse.deliveryInfoList.deliveryInfo.errorCode.ToString();
+                        vodafoneSmsResponse.ResponseMessage = "";
+                        vodafoneSmsResponse.MessageId = parsedXml.Body.sendSMSPacketResponse.@return.deliveryResponseList.deliveryResponse.messageId;
+                        vodafoneSmsResponse.ResponseBody = response;
+                        vodafoneSmsResponse.RequestBody = requests.Item2;
+                    }
+                    else
+                    {
+                        var parsedXml = response.DeserializeXml<Model.SendSms.ErrorXml.Envelope>();
+                        vodafoneSmsResponse.ResponseCode = parsedXml.Body.Fault.Code.Value.Split(":")[1];
+                        vodafoneSmsResponse.ResponseMessage = parsedXml.Body.Fault.Reason.Text.Value;
+                        vodafoneSmsResponse.MessageId = "";
+                        vodafoneSmsResponse.ResponseBody = response;
+                        vodafoneSmsResponse.RequestBody = requests.Item2;
+                        TransactionManager.LogCritical("Vodafone Otp Failed | " + JsonConvert.SerializeObject(vodafoneSmsResponse));
+                    }
+                });
+                
             }
             catch (HttpRequestException ex)
             {
@@ -83,34 +94,44 @@ namespace bbt.gateway.messaging.Api.Vodafone
             {
                 var xmlBody = new StringContent(getSmsStatusXml(vodafoneSmsStatusRequest), Encoding.UTF8, "application/soap+xml");
                 using var httpClient = _httpClientFactory.CreateClient("default");
-                var httpResponse = await httpClient.PostAsync(OperatorConfig.QueryService, xmlBody);
-                response = httpResponse.Content.ReadAsStringAsync().Result;
+                httpClient.Timeout = TimeSpan.FromSeconds(10);
 
-                if (httpResponse.IsSuccessStatusCode)
+                HttpResponseMessage httpResponse;
+                await Policy.Handle<HttpRequestException>().RetryAsync(3, (e, r) =>
                 {
-                    var parsedXml = response.DeserializeXml<Model.SmsStatus.SuccessXml.Envelope>();
+                    TransactionManager.LogInformation("Turkcell Polly Retry : " + r);
+                }).ExecuteAsync(async () =>
+                {
+                    httpResponse = await httpClient.PostAsync(OperatorConfig.QueryService, xmlBody);
+                    response = httpResponse.Content.ReadAsStringAsync().Result;
 
-                    if (parsedXml.Body.queryPacketStatusResponse.@return.result == 1)
+                    if (httpResponse.IsSuccessStatusCode)
                     {
-                        vodafoneSmsStatusResponse.ResponseCode = parsedXml.Body.queryPacketStatusResponse.@return.deliveryStatusList.deliveryStatus.status.ToString();
-                        vodafoneSmsStatusResponse.ResponseMessage = "";
-                        vodafoneSmsStatusResponse.ResponseBody = response;
+                        var parsedXml = response.DeserializeXml<Model.SmsStatus.SuccessXml.Envelope>();
+
+                        if (parsedXml.Body.queryPacketStatusResponse.@return.result == 1)
+                        {
+                            vodafoneSmsStatusResponse.ResponseCode = parsedXml.Body.queryPacketStatusResponse.@return.deliveryStatusList.deliveryStatus.status.ToString();
+                            vodafoneSmsStatusResponse.ResponseMessage = "";
+                            vodafoneSmsStatusResponse.ResponseBody = response;
+                        }
+                        else
+                        {
+                            vodafoneSmsStatusResponse.ResponseCode = parsedXml.Body.queryPacketStatusResponse.@return.errorCode.ToString();
+                            vodafoneSmsStatusResponse.ResponseMessage = parsedXml.Body.queryPacketStatusResponse.@return.description.ToString();
+                            vodafoneSmsStatusResponse.ResponseBody = response;
+                        }
                     }
                     else
                     {
-                        vodafoneSmsStatusResponse.ResponseCode = parsedXml.Body.queryPacketStatusResponse.@return.errorCode.ToString();
-                        vodafoneSmsStatusResponse.ResponseMessage = parsedXml.Body.queryPacketStatusResponse.@return.description.ToString();
+                        var parsedXml = response.DeserializeXml<Model.SmsStatus.ErrorXml.Envelope>();
+                        vodafoneSmsStatusResponse.ResponseCode = parsedXml.Body.Fault.Code.Value.Split(":")[1];
+                        vodafoneSmsStatusResponse.ResponseMessage = parsedXml.Body.Fault.Reason.Text.Value;
                         vodafoneSmsStatusResponse.ResponseBody = response;
-                    }
-                }
-                else
-                {
-                    var parsedXml = response.DeserializeXml<Model.SmsStatus.ErrorXml.Envelope>();
-                    vodafoneSmsStatusResponse.ResponseCode = parsedXml.Body.Fault.Code.Value.Split(":")[1];
-                    vodafoneSmsStatusResponse.ResponseMessage = parsedXml.Body.Fault.Reason.Text.Value;
-                    vodafoneSmsStatusResponse.ResponseBody = response;
 
-                }
+                    }
+                });
+                
             }
             catch (System.Exception ex)
             {

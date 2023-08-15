@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using bbt.gateway.messaging.Workers;
 using Newtonsoft.Json;
+using Polly;
+using System;
 
 namespace bbt.gateway.messaging.Api.TurkTelekom
 {
@@ -26,30 +28,40 @@ namespace bbt.gateway.messaging.Api.TurkTelekom
                 var requestBody = turkTelekomSmsRequest.SerializeXml();
                 var httpRequest = new StringContent(requestBody, Encoding.UTF8, "text/xml");
                 using var httpClient = _httpClientFactory.CreateClient("default");
-                var httpResponse = await httpClient.PostAsync(OperatorConfig.SendService, httpRequest);
-                response = httpResponse.Content.ReadAsStringAsync().Result;
+                httpClient.Timeout = TimeSpan.FromSeconds(10);
 
-                turkTelekomSmsRequest.Message = turkTelekomSmsRequest.Message.MaskOtpContent();
-                turkTelekomSmsRequest.Password = "XXXX";
-                turkTelekomSmsRequest.UserCode = "XXXX";
-                if (httpResponse.IsSuccessStatusCode)
+                HttpResponseMessage httpResponse;
+                await Policy.Handle<HttpRequestException>().RetryAsync(3, (e, r) =>
                 {
-                    var turkTelekomSmsResponse = response.DeserializeXml<TurkTelekomSmsResponse>();
-                    operatorApiResponse.ResponseCode = turkTelekomSmsResponse.ResponseSms.ResponseCode;
-                    operatorApiResponse.ResponseMessage = turkTelekomSmsResponse.ResponseSms.ResponseMessage;
-                    operatorApiResponse.MessageId = turkTelekomSmsResponse.ResponseSms.MessageId;
-                    operatorApiResponse.RequestBody = turkTelekomSmsRequest.SerializeXml();
-                    operatorApiResponse.ResponseBody = response;
-                }
-                else
+                    TransactionManager.LogInformation("Turk Telekom Polly Retry : " + r);
+                }).ExecuteAsync(async () =>
                 {
-                    operatorApiResponse.ResponseCode = "-99999";
-                    operatorApiResponse.ResponseMessage = "Http Status Code : 500";
-                    operatorApiResponse.MessageId = "";
-                    operatorApiResponse.RequestBody = turkTelekomSmsRequest.SerializeXml();
-                    operatorApiResponse.ResponseBody = response;
-                    TransactionManager.LogCritical("TurkTelekom Otp Failed | " + JsonConvert.SerializeObject(operatorApiResponse));
-                }
+                    httpResponse = await httpClient.PostAsync(OperatorConfig.SendService, httpRequest);
+                    response = httpResponse.Content.ReadAsStringAsync().Result;
+
+                    turkTelekomSmsRequest.Message = turkTelekomSmsRequest.Message.MaskOtpContent();
+                    turkTelekomSmsRequest.Password = "XXXX";
+                    turkTelekomSmsRequest.UserCode = "XXXX";
+                    if (httpResponse.IsSuccessStatusCode)
+                    {
+                        var turkTelekomSmsResponse = response.DeserializeXml<TurkTelekomSmsResponse>();
+                        operatorApiResponse.ResponseCode = turkTelekomSmsResponse.ResponseSms.ResponseCode;
+                        operatorApiResponse.ResponseMessage = turkTelekomSmsResponse.ResponseSms.ResponseMessage;
+                        operatorApiResponse.MessageId = turkTelekomSmsResponse.ResponseSms.MessageId;
+                        operatorApiResponse.RequestBody = turkTelekomSmsRequest.SerializeXml();
+                        operatorApiResponse.ResponseBody = response;
+                    }
+                    else
+                    {
+                        operatorApiResponse.ResponseCode = "-99999";
+                        operatorApiResponse.ResponseMessage = "Http Status Code : 500";
+                        operatorApiResponse.MessageId = "";
+                        operatorApiResponse.RequestBody = turkTelekomSmsRequest.SerializeXml();
+                        operatorApiResponse.ResponseBody = response;
+                        TransactionManager.LogCritical("TurkTelekom Otp Failed | " + JsonConvert.SerializeObject(operatorApiResponse));
+                    }
+                });
+                
 
 
             }
@@ -86,22 +98,32 @@ namespace bbt.gateway.messaging.Api.TurkTelekom
                 var requestBody = turkTelekomSmsStatusRequest.SerializeXml();
                 var httpRequest = new StringContent(requestBody, Encoding.UTF8, "text/xml");
                 using var httpClient = _httpClientFactory.CreateClient("default");
-                var httpResponse = await httpClient.PostAsync(OperatorConfig.QueryService, httpRequest);
-                response = httpResponse.Content.ReadAsStringAsync().Result;
+                httpClient.Timeout = TimeSpan.FromSeconds(10);
 
-                if (httpResponse.IsSuccessStatusCode)
+                HttpResponseMessage httpResponse;
+                await Policy.Handle<HttpRequestException>().RetryAsync(3, (e, r) =>
                 {
-                    var turkTelekomSmsStatusResponse = response.DeserializeXml<TurkTelekomSmsStatusResponse>();
-                    operatorApiTrackingResponse.ResponseCode = turkTelekomSmsStatusResponse.ResponseSmsStatus.Status;
-                    operatorApiTrackingResponse.ResponseMessage = turkTelekomSmsStatusResponse.ResponseSmsStatus.StatusDesc;
-                    operatorApiTrackingResponse.ResponseBody = response;
-                }
-                else
+                    TransactionManager.LogInformation("Turkcell Polly Retry : " + r);
+                }).ExecuteAsync(async () =>
                 {
-                    operatorApiTrackingResponse.ResponseCode = "-99999";
-                    operatorApiTrackingResponse.ResponseMessage = "Http Status Code : 500";
-                    operatorApiTrackingResponse.ResponseBody = response;
-                }
+                    httpResponse = await httpClient.PostAsync(OperatorConfig.QueryService, httpRequest);
+                    response = httpResponse.Content.ReadAsStringAsync().Result;
+
+                    if (httpResponse.IsSuccessStatusCode)
+                    {
+                        var turkTelekomSmsStatusResponse = response.DeserializeXml<TurkTelekomSmsStatusResponse>();
+                        operatorApiTrackingResponse.ResponseCode = turkTelekomSmsStatusResponse.ResponseSmsStatus.Status;
+                        operatorApiTrackingResponse.ResponseMessage = turkTelekomSmsStatusResponse.ResponseSmsStatus.StatusDesc;
+                        operatorApiTrackingResponse.ResponseBody = response;
+                    }
+                    else
+                    {
+                        operatorApiTrackingResponse.ResponseCode = "-99999";
+                        operatorApiTrackingResponse.ResponseMessage = "Http Status Code : 500";
+                        operatorApiTrackingResponse.ResponseBody = response;
+                    }
+                });
+                
 
                 
             }
