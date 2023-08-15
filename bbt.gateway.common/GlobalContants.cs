@@ -11,6 +11,8 @@ namespace bbt.gateway.common.GlobalConstants
         public static readonly string MAIL_CONTENTS_SUFFIX = "MailContents";
         public static readonly string PUSH_CONTENTS_SUFFIX = "PushContents";
 
+        public static readonly string SMS_DAILY_REPORT = "SmsDailyReport";
+
         public static readonly Dictionary<int,OperatorReportInfo> reportOperators = new Dictionary<int, OperatorReportInfo>()
         {
             {1, new(){ OperatorType = OperatorType.Turkcell,isFast = false,isOtp = true,AdditionalOperatorType = null} },

@@ -81,15 +81,12 @@ namespace bbt.gateway.common
 
                 var configuration = builder.Build();
                 
-                Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
                 ApiKeyAuthenticationCredentials k = new ApiKeyAuthenticationCredentials(configuration["ElasticSearch:ApiKey"]);
                 indexFormat = (environmentName != "Prod" ? ( environmentName != "Drc" ? "nonprod-" : "drc") : "prod-") + indexFormat;
                 Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .Enrich.WithEnvironmentName()
                 .Enrich.WithMachineName()
-                .WriteTo.Console()
-                .WriteTo.Debug()
                 .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(configuration["ElasticSearch:Url"]))
                 {
                     IndexFormat = indexFormat + "-{0:yyyy-MM}",
