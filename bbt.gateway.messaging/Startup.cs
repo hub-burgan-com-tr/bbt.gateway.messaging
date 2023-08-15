@@ -191,7 +191,7 @@ namespace bbt.gateway.messaging
                 opt.Configuration = $"{Configuration["Redis:Host"]}:{Configuration["Redis:Port"]},password={Configuration["Redis:Password"]}";
             });
             
-            services.AddDbContext<DatabaseContext>(o => { o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("bbt.gateway.messaging"));o.EnableSensitiveDataLogging(); });
+            services.AddDbContext<DatabaseContext>(o => { o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("bbt.gateway.messaging"));});
             //services.AddDbContext<DodgeDatabaseContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DodgeConnection")));
             services.AddDbContext<SmsBankingDatabaseContext>(o => o.UseSqlServer(Configuration.GetConnectionString("SmsBankingConnection")));
             services.Configure<UserSettings>(Configuration.GetSection(nameof(UserSettings)));

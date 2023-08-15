@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "bbt.gateway.worker.SmsDailyReport": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
