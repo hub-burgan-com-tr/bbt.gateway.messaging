@@ -14,20 +14,18 @@ namespace bbt.gateway.worker.SmsDailyReport
     {
         private readonly ITracer _tracer;
         private readonly LogManager _logManager;
-        private readonly DatabaseContext _dbContext;
         private IHostApplicationLifetime _hostApplicationLifetime;
         private readonly IRepositoryManager _repositoryManager;
         private readonly IConfiguration _configuration;
         private readonly DaprClient _daprClient;
 
         public SmsDailyReportWorker(LogManager logManager,ITracer tracer,
-            DbContextOptions<DatabaseContext> dbContextOptions,IRepositoryManager repositoryManager,
+            IRepositoryManager repositoryManager,
             IHostApplicationLifetime hostApplicationLifetime,IConfiguration configuration,DaprClient daprClient)
         {
             _logManager = logManager;
             _tracer = tracer;
             _repositoryManager = repositoryManager;
-            _dbContext = new DatabaseContext(dbContextOptions);
             _hostApplicationLifetime = hostApplicationLifetime;
             _configuration = configuration;
             _daprClient = daprClient;
@@ -60,7 +58,8 @@ namespace bbt.gateway.worker.SmsDailyReport
                                     operatorReportInfo = operatorReportInfo.AdditionalOperatorType;
                                     res += await GetOperatorInfo(dt, dt.AddDays(1), operatorReportInfo.OperatorType, operatorReportInfo.isOtp, operatorReportInfo.isFast);
                                 }
-                                await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, GlobalConstants.SMS_DAILY_REPORT+"_"+item.Key, res);
+                                var key = GlobalConstants.SMS_DAILY_REPORT + "_" + item.Key + "_" + dt.ToShortDateString() + "_" + dt.AddDays(1).ToShortDateString();
+                                await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE,key , res);
                             }
                         }
                         
@@ -68,7 +67,6 @@ namespace bbt.gateway.worker.SmsDailyReport
                     }
                     catch (Exception ex)
                     {
-                        await _dbContext.DisposeAsync();
                         _logManager.LogError(ex.ToString());
                         _tracer.CaptureException(ex);
                         _hostApplicationLifetime.StopApplication();
@@ -81,7 +79,6 @@ namespace bbt.gateway.worker.SmsDailyReport
             catch (Exception ex)
             {
                 _logManager.LogError(ex.ToString());
-                await _dbContext.DisposeAsync();
                 _hostApplicationLifetime.StopApplication();
             }
             _logManager.LogInformation("Sms Daily Report Finished");
