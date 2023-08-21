@@ -60,7 +60,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
 
                 var key = GlobalConstants.SMS_DAILY_REPORT + "_" + @operator + "_" + startDate.ToShortDateString() + "_" + endDate.ToShortDateString();
-                var res = _daprClient.GetStateAsync<OperatorReport>(GlobalConstants.DAPR_STATE_STORE,key);
+                var res = await _daprClient.GetStateAsync<OperatorReport>(GlobalConstants.DAPR_STATE_STORE,key);
 
                 return Ok(res);
             }
