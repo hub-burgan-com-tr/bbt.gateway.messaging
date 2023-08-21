@@ -87,6 +87,7 @@ namespace bbt.gateway.common
                 .Enrich.FromLogContext()
                 .Enrich.WithEnvironmentName()
                 .Enrich.WithMachineName()
+                .WriteTo.Console()
                 .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(configuration["ElasticSearch:Url"]))
                 {
                     IndexFormat = indexFormat + "-{0:yyyy-MM}",
