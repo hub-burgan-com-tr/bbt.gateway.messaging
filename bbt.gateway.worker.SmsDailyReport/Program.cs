@@ -18,7 +18,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IRepositoryManager, RepositoryManager>();
         services.AddSingleton<LogManager>();
         services.AddDaprClient();
-
+        Console.WriteLine("DI Finished ...");
     })
     .UseAllElasticApm()
     .Build();
