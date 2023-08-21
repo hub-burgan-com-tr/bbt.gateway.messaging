@@ -23,16 +23,19 @@ namespace bbt.gateway.worker.SmsDailyReport
             IRepositoryManager repositoryManager,
             IHostApplicationLifetime hostApplicationLifetime,IConfiguration configuration,DaprClient daprClient)
         {
+            Console.WriteLine("Constructor started");
             _logManager = logManager;
             _tracer = tracer;
             _repositoryManager = repositoryManager;
             _hostApplicationLifetime = hostApplicationLifetime;
             _configuration = configuration;
             _daprClient = daprClient;
+            Console.WriteLine("Constructor finished");
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            Console.WriteLine("Execution start");
             _logManager.LogInformation("Sms Daily Report Triggered");
             try
             {
