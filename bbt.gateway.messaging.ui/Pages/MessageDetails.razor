@@ -29,7 +29,7 @@
             </span>
         </HeaderTemplate>
         <ChildContent> 
-            @if (Txn.TransactionType == TransactionType.Otp || Txn.TransactionType == TransactionType.TransactionalSms)
+            @if (Txn.TransactionType == TransactionType.Otp )
         {
             @if (responseLogs.Count > 0)
             {
@@ -73,6 +73,49 @@
                 <div class="col-12">
                     <RadzenCard>
                         <span>@ErrorDetail</span>
+                    </RadzenCard>
+                </div>
+            }
+
+        }
+        else @if(Txn.TransactionType == TransactionType.TransactionalSms)
+        {
+            @if (responseLogTransactionalSms.Count > 0)
+            {
+                @foreach (var responseLog in responseLogTransactionalSms)
+                {
+                    <div class="row">
+                        <div class="col-4">
+                            <RadzenCard>
+                                <span>Operator Cevap Kodu</span>
+                                <RadzenTextBox ReadOnly Value="@responseLog.OperatorResponseCode.ToString()" />
+                            </RadzenCard>
+                        </div>
+
+                        <div class="col-4">
+                            <RadzenCard>
+                                <span>Response ID</span>
+                                <RadzenTextBox ReadOnly Value="@responseLog.StatusQueryId" />
+                            </RadzenCard>
+                        </div>
+
+                    </div>
+                    <div class="row mt-1">
+                        <div class="col-12">
+                            <RadzenCard>
+                                <span>Operator Cevap Açıklama</span>
+                                <RadzenTextArea ReadOnly Value="@responseLog.OperatorResponseMessage" />
+                            </RadzenCard>
+                        </div>
+                    </div>
+                }
+
+            }
+            else
+            {
+                <div class="col-12">
+                    <RadzenCard>
+                        <span>Response Log Bulunamadı.</span>
                     </RadzenCard>
                 </div>
             }

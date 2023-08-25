@@ -11,6 +11,7 @@ namespace bbt.gateway.messaging.ui.Pages
         [Parameter] public Transaction Txn { get; set; }
 
         private ICollection<OtpResponseLog> responseLogs;
+        private ICollection<SmsResponseLog> responseLogTransactionalSms;
         private ICollection<MailResponseLog> responseLogsMail;
         private ICollection<PushNotificationResponseLog> responseLogsPush;
         private ICollection<OtpTrackingLog> trackingsLogs;
@@ -21,7 +22,9 @@ namespace bbt.gateway.messaging.ui.Pages
 
         protected override void OnInitialized()
         {
-            message = Txn.OtpRequestLog == null ? "" : (Txn.OtpRequestLog.Content ?? "");  
+            message = Txn.OtpRequestLog == null ? (Txn.SmsRequestLog==null?"":Txn.SmsRequestLog.content)
+                : (Txn.OtpRequestLog.Content ?? "");
+            responseLogTransactionalSms = GetSmsResponseLogs();
             responseLogs = GetOtpResponseLogs();
             responseLogsMail = GetMailResponseLogs();
             responseLogsPush=GetPushResponseLogs();
@@ -90,6 +93,12 @@ namespace bbt.gateway.messaging.ui.Pages
             if (Txn.OtpRequestLog == null)
                 return new List<OtpResponseLog>();
             return Txn.OtpRequestLog.ResponseLogs ?? new List<OtpResponseLog>();
+        }
+        private ICollection<SmsResponseLog> GetSmsResponseLogs()
+        {
+            if (Txn.SmsRequestLog == null)
+                return new List<SmsResponseLog>();
+            return Txn.SmsRequestLog.ResponseLogs ?? new List<SmsResponseLog>();
         }
         private ICollection<MailResponseLog> GetMailResponseLogs()
         {
