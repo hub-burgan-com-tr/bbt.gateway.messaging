@@ -52,8 +52,6 @@ namespace bbt.gateway.messaging.Middlewares
                 _transactionManager.Transaction.Request = body;
                 _transactionManager.Transaction.IpAdress = ipAdress;
 
-
-                _transactionManager.LogError("Request Body :"+body);
                 //Deserialize Request Body 
                 _middlewareRequest = JsonConvert.DeserializeObject<MiddlewareRequest>(body);
 

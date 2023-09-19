@@ -37,5 +37,10 @@ namespace bbt.gateway.common.Models
                 return $"{CountryCode}{Prefix}{Number}";
             }
         }
+
+        public string ConcatenateStringSend(int country,int prefix,int number)
+        {
+            return $"{CountryCode}{Prefix.ToString().PadLeft(prefix, '0')}{Number.ToString().PadLeft(number, '0')}";
+        }
     }
 }

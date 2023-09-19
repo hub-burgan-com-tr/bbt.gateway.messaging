@@ -35,7 +35,8 @@ namespace bbt.gateway.messaging.Workers
             Func<OperatorType, IOperatorGateway> operatorRepository,
             IRepositoryManager repositoryManager,
             ITransactionManager transactionManager,
-            InstantReminder instantReminder)
+            InstantReminder instantReminder,
+            InfobipSender infobipSender)
         {
             _headerManager = headerManager;
             _operatorRepository = operatorRepository;
@@ -630,7 +631,7 @@ namespace bbt.gateway.messaging.Workers
 
             if (phoneConfiguration.Operator == OperatorType.Foreign
                 || phoneConfiguration.Operator == OperatorType.ForeignVodafone)
-            {
+            { 
                 var resultForeign = await gateway.SendOtpForeign(_dataV2.Phone.MapTo<Phone>(), header.BuildContentForSms(_dataV2.Content), header);
                 return resultForeign;
             }

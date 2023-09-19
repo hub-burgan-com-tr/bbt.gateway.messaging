@@ -36,6 +36,7 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using bbt.gateway.common.Api.MessagingGateway;
+using bbt.gateway.messaging.Api.Infobip;
 
 namespace bbt.gateway.messaging
 {
@@ -238,9 +239,11 @@ namespace bbt.gateway.messaging
             services.AddScoped<OperatordEngage>();
             services.AddScoped<OperatordEngageMock>();
             services.AddScoped<OperatorCodec>();
+            services.AddScoped<OperatorInfobip>();
             services.AddScoped<TurkTelekomApi>();
             services.AddScoped<VodafoneApi>();
             services.AddScoped<TurkcellApi>();
+            services.AddScoped<IInfobipApi,InfobipApi>();
             services.AddScoped<TurkTelekomApiMock>();
             services.AddScoped<VodafoneApiMock>();
             services.AddScoped<TurkcellApiMock>();
@@ -294,6 +297,7 @@ namespace bbt.gateway.messaging
             });
 
 
+            services.AddScoped<InfobipSender>();
             services.AddScoped<OtpSender>();
             services.AddScoped<dEngageSender>();
             services.AddScoped<CodecSender>();
