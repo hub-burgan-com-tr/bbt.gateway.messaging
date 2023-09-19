@@ -27,17 +27,20 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly ITransactionManager _transactionManager;
         private readonly dEngageSender _dEngageSender;
         private readonly CodecSender _codecSender;
+        private readonly InfobipSender _infobipSender;
         private readonly IRepositoryManager _repositoryManager;
         private readonly ITracer _tracer;
         private readonly IConfiguration _configuration;
         private readonly IMessagingGatewayApi _messagingGatewayApi;
         public Messaging(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender
-            , IRepositoryManager repositoryManager, CodecSender codecSender,IConfiguration configuration,IMessagingGatewayApi messagingGatewayApi)
+            , IRepositoryManager repositoryManager, CodecSender codecSender,IConfiguration configuration,IMessagingGatewayApi messagingGatewayApi
+            ,InfobipSender infobipSender)
         {
             _transactionManager = transactionManager;
             _otpSender = otpSender;
             _dEngageSender = dEngageSender;
             _codecSender = codecSender;
+            _infobipSender = infobipSender;
             _repositoryManager = repositoryManager;
             _configuration = configuration;
             _messagingGatewayApi = messagingGatewayApi;
@@ -156,16 +159,38 @@ namespace bbt.gateway.messaging.Controllers.v2
 
             if (ModelState.IsValid)
             {
+                var codecOperator = await _repositoryManager.Operators.GetOperatorAsNoTracking(common.Models.OperatorType.Codec);
+                var infobipOperator = await _repositoryManager.Operators.GetOperatorAsNoTracking(common.Models.OperatorType.Infobip);
                 if (data.SmsType == SmsTypes.Otp)
                 {
                     return await _tracer.CaptureTransaction("OtpSending", ApiConstants.TypeRequest, async () =>
                     {
-                        return Ok(await _otpSender.SendMessageV2(data));
+                        if (data.Phone.CountryCode != 90)
+                        {
+                            if(infobipOperator?.Status == common.Models.OperatorStatus.Active)
+                            {
+                                return Ok(await _infobipSender.SendSms(data));
+                            }
+
+                            return Ok(await _otpSender.SendMessageV2(data));
+                        }
+                        else
+                        {
+                            return Ok(await _otpSender.SendMessageV2(data));
+                        }
                     });
                 }
                 else
                 {
-                    var codecOperator = await _repositoryManager.Operators.GetOperatorAsNoTracking(common.Models.OperatorType.Codec);
+                    
+                    if(data.Phone.CountryCode != 90 && infobipOperator?.Status == common.Models.OperatorStatus.Active)
+                    {
+                        return await _tracer.CaptureTransaction("SmsSendingInfobip", ApiConstants.TypeRequest, async () =>
+                        {
+                            return Ok(await _infobipSender.SendSms(data));
+                        });
+                    }
+
                     if (codecOperator.Status == common.Models.OperatorStatus.Active)
                     {
                         return await _tracer.CaptureTransaction("SmsSendingCodec", ApiConstants.TypeRequest, async () =>
@@ -404,13 +429,33 @@ namespace bbt.gateway.messaging.Controllers.v2
 
             if (ModelState.IsValid)
             {
+                var codecOperator = await _repositoryManager.Operators.GetOperatorAsNoTracking(common.Models.OperatorType.Codec);
+                var infobipOperator = await _repositoryManager.Operators.GetOperatorAsNoTracking(common.Models.OperatorType.Infobip);
                 if (data.SmsType == SmsTypes.Otp)
                 {
-                    return Ok(await _otpSender.SendMessageV2(_data));
+                    if (_data.Phone.CountryCode != 90)
+                    {
+                        if (infobipOperator?.Status == common.Models.OperatorStatus.Active)
+                        {
+                            return Ok(await _infobipSender.SendSms(_data));
+                        }
+
+                        return Ok(await _otpSender.SendMessageV2(_data));
+                    }
+                    else
+                    {
+                        return Ok(await _otpSender.SendMessageV2(_data));
+                    }
                 }
                 else
                 {
-                    var codecOperator = await _repositoryManager.Operators.GetOperatorAsNoTracking(common.Models.OperatorType.Codec);
+                    if(_data.Phone.CountryCode != 90 && infobipOperator?.Status == common.Models.OperatorStatus.Active)
+                    {
+                        return await _tracer.CaptureTransaction("SmsSendingInfobip", ApiConstants.TypeRequest, async () =>
+                        {
+                            return Ok(await _infobipSender.SendSms(_data));
+                        });
+                    }
                     if (codecOperator.Status == common.Models.OperatorStatus.Active)
                     {
                         return await _tracer.CaptureTransaction("SmsSendingCodec", ApiConstants.TypeRequest, async () =>

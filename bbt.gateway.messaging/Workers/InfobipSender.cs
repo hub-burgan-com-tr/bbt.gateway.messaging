@@ -1,0 +1,138 @@
+﻿using bbt.gateway.common.Extensions;
+using bbt.gateway.common.Models;
+using bbt.gateway.common.Models.v2;
+using bbt.gateway.common.Repositories;
+using bbt.gateway.messaging.Workers.OperatorGateway;
+using System.Threading.Tasks;
+
+namespace bbt.gateway.messaging.Workers
+{
+    public class InfobipSender
+    {
+        private readonly HeaderManager _headerManager;
+        private readonly IRepositoryManager _repositoryManager;
+        private readonly ITransactionManager _transactionManager;
+        private readonly OperatorInfobip _operatorInfobip;
+
+        public InfobipSender(HeaderManager headerManager,
+            IRepositoryManager repositoryManager,
+            ITransactionManager transactionManager,
+            OperatorInfobip operatorInfobip
+        )
+        {
+            _headerManager = headerManager;
+            _repositoryManager = repositoryManager;
+            _transactionManager = transactionManager;
+            _operatorInfobip = operatorInfobip;
+        }
+
+        public async Task<SmsTrackingLog> CheckSms(common.Models.v2.CheckFastSmsRequest checkFastSmsRequest)
+        {
+            _operatorInfobip.Type = OperatorType.Infobip;
+            var response = await _operatorInfobip.CheckSms(checkFastSmsRequest.StatusQueryId);
+
+            //if (response != null)
+            //{
+            //    if (response.ResultSet.Code == 0)
+            //    {
+            //        return response.BuildCodecTrackingResponse(checkFastSmsRequest);
+            //    }
+            //    else
+            //    {
+            //        return new SmsTrackingLog()
+            //        {
+            //            Id = System.Guid.NewGuid(),
+            //            LogId = checkFastSmsRequest.SmsRequestLogId,
+            //            Status = SmsTrackingStatus.SystemError,
+            //            Detail = "",
+            //            StatusReason = $"Codec operatöründen bilgi alınamadı. Response Code : {response.ResultSet.Code} | Response Message : {response.ResultSet.Description}",
+
+            //        };
+            //    }
+            //}
+            //else
+            //{
+            //    return new SmsTrackingLog()
+            //    {
+            //        Id = System.Guid.NewGuid(),
+            //        LogId = checkFastSmsRequest.SmsRequestLogId,
+            //        Status = SmsTrackingStatus.SystemError,
+            //        Detail = "",
+            //        StatusReason = "Codec operatöründen bilgi alınamadı.",
+
+            //    };
+            //}
+            return null;
+        }
+
+        public async Task<InfobipSmsResponse> SendSms(common.Models.v2.SmsRequest sendSmsRequest)
+        {
+            InfobipSmsResponse sendSmsResponse = new InfobipSmsResponse()
+            {
+                TxnId = _transactionManager.TxnId,
+            };
+
+            var header =  _headerManager.Get(sendSmsRequest.SmsType);
+
+            if (sendSmsRequest.Sender != common.Models.v2.SenderType.AutoDetect)
+                _transactionManager.CustomerRequestInfo.BusinessLine = sendSmsRequest.Sender == common.Models.v2.SenderType.On ? "X" : "B";
+
+            _operatorInfobip.Type = OperatorType.Infobip;
+
+            var smsRequest = new SmsRequestLog()
+            {
+                Operator = _operatorInfobip.Type,
+                content = header.SmsPrefix + " " + sendSmsRequest.Content.MaskFields() + " " + header.SmsSuffix,
+                TemplateId = "",
+                TemplateParams = "",
+                SmsType = (common.Models.SmsTypes)sendSmsRequest.SmsType,
+                Phone = new() { CountryCode = sendSmsRequest.Phone.CountryCode, Prefix = sendSmsRequest.Phone.Prefix, Number = sendSmsRequest.Phone.Number },
+                CreatedBy = sendSmsRequest.Process.MapTo<common.Models.Process>()
+            };
+
+            var otpRequest = new OtpRequestLog()
+            {
+                Content = header.SmsPrefix + " " + sendSmsRequest.Content.MaskOtpContent() + " " + header.SmsSuffix,
+                CreatedBy = sendSmsRequest.Process.MapTo<common.Models.Process>(),
+                Phone = new() { CountryCode = sendSmsRequest.Phone.CountryCode, Prefix = sendSmsRequest.Phone.Prefix, Number = sendSmsRequest.Phone.Number },
+                PhoneConfiguration = _transactionManager.OtpRequestInfo.PhoneConfiguration
+            };
+
+            if (_transactionManager.Transaction.TransactionType == TransactionType.Otp)
+            {
+                await _repositoryManager.OtpRequestLogs.AddAsync(otpRequest);
+                _transactionManager.Transaction.OtpRequestLog = otpRequest;
+            }
+            else
+            {   
+                smsRequest.PhoneConfiguration = _transactionManager.SmsRequestInfo.PhoneConfiguration;
+                _transactionManager.Transaction.SmsRequestLog = smsRequest;
+
+                await _repositoryManager.SmsRequestLogs.AddAsync(smsRequest);
+            }
+            
+            
+            var response = await _operatorInfobip.SendSms(sendSmsRequest.Phone.MapTo<common.Models.Phone>(), header.BuildContentForSms(sendSmsRequest.Content));
+
+            if (_transactionManager.Transaction.TransactionType == TransactionType.Otp)
+            {
+                otpRequest.ResponseLogs.Add(response.Item2);
+                sendSmsResponse.Status = response.Item2.ResponseCode == SendSmsResponseStatus.Success ? InfobipResponseCodes.Success : InfobipResponseCodes.Error;
+            }
+            else
+            {
+                smsRequest.ResponseLogs.Add(response.Item1);
+                sendSmsResponse.Status = response.Item1.OperatorResponseCode ==  0 ? InfobipResponseCodes.Success : InfobipResponseCodes.Error;
+            }
+
+            return sendSmsResponse;
+        }
+
+
+       
+
+    }
+
+
+
+}

@@ -9,6 +9,7 @@
 	<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	<DockerfileContext>.</DockerfileContext>
 	<DocumentationFile>C:\WorkFile\bbt.gateway.messaging\bbt.gateway.messaging\wwwroot\bbt.gateway.messaging.xml</DocumentationFile>
+	<ThreadPoolMinThreads>10</ThreadPoolMinThreads>
   </PropertyGroup>
   
   <ItemGroup>

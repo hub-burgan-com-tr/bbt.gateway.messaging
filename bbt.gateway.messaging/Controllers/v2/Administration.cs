@@ -4,6 +4,7 @@ using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
 using bbt.gateway.messaging.Workers;
+using Dapr.Client;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,9 +33,10 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly CodecSender _codecSender;
         private readonly dEngageSender _dEngageSender;
         private readonly OtpSender _otpSender;
+        private readonly DaprClient _daprClient;
         public Administration(HeaderManager headerManager, OperatorManager operatorManager,
             IRepositoryManager repositoryManager,
-            CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender)
+            CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender,DaprClient daprClient)
         {
             _headerManager = headerManager;
             _operatorManager = operatorManager;
@@ -42,6 +44,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             _codecSender = codecSender;
             _dEngageSender = dEngageSender;
             _otpSender = otpSender;
+            _daprClient = daprClient;
         }
 
         [SwaggerOperation(
@@ -55,13 +58,9 @@ namespace bbt.gateway.messaging.Controllers.v2
         {
             try
             {
-                OperatorReportInfo operatorReportInfo = GlobalConstants.reportOperators[@operator];
-                var res = await GetOperatorInfo(startDate, endDate, operatorReportInfo.OperatorType, operatorReportInfo.isOtp, operatorReportInfo.isFast);
-                while (operatorReportInfo.AdditionalOperatorType != null)
-                {
-                    operatorReportInfo = operatorReportInfo.AdditionalOperatorType;
-                    res += await GetOperatorInfo(startDate, endDate, operatorReportInfo.OperatorType, operatorReportInfo.isOtp, operatorReportInfo.isFast);
-                }
+
+                var key = GlobalConstants.SMS_DAILY_REPORT + "_" + @operator + "_" + startDate.ToShortDateString() + "_" + endDate.ToShortDateString();
+                var res = await _daprClient.GetStateAsync<OperatorReport>(GlobalConstants.DAPR_STATE_STORE,key);
 
                 return Ok(res);
             }
