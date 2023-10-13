@@ -31,38 +31,15 @@ namespace bbt.gateway.messaging.Workers
             _operatorInfobip.Type = OperatorType.Infobip;
             var response = await _operatorInfobip.CheckSms(checkFastSmsRequest.StatusQueryId);
 
-            //if (response != null)
-            //{
-            //    if (response.ResultSet.Code == 0)
-            //    {
-            //        return response.BuildCodecTrackingResponse(checkFastSmsRequest);
-            //    }
-            //    else
-            //    {
-            //        return new SmsTrackingLog()
-            //        {
-            //            Id = System.Guid.NewGuid(),
-            //            LogId = checkFastSmsRequest.SmsRequestLogId,
-            //            Status = SmsTrackingStatus.SystemError,
-            //            Detail = "",
-            //            StatusReason = $"Codec operatöründen bilgi alınamadı. Response Code : {response.ResultSet.Code} | Response Message : {response.ResultSet.Description}",
+            return response.BuildInfobipTrackingResponse(checkFastSmsRequest);
+        }
 
-            //        };
-            //    }
-            //}
-            //else
-            //{
-            //    return new SmsTrackingLog()
-            //    {
-            //        Id = System.Guid.NewGuid(),
-            //        LogId = checkFastSmsRequest.SmsRequestLogId,
-            //        Status = SmsTrackingStatus.SystemError,
-            //        Detail = "",
-            //        StatusReason = "Codec operatöründen bilgi alınamadı.",
+        public async Task<OtpTrackingLog> CheckSms(common.Models.CheckSmsRequest checkSmsRequest)
+        {
+            _operatorInfobip.Type = OperatorType.Infobip;
+            var response = await _operatorInfobip.CheckSms(checkSmsRequest.StatusQueryId);
 
-            //    };
-            //}
-            return null;
+            return response.BuildInfobipTrackingResponse(checkSmsRequest);
         }
 
         public async Task<InfobipSmsResponse> SendSms(common.Models.v2.SmsRequest sendSmsRequest)

@@ -307,6 +307,16 @@ namespace bbt.gateway.messaging
             { "FA", new SmsApiTrackingResponse { ReturnMessage = "Mesaj iletilemedi.", SmsTrackingStatus = SmsTrackingStatus.SystemError } },
         };
 
+        public static readonly Dictionary<string, SmsApiTrackingResponse> infobipTrackingErrorCodes =
+        new()
+        {
+            { "1", new SmsApiTrackingResponse { ReturnMessage = "İletim raporu bekleniyor.", SmsTrackingStatus = SmsTrackingStatus.Pending } },
+            { "2", new SmsApiTrackingResponse { ReturnMessage = "Mesaj iletilemedi", SmsTrackingStatus = SmsTrackingStatus.SystemError } },
+            { "3", new SmsApiTrackingResponse { ReturnMessage = "Mesaj iletildi.", SmsTrackingStatus = SmsTrackingStatus.Delivered } },
+            { "4", new SmsApiTrackingResponse { ReturnMessage = "Mesaj zaman aşımına uğradı.", SmsTrackingStatus = SmsTrackingStatus.Expired } },
+            { "5", new SmsApiTrackingResponse { ReturnMessage = "Mesaj kabul edilmedi.", SmsTrackingStatus = SmsTrackingStatus.DeviceRejected } }
+        };
+
         public static readonly Dictionary<OperatorType, Dictionary<string, SmsApiTrackingResponse>> OperatorTrackingErrorCodes =
         new()
         {
@@ -315,7 +325,8 @@ namespace bbt.gateway.messaging
             { OperatorType.Turkcell, TurkcellTrackingErrorCodes },
             { OperatorType.Codec, CodecTrackingErrorCodes},
             { OperatorType.dEngageBurgan, dEngageTrackingErrorCodes },
-            { OperatorType.dEngageOn, dEngageTrackingErrorCodes}
+            { OperatorType.dEngageOn, dEngageTrackingErrorCodes},
+            { OperatorType.Infobip,infobipTrackingErrorCodes}
         };
 
 

@@ -4,6 +4,7 @@
     {
         public bool IsSuccess { get; set; }
         public string Message { get; set; }
-        public InfobipSmsStatus Status { get; set; }
+        public int GroupId { get; set; }
+        public int SubCode { get; set; }
     }
 }
