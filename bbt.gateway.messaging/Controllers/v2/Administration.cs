@@ -5,7 +5,6 @@ using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
 using bbt.gateway.messaging.Workers;
 using Dapr.Client;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
@@ -33,10 +32,11 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly CodecSender _codecSender;
         private readonly dEngageSender _dEngageSender;
         private readonly OtpSender _otpSender;
+        private readonly InfobipSender _infobipSender;
         private readonly DaprClient _daprClient;
         public Administration(HeaderManager headerManager, OperatorManager operatorManager,
             IRepositoryManager repositoryManager,
-            CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender,DaprClient daprClient)
+            CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender, InfobipSender infobipSender, DaprClient daprClient)
         {
             _headerManager = headerManager;
             _operatorManager = operatorManager;
@@ -45,6 +45,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             _dEngageSender = dEngageSender;
             _otpSender = otpSender;
             _daprClient = daprClient;
+            _infobipSender = infobipSender;
         }
 
         [SwaggerOperation(
@@ -60,7 +61,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
 
                 var key = GlobalConstants.SMS_DAILY_REPORT + "_" + @operator + "_" + startDate.ToShortDateString() + "_" + endDate.ToShortDateString();
-                var res = await _daprClient.GetStateAsync<OperatorReport>(GlobalConstants.DAPR_STATE_STORE,key);
+                var res = await _daprClient.GetStateAsync<OperatorReport>(GlobalConstants.DAPR_STATE_STORE, key);
 
                 return Ok(res);
             }
@@ -83,17 +84,23 @@ namespace bbt.gateway.messaging.Controllers.v2
 
             if (ModelState.IsValid)
             {
-                if (data.Operator == common.Models.OperatorType.Codec)
+                if (data.Operator == OperatorType.Codec)
                 {
                     var res = await _codecSender.CheckSms(data);
                     return Ok(res);
                 }
-                if (data.Operator == common.Models.OperatorType.dEngageOn ||
-                    data.Operator == common.Models.OperatorType.dEngageBurgan)
+                if (data.Operator == OperatorType.dEngageOn ||
+                    data.Operator == OperatorType.dEngageBurgan)
                 {
                     var res = await _dEngageSender.CheckSms(data);
                     return Ok(res);
                 }
+                if (data.Operator == OperatorType.Infobip)
+                {
+                    var res = await _infobipSender.CheckSms(data);
+                    return Ok(res);
+                }
+
                 return BadRequest("Unknown Operator");
             }
             else
@@ -116,8 +123,16 @@ namespace bbt.gateway.messaging.Controllers.v2
 
             if (ModelState.IsValid)
             {
-                var res = await _otpSender.CheckMessage(data.MapTo<common.Models.CheckSmsRequest>());
-                return Ok(res);
+                if (data.Operator != OperatorType.Infobip)
+                {
+                    var res = await _otpSender.CheckMessage(data.MapTo<common.Models.CheckSmsRequest>());
+                    return Ok(res);
+                }
+                else
+                {
+                    var res = await _infobipSender.CheckSms(data.MapTo<common.Models.CheckSmsRequest>());
+                    return Ok(res);
+                }
 
             }
             else

@@ -20,9 +20,79 @@ namespace bbt.gateway.messaging.Api.Infobip
             Type = OperatorType.Infobip;
             _httpClientFactory = httpClientFactory;
         }
-        public Task<InfobipApiSmsStatusResponse> CheckSmsStatus(InfobipSmsStatusRequest infobipSmsStatusRequest)
+        public async Task<InfobipApiSmsStatusResponse> CheckSmsStatus(InfobipSmsStatusRequest infobipSmsStatusRequest)
         {
-            throw new System.NotImplementedException();
+            InfobipApiSmsStatusResponse infobipApiSmsStatusResponse = new InfobipApiSmsStatusResponse();
+            try
+            {
+                using var client = _httpClientFactory.CreateClient();
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("App", OperatorConfig.AuthToken);
+
+                HttpResponseMessage httpResponse;
+                await Policy.Handle<HttpRequestException>().RetryAsync(5,
+                (e, r) =>
+                {
+                    TransactionManager.LogError($"Infobip Retry : {r}");
+                    if (r == 5)
+                    {
+                        TransactionManager.LogError($"Critical Error Occured at Infobip Services | ErrorCode:499");
+                        infobipApiSmsStatusResponse.IsSuccess = false;
+                        infobipApiSmsStatusResponse.Message = "Couldn't Access To Infobip";
+                    }
+                }).ExecuteAsync(async () =>
+                {
+                    httpResponse = await client.GetAsync(OperatorConfig.QueryService+"?messageId="+infobipSmsStatusRequest.MessageId);
+                    if (httpResponse.IsSuccessStatusCode)
+                    {
+                        var responseText = await httpResponse.Content.ReadAsStringAsync();
+                        var response = JsonConvert.DeserializeObject<InfobipSmsStatusResponse>(responseText);
+                        var statusResult = response.results.FirstOrDefault();
+                        infobipApiSmsStatusResponse.IsSuccess = true;
+                        infobipApiSmsStatusResponse.Message = "";
+                        if (statusResult != null)
+                        {
+                            if (statusResult.status != null)
+                            {
+                                infobipApiSmsStatusResponse.GroupId = statusResult.status.groupId;
+                                infobipApiSmsStatusResponse.SubCode = statusResult.status.id;
+                            }
+                            else
+                            {
+                                infobipApiSmsStatusResponse.GroupId = 1;
+                                infobipApiSmsStatusResponse.SubCode = 3;
+                            }
+                        }
+                        else
+                        {
+                            infobipApiSmsStatusResponse.GroupId = 1;
+                            infobipApiSmsStatusResponse.SubCode = 3;
+                        }
+                        
+                    }
+                    else
+                    {
+                        var errorResponse = await httpResponse.Content.ReadAsStringAsync();
+                        TransactionManager.LogError($"Critical Error Occured at Infobip Services | ErrorCode:498 | " + errorResponse);
+                        var response = JsonConvert.DeserializeObject<InfobipErrorResponse>(errorResponse);
+                        var errorMessage = response.requestError.serviceException.text;
+                        infobipApiSmsStatusResponse.IsSuccess = false;
+                        infobipApiSmsStatusResponse.Message = errorMessage;
+                        infobipApiSmsStatusResponse.GroupId = 1;
+                        infobipApiSmsStatusResponse.SubCode = 3;
+                    }
+                });
+
+
+            }
+            catch (System.Exception ex)
+            {
+                TransactionManager.LogError($"Critical Error Occured at Infobip Services | ErrorCode:499 | ex : " + ex.ToString());
+                infobipApiSmsStatusResponse.IsSuccess = false;
+                infobipApiSmsStatusResponse.Message = ex.ToString();
+                infobipApiSmsStatusResponse.GroupId = 1;
+                infobipApiSmsStatusResponse.SubCode = 3;
+            }
+            return infobipApiSmsStatusResponse;
         }
 
         public async Task<InfobipApiSmsResponse> SendSms(InfobipSmsRequest infobipSmsRequest)
