@@ -17,7 +17,8 @@ namespace bbt.gateway.common.Models
     public enum SmsStatus
     { 
         Delivered = 0,
-        NotDelivered = 1
+        NotDelivered = 1,
+        Pending = 2
     }
 
     public enum TransactionStatus

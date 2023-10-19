@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace bbt.gateway.messaging.Workers.OperatorGateway
 {
-    public class OperatorCodec : OperatorGatewayBase
+    public class OperatorCodec : OperatorGatewayBase,IOperatorCodec
     {
 
         private SoapSoapClient _codecClient;

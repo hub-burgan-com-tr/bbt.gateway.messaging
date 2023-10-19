@@ -12,18 +12,18 @@ namespace bbt.gateway.messaging.Workers
         private readonly HeaderManager _headerManager;
         private readonly IRepositoryManager _repositoryManager;
         private readonly ITransactionManager _transactionManager;
-        private readonly OperatorInfobip _operatorInfobip;
+        private readonly IOperatorInfobip _operatorInfobip;
 
         public InfobipSender(HeaderManager headerManager,
             IRepositoryManager repositoryManager,
             ITransactionManager transactionManager,
-            OperatorInfobip operatorInfobip
+            InfobipFactory infobipFactory
         )
         {
             _headerManager = headerManager;
             _repositoryManager = repositoryManager;
             _transactionManager = transactionManager;
-            _operatorInfobip = operatorInfobip;
+            _operatorInfobip = infobipFactory(_transactionManager.UseFakeSmtp);
         }
 
         public async Task<SmsTrackingLog> CheckSms(common.Models.v2.CheckFastSmsRequest checkFastSmsRequest)
