@@ -44,6 +44,8 @@ namespace bbt.gateway.messaging
     public delegate ITurkcellApi TurkcellApiFactory(bool useFakeSmtp);
     public delegate ITurkTelekomApi TurkTelekomApiFactory(bool useFakeSmtp);
     public delegate IOperatordEngage dEngageFactory(bool useFakeSmtp);
+    public delegate IOperatorCodec CodecFactory(bool useFakeSmtp);
+    public delegate IOperatorInfobip InfobipFactory(bool useFakeSmtp);
 
     public class Startup
     {
@@ -239,7 +241,9 @@ namespace bbt.gateway.messaging
             services.AddScoped<OperatordEngage>();
             services.AddScoped<OperatordEngageMock>();
             services.AddScoped<OperatorCodec>();
+            services.AddScoped<OperatorCodecMock>();
             services.AddScoped<OperatorInfobip>();
+            services.AddScoped<OperatorInfobipMock>();
             services.AddScoped<TurkTelekomApi>();
             services.AddScoped<VodafoneApi>();
             services.AddScoped<TurkcellApi>();
@@ -277,6 +281,22 @@ namespace bbt.gateway.messaging
                 {
                     true => serviceProvider.GetRequiredService<OperatordEngageMock>(),
                     _ => serviceProvider.GetRequiredService<OperatordEngage>()
+                };
+            });
+            services.AddScoped<CodecFactory>(serviceProvider => useFakeSmtp =>
+            {
+                return useFakeSmtp switch
+                {
+                    true => serviceProvider.GetRequiredService<OperatorCodecMock>(),
+                    _ => serviceProvider.GetRequiredService<OperatorCodec>()
+                };
+            });
+            services.AddScoped<InfobipFactory>(serviceProvider => useFakeSmtp =>
+            {
+                return useFakeSmtp switch
+                {
+                    true => serviceProvider.GetRequiredService<OperatorInfobipMock>(),
+                    _ => serviceProvider.GetRequiredService<OperatorInfobip>()
                 };
             });
             services.AddScoped<Func<OperatorType, IOperatorGateway>>(serviceProvider => key =>

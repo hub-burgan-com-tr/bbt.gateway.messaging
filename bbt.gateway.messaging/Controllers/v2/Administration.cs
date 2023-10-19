@@ -7,6 +7,7 @@ using bbt.gateway.messaging.Workers;
 using Dapr.Client;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using OfficeOpenXml;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
@@ -34,9 +35,10 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly OtpSender _otpSender;
         private readonly InfobipSender _infobipSender;
         private readonly DaprClient _daprClient;
+        private readonly ITransactionManager _transactionManager;
         public Administration(HeaderManager headerManager, OperatorManager operatorManager,
             IRepositoryManager repositoryManager,
-            CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender, InfobipSender infobipSender, DaprClient daprClient)
+            CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender, InfobipSender infobipSender, DaprClient daprClient,ITransactionManager transactionManager)
         {
             _headerManager = headerManager;
             _operatorManager = operatorManager;
@@ -46,6 +48,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             _otpSender = otpSender;
             _daprClient = daprClient;
             _infobipSender = infobipSender;
+            _transactionManager = transactionManager;
         }
 
         [SwaggerOperation(
@@ -168,6 +171,68 @@ namespace bbt.gateway.messaging.Controllers.v2
                 return BadRequest(ModelState);
             }
 
+        }
+
+        [SwaggerOperation(
+           Summary = "Check Sms Message Status",
+           Description = "Check Transactional Sms Delivery Status."
+           )]
+        [HttpGet("sms/check")]
+
+        public async Task<IActionResult> CheckSmsStatus(System.Guid TxnId)
+        {
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Mock")
+            {
+                return Ok(new CheckSmsStatusResponse()
+                {
+                    code = 0,
+                    message = "Delivered",
+                    status = SmsStatus.Delivered
+                });
+            }
+
+            CheckSmsStatusResponse res = new();
+
+            var transaction = await _repositoryManager.Transactions.GetWithIdAsNoTrackingAsync(TxnId);
+            if(transaction == null)
+                return NotFound("Transaction Not Found");
+            if(transaction.SmsRequestLog == null)
+            {
+                return NotFound("Sms Log Not Found");
+            }
+
+            var smsRequestLog = transaction.SmsRequestLog;
+            if(smsRequestLog.ResponseLogs == null || smsRequestLog.ResponseLogs.Count <= 0)
+            {
+                return NotFound("Sms Log Not Found");
+            }
+
+            var smsResponseLog = smsRequestLog.ResponseLogs.FirstOrDefault();
+
+            if(String.IsNullOrWhiteSpace(smsResponseLog.Status))
+            {
+                res.status = SmsStatus.Pending;
+                res.message = "Pending";
+                res.code = 0;
+                return Ok(res);
+            }
+
+            if (smsResponseLog.Status.Equals("Delivered"))
+            {
+                res.status = SmsStatus.Delivered;
+                res.message = "Delivered";
+                res.code = 0;
+                return Ok(res);
+            }
+            else
+            {
+                res.status = SmsStatus.NotDelivered;
+                res.message = "NotDelivered";
+                res.code = 0;
+                return Ok(res);
+            }
+
+            
         }
 
         [SwaggerOperation(
@@ -627,6 +692,9 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerResponse(200, "Whitelist record is deleted successfully", typeof(void))]
         public async Task<IActionResult> DeletePhoneFromWhitelist(PhoneString phone)
         {
+            var ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+                    ?? HttpContext.Connection.RemoteIpAddress.ToString();
+            _transactionManager.LogInformation($"Delete From Whitelist Called {ip} : request : {JsonConvert.SerializeObject(phone)}");
             var recordsToDelete = await _repositoryManager.Whitelist.FindAsync(w => (w.Phone.CountryCode == Convert.ToInt32(phone.CountryCode))
               && (w.Phone.Prefix == Convert.ToInt32(phone.Prefix))
               && (w.Phone.Number == Convert.ToInt32(phone.Number)));

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace bbt.gateway.messaging.Workers.OperatorGateway
 {
-    public class OperatorInfobip : OperatorGatewayBase
+    public class OperatorInfobip : OperatorGatewayBase,IOperatorInfobip
     {
         private readonly IInfobipApi _infobipApi;
         private string _authToken;

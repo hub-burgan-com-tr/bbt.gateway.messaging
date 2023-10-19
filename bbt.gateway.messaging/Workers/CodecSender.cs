@@ -11,9 +11,10 @@ namespace bbt.gateway.messaging.Workers
         private readonly HeaderManager _headerManager;
         private readonly IRepositoryManager _repositoryManager;
         private readonly ITransactionManager _transactionManager;
-        private readonly OperatorCodec _operatorCodec;
+        private readonly IOperatorCodec _operatorCodec;
 
         public CodecSender(HeaderManager headerManager,
+            CodecFactory codecFactory,
             IRepositoryManager repositoryManager,
             ITransactionManager transactionManager,
             OperatorCodec operatorCodec
@@ -22,7 +23,7 @@ namespace bbt.gateway.messaging.Workers
             _headerManager = headerManager;
             _repositoryManager = repositoryManager;
             _transactionManager = transactionManager;
-            _operatorCodec = operatorCodec;
+            _operatorCodec = codecFactory(_transactionManager.UseFakeSmtp);
         }
 
         public async Task<SmsTrackingLog> CheckSms(common.Models.v2.CheckFastSmsRequest checkFastSmsRequest)
