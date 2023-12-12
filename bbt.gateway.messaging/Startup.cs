@@ -37,6 +37,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using bbt.gateway.common.Api.MessagingGateway;
 using bbt.gateway.messaging.Api.Infobip;
+using System.Linq;
 
 namespace bbt.gateway.messaging
 {
@@ -138,7 +139,7 @@ namespace bbt.gateway.messaging
                 c.CustomSchemaIds(type => type.FullName);
                 c.OrderActionsBy((apiDesc) => $"{apiDesc.ActionDescriptor.RouteValues["controller"]}_{apiDesc.RelativePath}");
                 c.ExampleFilters();
-             
+                
                 
                 c.IncludeXmlComments("wwwroot/bbt.gateway.messaging.xml");
                 c.IncludeXmlComments("wwwroot/bbt.gateway.common.xml");
@@ -153,6 +154,7 @@ namespace bbt.gateway.messaging
                     Version = "v2",
                     Title = "Bbt.Gateway.Messaging",
                 });
+                
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
@@ -177,6 +179,7 @@ namespace bbt.gateway.messaging
                         new string[]{ }
                     }    
                 });
+                c.DocumentFilter<PathDocumentFilter>();
             });
             
             services.AddSwaggerExamplesFromAssemblyOf<Startup>();
@@ -342,9 +345,11 @@ namespace bbt.gateway.messaging
 
             app.UseSwagger();
             app.UseStaticFiles();
+            
             app.UseSwaggerUI(options =>
             {
                 options.InjectStylesheet("Swagger.css");
+                
                 foreach (var description in provider.ApiVersionDescriptions)
                 {
                     options.SwaggerEndpoint(

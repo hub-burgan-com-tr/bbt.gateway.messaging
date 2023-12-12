@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -60,6 +61,17 @@ namespace bbt.gateway.messaging
         {
             swaggerDoc.Tags = swaggerDoc.Tags
                  .OrderBy(x => x.Name).ToList();
+        }
+    }
+
+    public class PathDocumentFilter : IDocumentFilter
+    {
+        public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+        {
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Prod")
+            {
+                swaggerDoc.Paths.Where(p => p.Key.Contains("Administration")).ToList().ForEach(p => swaggerDoc.Paths.Remove(p.Key));
+            }
         }
     }
 
