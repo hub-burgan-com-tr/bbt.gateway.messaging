@@ -73,7 +73,7 @@ namespace bbt.gateway.messaging
             { "15", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.OperatorChange } },
             { "16", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
             { "17", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
-            { "19", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
+            { "19", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.SimChange } },
             { "20", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
             { "21", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
             { "29", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
@@ -89,7 +89,7 @@ namespace bbt.gateway.messaging
             { "36", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
             { "37", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
             { "38", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
-            { "30", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.RejectedByOperator } },
+            { "30", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.OperatorChange } },
             { "-99999", new SmsApiResponse { ReturnMessage = "", SmsResponseStatus = SendSmsResponseStatus.ClientError } }
         };
 
