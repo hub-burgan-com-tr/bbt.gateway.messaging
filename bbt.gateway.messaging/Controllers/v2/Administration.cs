@@ -51,6 +51,24 @@ namespace bbt.gateway.messaging.Controllers.v2
             _transactionManager = transactionManager;
         }
 
+        [SwaggerOperation(Summary = "Update Old Blacklist Record's CustomerNo or ContactNo",
+            Tags = new[] { "Phone Management" })]
+        [HttpPut("blacklist/phone/{countryCode}/{prefix}/{number}/{customerNo}")]
+        [SwaggerResponse(200, "Whitelist record is deleted successfully", typeof(void))]
+        public async Task<IActionResult> UpdateOldBlacklistCustomerInfo(string countryCode,string prefix,string number,long customerNo)
+        {
+            var phoneNumber = $"+{countryCode}{prefix}{number}";
+
+            var blacklistRecords = await _repositoryManager.DirectBlacklists.FindAsync(b => b.GsmNumber.Equals(phoneNumber) && b.CustomerNo == 0);
+            foreach(var blacklistRecord in blacklistRecords)
+            {
+                blacklistRecord.CustomerNo = customerNo;
+            }
+
+            await _repositoryManager.SaveSmsBankingChangesAsync();
+            return Ok();
+        }
+
         [SwaggerOperation(
            Summary = "Returns Sms Counts And Success Rate",
            Description = "Returns Sms Counts And Success Rate."

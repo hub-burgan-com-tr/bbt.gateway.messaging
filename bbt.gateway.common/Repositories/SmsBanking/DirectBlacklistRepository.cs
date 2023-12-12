@@ -17,5 +17,6 @@ namespace bbt.gateway.common.Repositories
             return await Context.SmsDirectBlackList.Where(b => b.GsmNumber == number)
                 .OrderByDescending(b => b.RecordDate).FirstOrDefaultAsync();
         }
+
     }
 }

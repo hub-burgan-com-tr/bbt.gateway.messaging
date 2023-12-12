@@ -420,6 +420,15 @@ namespace bbt.gateway.messaging.Workers
                     else
                     {
                         _transactionManager.OldBlacklistVerifiedAt = oldBlacklistRecord.VerifyDate ?? DateTime.MinValue;
+                        //Insert Blacklist entry
+                        var blacklistEntry = createBlackListEntryV2(phoneConfiguration, returnValue.ToString(), "SendMessageToKnownProcess", oldBlacklistRecord.SmsId);
+                        blacklistEntry.ResolvedAt = oldBlacklistRecord.VerifyDate;
+                        blacklistEntry.Status = BlacklistStatus.Resolved;
+                        blacklistEntry.ResolvedBy = new();
+                        blacklistEntry.ResolvedBy.Name = "Migrated From Old Db";
+                        blacklistEntry.ResolvedBy.Identity = oldBlacklistRecord.VerifiedBy;
+                        phoneConfiguration.BlacklistEntries.Add(blacklistEntry);
+                        await _repositoryManager.BlackListEntries.AddAsync(blacklistEntry);
                     }
                 }
             }
@@ -710,7 +719,7 @@ namespace bbt.gateway.messaging.Workers
             newBlackListEntry.Reason = reason;
             newBlackListEntry.Source = source;
             newBlackListEntry.CreatedBy = _dataV2.Process.MapTo<Process>();
-            newBlackListEntry.ValidTo = DateTime.Now.AddMonths(1);
+            newBlackListEntry.ValidTo = DateTime.Now.AddDays(90);
             newBlackListEntry.SmsId = smsId;
             newBlackListEntry.Logs = new List<BlackListEntryLog>
             {
