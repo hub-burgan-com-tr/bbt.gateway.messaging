@@ -26,6 +26,7 @@ namespace bbt.gateway.messaging.Workers
             _repositoryManager = repositoryManager;
             _transactionManager = transactionManager;
             _operatorInfobip = infobipFactory(_transactionManager.UseFakeSmtp);
+            _instantReminder = instantReminder;
         }
 
         public async Task<SmsTrackingLog> CheckSms(common.Models.v2.CheckFastSmsRequest checkFastSmsRequest)
