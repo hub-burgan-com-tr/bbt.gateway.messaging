@@ -2,6 +2,7 @@
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
+using bbt.gateway.messaging.Helpers;
 using bbt.gateway.messaging.Workers.OperatorGateway;
 using System.Threading.Tasks;
 
@@ -13,11 +14,12 @@ namespace bbt.gateway.messaging.Workers
         private readonly IRepositoryManager _repositoryManager;
         private readonly ITransactionManager _transactionManager;
         private readonly IOperatorInfobip _operatorInfobip;
-
+        private readonly InstantReminder _instantReminder;
         public InfobipSender(HeaderManager headerManager,
             IRepositoryManager repositoryManager,
             ITransactionManager transactionManager,
-            InfobipFactory infobipFactory
+            InfobipFactory infobipFactory,
+            InstantReminder instantReminder
         )
         {
             _headerManager = headerManager;
@@ -95,13 +97,22 @@ namespace bbt.gateway.messaging.Workers
             {
                 otpRequest.ResponseLogs.Add(response.Item2);
                 sendSmsResponse.Status = response.Item2.ResponseCode == SendSmsResponseStatus.Success ? InfobipResponseCodes.Success : InfobipResponseCodes.Error;
+                if (response.Item2 != null && response.Item2.ResponseCode == SendSmsResponseStatus.Success)
+                {
+                    await _instantReminder.RemindAsync($"{_operatorInfobip.Type} Otp Sms | {sendSmsRequest.Phone.MapTo<common.Models.Phone>().Concatenate()}", sendSmsRequest.Content, null);
+                }
             }
             else
             {
                 smsRequest.ResponseLogs.Add(response.Item1);
                 sendSmsResponse.Status = response.Item1.OperatorResponseCode ==  0 ? InfobipResponseCodes.Success : InfobipResponseCodes.Error;
+                if (response.Item1 != null && response.Item1.OperatorResponseCode == 0)
+                {
+                    await _instantReminder.RemindAsync($"{_operatorInfobip.Type} Fast Sms | {sendSmsRequest.Phone.MapTo<common.Models.Phone>().Concatenate()}", sendSmsRequest.Content, null);
+                }
             }
 
+            
             return sendSmsResponse;
         }
 

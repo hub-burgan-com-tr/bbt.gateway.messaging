@@ -1,6 +1,7 @@
 ﻿using bbt.gateway.common.Extensions;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Repositories;
+using bbt.gateway.messaging.Helpers;
 using bbt.gateway.messaging.Workers.OperatorGateway;
 using System.Threading.Tasks;
 
@@ -12,12 +13,14 @@ namespace bbt.gateway.messaging.Workers
         private readonly IRepositoryManager _repositoryManager;
         private readonly ITransactionManager _transactionManager;
         private readonly IOperatorCodec _operatorCodec;
+        private readonly InstantReminder _instantReminder;
 
         public CodecSender(HeaderManager headerManager,
             CodecFactory codecFactory,
             IRepositoryManager repositoryManager,
             ITransactionManager transactionManager,
-            OperatorCodec operatorCodec
+            OperatorCodec operatorCodec,
+            InstantReminder instantReminder
         )
         {
             _headerManager = headerManager;
@@ -98,6 +101,8 @@ namespace bbt.gateway.messaging.Workers
 
             sendSmsResponse.Status = response.GetCodecStatus();
 
+            
+
             return sendSmsResponse;
         }
 
@@ -136,6 +141,11 @@ namespace bbt.gateway.messaging.Workers
 
 
             sendSmsResponse.Status = response.GetCodecStatus();
+
+            if (response != null && response.OperatorResponseCode == 0)
+            {
+                await _instantReminder.RemindAsync($"{_operatorCodec.Type} Fast Sms | {sendSmsRequest.Phone.MapTo<Phone>().Concatenate()}", sendSmsRequest.Content, null);
+            }
 
             return sendSmsResponse;
         }
