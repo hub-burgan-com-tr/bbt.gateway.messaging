@@ -259,7 +259,7 @@ namespace bbt.gateway.messaging.Api.Turkcell
             + "</DST_MSISDN_LIST>"
             + "<CONTENT_LIST>"
             + "<CONTENT>"
-            + "<CONTENT_TEXT>"+turkcellSmsRequest.Content.Trim()+"</CONTENT_TEXT>"
+            + "<CONTENT_TEXT>"+turkcellSmsRequest.Content.Replace("&","&amp;").Trim()+"</CONTENT_TEXT>"
             + "</CONTENT>"
             + "</CONTENT_LIST>"
             + "</TM>"
