@@ -29,6 +29,7 @@ namespace bbt.gateway.messaging.Workers
         public Task GetCustomerInfoByEmail();
         public Task GetCustomerInfoByCitizenshipNumber();
         public Task GetCustomerInfoByCustomerNo();
+        public string? GetTemplateLanguage();
         public void LogState();
 
         public void LogCritical(string message);

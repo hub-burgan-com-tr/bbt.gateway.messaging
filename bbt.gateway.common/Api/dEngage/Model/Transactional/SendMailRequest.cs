@@ -27,6 +27,7 @@ namespace bbt.gateway.common.Api.dEngage.Model.Transactional
         public string to { get; set; }
         public string cc { get; set; }
         public string bcc { get; set; }
+        public string toLanguage { get; set; }
     }
 
     public class Attachment

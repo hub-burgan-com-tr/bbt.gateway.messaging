@@ -690,7 +690,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             try
             {
                 sendMailRequest.send.to = to;
-
+                sendMailRequest.send.toLanguage = TransactionManager.GetTemplateLanguage();
                 sendMailRequest.send.cc = string.IsNullOrEmpty(cc) ? null : cc;
                 sendMailRequest.send.bcc = string.IsNullOrEmpty(bcc) ? null : bcc;
 
@@ -842,7 +842,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
             sendBulkMailRequest.emailList.Add(bulkMailItem);
 
-            return sendBulkMailRequest;
+            return sendBulkMailRequest; 
         }
 
         private SendPushRequest CreatePushRequest(string contactId, string template, string templateParams, string customParameters, bool? saveInbox, string[] tags)
@@ -850,6 +850,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             SendPushRequest sendPushRequest = new();
             sendPushRequest.contactKey = contactId;
             sendPushRequest.contentId = template;
+            sendPushRequest.language = TransactionManager.GetTemplateLanguage();
             if (saveInbox != null && saveInbox != null)
             {
                 common.Models.v2.InboxParams inboxParams = new common.Models.v2.InboxParams();
@@ -905,6 +906,9 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             {
                 sendSmsRequest.send.to = phone.Concatenate();
             }
+           
+            sendSmsRequest.send.toLanguage = TransactionManager.GetTemplateLanguage();
+            
             //var now = DateTime.Now;
             //sendSmsRequest.earliestTime = now.ToString("HH:mm");
             //sendSmsRequest.latestTime = now.AddMinutes(3).ToString("HH:mm");
