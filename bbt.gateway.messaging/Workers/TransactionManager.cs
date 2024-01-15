@@ -1,4 +1,5 @@
-﻿using bbt.gateway.common.Models;
+﻿using bbt.gateway.common.GlobalConstants;
+using bbt.gateway.common.Models;
 using bbt.gateway.common.Repositories;
 using bbt.gateway.messaging.Api.Fora;
 using bbt.gateway.messaging.Api.Fora.Model.Permission;
@@ -9,6 +10,7 @@ using bbt.gateway.messaging.Api.Pusula.Model.GetCustomer;
 using Newtonsoft.Json;
 using Serilog;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace bbt.gateway.messaging.Workers
@@ -331,6 +333,18 @@ namespace bbt.gateway.messaging.Workers
         public void LogWarning(string LogMessage)
         {
             _logger.Warning("TxnId:" + _txnId + " | Type : " + Transaction.TransactionType + " :" + LogMessage);
+        }
+
+        public string? GetTemplateLanguage()
+        {
+            if (!string.IsNullOrEmpty(CustomerRequestInfo.PreferedLanguage))
+            {
+                return GlobalConstants.AVAILABLE_TEMPLATE_LANGUAGES.Contains(CustomerRequestInfo.PreferedLanguage) ? CustomerRequestInfo.PreferedLanguage : null;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 

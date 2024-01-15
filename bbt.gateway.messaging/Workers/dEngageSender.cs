@@ -980,13 +980,16 @@ namespace bbt.gateway.messaging.Workers
 
         public T GetContentInfo<T>(List<T> contentList,string givenTemplate) where T : IContentReadeble
         {
-            var templateInfo = contentList.Where(c => c.GetPath(givenTemplate.Trim().StartsWith("/")) == GetTemplateNameWithPreferredLang(givenTemplate)).FirstOrDefault();
+            var templateInfo = contentList.Where(c => c.GetPath(givenTemplate.Trim().StartsWith("/")) == GetTemplateName(givenTemplate)).FirstOrDefault();
             if (templateInfo == null)
-            {
-                templateInfo = contentList.Where(c => c.GetPath(givenTemplate.Trim().StartsWith("/")) == GetTemplateName(givenTemplate)).FirstOrDefault();
-                if (templateInfo == null)
-                    throw new WorkflowException("Template Not Found", System.Net.HttpStatusCode.NotFound);
-            }
+                throw new WorkflowException("Template Not Found", System.Net.HttpStatusCode.NotFound);
+            //var templateInfo = contentList.Where(c => c.GetPath(givenTemplate.Trim().StartsWith("/")) == GetTemplateNameWithPreferredLang(givenTemplate)).FirstOrDefault();
+            //if (templateInfo == null)
+            //{
+            //    templateInfo = contentList.Where(c => c.GetPath(givenTemplate.Trim().StartsWith("/")) == GetTemplateName(givenTemplate)).FirstOrDefault();
+            //    if (templateInfo == null)
+            //        throw new WorkflowException("Template Not Found", System.Net.HttpStatusCode.NotFound);
+            //}
 
             return templateInfo;
         }

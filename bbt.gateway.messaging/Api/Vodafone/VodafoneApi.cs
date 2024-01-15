@@ -210,7 +210,7 @@ namespace bbt.gateway.messaging.Api.Vodafone
             + "<subscriberId>"+vodafoneSmsRequest.PhoneNo+"</subscriberId>"
             + "</destination>"
             + "</destinationList>"
-            + "<message>"+vodafoneSmsRequest.Message.Trim()+"</message>"
+            + "<message>"+vodafoneSmsRequest.Message.Replace("&","&amp;").Trim()+"</message>"
             + "<smsParameters>"
             + "<sender>"+(vodafoneSmsRequest.IsAbroad ? string.Empty : vodafoneSmsRequest.Header)+"</sender>"
             + "<shortCode xsi:nil=\"true\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"/>"

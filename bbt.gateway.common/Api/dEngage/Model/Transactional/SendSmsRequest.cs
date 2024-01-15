@@ -23,6 +23,7 @@ namespace bbt.gateway.common.Api.dEngage.Model.Transactional
     public class Send 
     {
         public string to { get; set; }
+        public string toLanguage { get; set; }
     }
 
 }
