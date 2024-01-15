@@ -1,0 +1,138 @@
+{
+  "name": "BlacklistCustomerUpdate",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=n8n_msg_gw_url/{{ $json.CountryCode }}/{{ $json.CityCode }}/{{ $json.TelephoneNumber }}/ {{ $('CustomerKafkaTrigger').item.json.message.data.ExternalClientNo }}",
+        "options": {}
+      },
+      "id": "31690474-7734-4cd1-aad3-81225e28302e",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1280,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "topic": "dbo.Customers",
+        "groupId": "blacklist-customer",
+        "options": {
+          "jsonParseMessage": true,
+          "parallelProcessing": true,
+          "onlyMessage": true
+        }
+      },
+      "id": "ec63c6b4-49a7-4a43-9708-0fe7052ad2e9",
+      "name": "CustomerKafkaTrigger",
+      "type": "n8n-nodes-base.kafkaTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        620,
+        240
+      ],
+      "credentials": {
+        "kafka": {
+          "id": "OdPi9JJPpIVs4Krc",
+          "name": "Kafka account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.message.headers.operation }}",
+              "value2": "UPDATE"
+            }
+          ],
+          "number": [
+            {
+              "value1": "={{ $json.message.data.ExternalClientNo }}",
+              "operation": "notEqual",
+              "value2": "={{ $json.message.beforeData.ExternalClientNo }}"
+            }
+          ]
+        }
+      },
+      "id": "84788b27-1cb2-4d2e-9a37-13811ba073c0",
+      "name": "CheckClientNoChanged",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        860,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select CountryCode, CityCode, TelephoneNumber from dbo.CustomerTelephone (nolock) where Id = {{ $('CustomerKafkaTrigger').item.json.message.data.Id }}\nand TelephoneType = 3"
+      },
+      "id": "c7db2447-3a01-4dbc-93d3-31c8e0972ada",
+      "name": "GetPhoneNumber",
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        240
+      ],
+      "credentials": {
+        "microsoftSql": {
+          "id": "2Funn7V8LNK74SqB",
+          "name": "CustomerDB"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "CustomerKafkaTrigger": {
+      "main": [
+        [
+          {
+            "node": "CheckClientNoChanged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CheckClientNoChanged": {
+      "main": [
+        [
+          {
+            "node": "GetPhoneNumber",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetPhoneNumber": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8e58c149-73e6-438a-b1e9-6a871a0cfa16",
+  "id": "3jPLWMjfdLgCt0hJ",
+  "meta": {
+    "instanceId": "915c7a31bf473052725455d89d3ffb42ecc1a7653591dce4b84d23be4d27bfe8"
+  },
+  "tags": []
+}
