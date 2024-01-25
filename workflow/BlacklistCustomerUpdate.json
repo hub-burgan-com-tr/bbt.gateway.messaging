@@ -37,7 +37,7 @@
       "credentials": {
         "kafka": {
           "id": "OdPi9JJPpIVs4Krc",
-          "name": "Kafka account"
+          "name": "KafkaAccount"
         }
       }
     },
