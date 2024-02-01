@@ -63,9 +63,11 @@ namespace bbt.gateway.messaging.Controllers.v2
             foreach(var blacklistRecord in blacklistRecords)
             {
                 blacklistRecord.CustomerNo = customerNo;
+                _transactionManager.LogInformation($"{blacklistRecord.SmsId}-{phoneNumber} blacklist updated with customer No:{customerNo}");
             }
 
             await _repositoryManager.SaveSmsBankingChangesAsync();
+            
             return Ok();
         }
 
