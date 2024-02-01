@@ -104,9 +104,24 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        800,
-        380
+        720,
+        440
       ]
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds"
+      },
+      "id": "26ccd936-adbc-41da-9717-ee32814a2f16",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        920,
+        360
+      ],
+      "webhookId": "fc62b410-e8bb-41b8-aa7b-da1fa95a29ce"
     }
   ],
   "pinData": {},
@@ -153,6 +168,17 @@
       "main": [
         [
           {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
             "node": "GetPhoneNumber",
             "type": "main",
             "index": 0
@@ -165,7 +191,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "995ef10b-3b69-44d9-852c-816893919549",
+  "versionId": "40a7fa73-5714-44a7-9a87-94a015c9d94b",
   "id": "3jPLWMjfdLgCt0hJ",
   "meta": {
     "instanceId": "915c7a31bf473052725455d89d3ffb42ecc1a7653591dce4b84d23be4d27bfe8"
