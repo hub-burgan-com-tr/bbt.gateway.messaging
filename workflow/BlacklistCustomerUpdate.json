@@ -31,7 +31,7 @@
       "type": "n8n-nodes-base.kafkaTrigger",
       "typeVersion": 1.1,
       "position": [
-        620,
+        520,
         240
       ],
       "credentials": {
@@ -64,8 +64,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        860,
-        240
+        800,
+        180
       ]
     },
     {
@@ -87,6 +87,26 @@
           "name": "CustomerDB"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.message.headers.operation }}",
+              "value2": "INSERT"
+            }
+          ]
+        }
+      },
+      "id": "829c41e6-b799-41b8-aadc-ffecdf9873cf",
+      "name": "CheckNewCustomer",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        800,
+        380
+      ]
     }
   ],
   "pinData": {},
@@ -96,6 +116,11 @@
         [
           {
             "node": "CheckClientNoChanged",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CheckNewCustomer",
             "type": "main",
             "index": 0
           }
@@ -123,13 +148,24 @@
           }
         ]
       ]
+    },
+    "CheckNewCustomer": {
+      "main": [
+        [
+          {
+            "node": "GetPhoneNumber",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "8e58c149-73e6-438a-b1e9-6a871a0cfa16",
+  "versionId": "995ef10b-3b69-44d9-852c-816893919549",
   "id": "3jPLWMjfdLgCt0hJ",
   "meta": {
     "instanceId": "915c7a31bf473052725455d89d3ffb42ecc1a7653591dce4b84d23be4d27bfe8"
