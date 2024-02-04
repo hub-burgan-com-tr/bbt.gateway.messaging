@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
@@ -113,6 +114,42 @@ namespace bbt.gateway.messaging
         {
             string maskedContent = content.MaskOtpContent();
             return $"[{header.SmsSender}]{header.SmsPrefix} {maskedContent} {header.SmsSuffix}";
+        }
+
+        public static string RemoveNonBreakSpaces(this string content)
+        {
+            var byteArr = Encoding.UTF8.GetBytes(content);
+            List<byte> newByteArr = new List<byte>();
+            int i = 0;
+            while(i < byteArr.Length)
+            {
+                if (i + 1 <= byteArr.Length)
+                {
+                    if (byteArr[i] == 194 && byteArr[i + 1] == 160)
+                    {
+                        newByteArr.Add(32);
+                        i+=2;
+                    }
+                    else
+                    {
+                        newByteArr.Add(byteArr[i]);
+                        i++;
+                    }
+                }
+                else
+                {
+                    if (byteArr[i] == 194)
+                    {
+                        i++;
+                    }
+                    else
+                    {
+                        newByteArr.Add(byteArr[i]);
+                        i++;
+                    }
+                }
+            }
+            return Encoding.UTF8.GetString(newByteArr.ToArray());
         }
 
         public static OtpResponseLog BuildOperatorApiResponse(this OperatorApiResponse apiResponse)

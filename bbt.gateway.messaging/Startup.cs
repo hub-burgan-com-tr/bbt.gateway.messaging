@@ -225,7 +225,20 @@ namespace bbt.gateway.messaging
 
             services.AddHttpClient("default", httpClient =>
             {
+                
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                return new HttpClientHandler()
+                {
+                    UseProxy = false
+                };
+            });
 
+            services.AddHttpClient("foraClient", httpClient =>
+            {
+                httpClient.DefaultRequestHeaders.Add("channel", Configuration["Api:Fora:Channel"]);
+                httpClient.DefaultRequestHeaders.Add("branch", Configuration["Api:Fora:Branch"]);
+                httpClient.DefaultRequestHeaders.Add("user", Configuration["Api:Fora:User"]);
             }).ConfigurePrimaryHttpMessageHandler(() =>
             {
                 return new HttpClientHandler()

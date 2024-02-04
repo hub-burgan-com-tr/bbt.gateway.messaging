@@ -8,6 +8,7 @@ using System;
 using bbt.gateway.messaging.Workers;
 using Newtonsoft.Json;
 using Polly;
+using System.Collections.Generic;
 
 namespace bbt.gateway.messaging.Api.Turkcell
 {
@@ -21,6 +22,7 @@ namespace bbt.gateway.messaging.Api.Turkcell
 
         public async Task<OperatorApiResponse> SendSms(TurkcellSmsRequest turkcellSmsRequest) {
             OperatorApiResponse turkcellSmsResponse = new() { OperatorType = this.Type};
+            turkcellSmsRequest.Content = turkcellSmsRequest.Content.RemoveNonBreakSpaces();
             var requests = getSendSmsXml(turkcellSmsRequest);
             string response = "";
             try

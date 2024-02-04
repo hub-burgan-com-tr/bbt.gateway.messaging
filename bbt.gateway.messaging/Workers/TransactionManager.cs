@@ -236,8 +236,17 @@ namespace bbt.gateway.messaging.Workers
                 var response = await _foraClient.getPermission(CitizenshipNo);
                 if (response.ResponseCode == 0)
                 {
-                    var permissionInfo = JsonConvert.DeserializeObject<PermissionInfo>(response.ResponseMesssage);
-                    return permissionInfo.PreferredLanguage.Split('-')[1];
+                    try
+                    {
+                        var permissionInfo = JsonConvert.DeserializeObject<PermissionInfo>(response.ResponseMesssage);
+                        return permissionInfo.PreferredLanguage.Split('-')[1];
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError($"Preferred Language Couldn't Be Retrieved | Detail : {ex.ToString()}");
+                        return string.Empty;
+                    }
+                    
                 }
                 else
                 {
