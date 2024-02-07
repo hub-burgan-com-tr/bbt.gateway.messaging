@@ -103,7 +103,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
         private string GetSender()
         {
-            return TransactionManager.CustomerRequestInfo.BusinessLine == "X" ? "ON Dijital" : "BURGAN TR";
+            return TransactionManager.CustomerRequestInfo.BusinessLine == "X" ? "ON Dijital" : "BURGAN BANK";
         }
 
         private InfobipSmsRequest CreateSmsRequest(string message, Phone phone)
