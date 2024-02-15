@@ -23,6 +23,7 @@ namespace bbt.gateway.messaging.Middlewares
         private readonly RequestDelegate _next;
         private RecyclableMemoryStreamManager _recyclableMemoryStreamManager;
         private MiddlewareRequest _middlewareRequest;
+        private bool _isInvalidModel;
         public TransactionMiddleware(RequestDelegate next)
         {
             _next = next;
@@ -34,6 +35,7 @@ namespace bbt.gateway.messaging.Middlewares
             
             try
             {
+                _isInvalidModel = false;
                 context.Request.EnableBuffering();
 
                 //Get IpAddress
@@ -67,6 +69,10 @@ namespace bbt.gateway.messaging.Middlewares
                 _transactionManager.InstantReminder = _middlewareRequest.InstantReminder;
 
                 SetTransaction(context,_transactionManager);
+                if(_isInvalidModel)
+                {
+                    throw new WorkflowException("Invalid Model", System.Net.HttpStatusCode.BadRequest);
+                }
 
                 //Save Original Stream
                 var originalStream = context.Response.Body;
@@ -120,6 +126,31 @@ namespace bbt.gateway.messaging.Middlewares
                     context.Response.StatusCode = 500;
                 }
             }
+            catch (WorkflowException ex)
+            {
+                var originalStream = context.Response.Body;
+                await using var responseBody = _recyclableMemoryStreamManager.GetStream();
+                context.Response.Body = responseBody;
+
+                //Get Response Body
+                context.Response.Body.Seek(0, SeekOrigin.Begin);
+                using var stream = new MemoryStream();
+                using var writer = new StreamWriter(stream);
+                writer.Write(ex.Message);
+                writer.Flush();
+                stream.Position = 0;
+                context.Response.Body.Seek(0, SeekOrigin.Begin);
+                context.Response.ContentType = "text/plain";
+                context.Response.StatusCode = (int)ex.StatusCode;
+                await stream.CopyToAsync(originalStream);
+
+                _transactionManager.Transaction.Response = "An Error Occured | Detail :" + ex.ToString();
+
+                _transactionManager.LogState();
+                _transactionManager.LogError("An Error Occured | Detail :" + ex.ToString());
+
+
+            }
             catch (Exception ex)
             {
                 _transactionManager.Transaction.Response = "An Error Occured | Detail :" + ex.ToString();
@@ -166,6 +197,9 @@ namespace bbt.gateway.messaging.Middlewares
                         SetTransactionAsSms(_transactionManager);
                     }
                 }
+                if (_middlewareRequest.Phone.CountryCode == 0)
+                    _isInvalidModel = true;
+
             }
 
             if (path.Contains("email"))
