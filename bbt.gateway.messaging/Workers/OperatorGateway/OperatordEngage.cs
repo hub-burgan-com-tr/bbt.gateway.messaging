@@ -6,6 +6,7 @@ using bbt.gateway.common.Api.dEngage.Model.Transactional;
 using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Models;
 using bbt.gateway.messaging.Api;
+using bbt.gateway.messaging.Exceptions;
 using Dapr.Client;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -887,7 +888,15 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             }
             else
             {
-                sendPushRequest.customParameters = customParameters?.ClearMaskingFields();
+                try
+                {
+                    sendPushRequest.customParameters = JsonConvert.DeserializeObject<List<dynamic>>(customParameters?.ClearMaskingFields());
+                }
+                catch (Exception ex)
+                {
+                    throw new WorkflowException("Unvalid Custom Parameters, Please Send JsonSerialized String . Example : \"[{\"key\":\"val\"},{\"key1\":123}]\" ", System.Net.HttpStatusCode.BadRequest);
+                }
+                
             }
 
 

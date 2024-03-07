@@ -10,7 +10,7 @@ namespace bbt.gateway.common.Api.dEngage.Model.Transactional
         public string current { get; set; }
         public string language { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string customParameters { get; set; }
+        public List<dynamic> customParameters { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string[]? Tags { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
