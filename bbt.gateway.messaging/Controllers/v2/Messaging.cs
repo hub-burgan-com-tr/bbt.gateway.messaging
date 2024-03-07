@@ -6,6 +6,7 @@ using bbt.gateway.messaging.Workers;
 using Elastic.Apm.Api;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using Refit;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
