@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -113,7 +114,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             return pushList.Select(n => new Notification()
             {
                 contentHtml = n.Content,
-                date = n.CreatedAt.ToString("d MMMM yyyy"),
+                date = n.CreatedAt.ToString("d MMMM yyyy",new CultureInfo("tr-TR")),
                 isRead = n.IsRead,
                 notificationId = n.Id.ToString(),
                 reminderType = n.NotificationType
