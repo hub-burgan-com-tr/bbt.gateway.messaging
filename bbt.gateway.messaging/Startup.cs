@@ -38,6 +38,7 @@ using System.Security.Claims;
 using bbt.gateway.common.Api.MessagingGateway;
 using bbt.gateway.messaging.Api.Infobip;
 using System.Linq;
+using bbt.gateway.common.Api.Reminder;
 
 namespace bbt.gateway.messaging
 {
@@ -207,6 +208,21 @@ namespace bbt.gateway.messaging
             services.AddRefitClient<IMessagingGatewayApi>()
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(Configuration["Api:MessagingGateway:BaseAddress"]));
 
+            services.AddRefitClient<IReminderApi>()
+            .ConfigureHttpClient(c => {
+                c.BaseAddress = new Uri(Configuration["Api:Reminder:BaseAddress"]);
+                c.DefaultRequestHeaders.Add("channel", Configuration["Api:Reminder:Channel"]);
+                c.DefaultRequestHeaders.Add("branch", Configuration["Api:Reminder:Branch"]);
+                c.DefaultRequestHeaders.Add("user", Configuration["Api:Reminder:User"]);
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                return new HttpClientHandler()
+                {
+                    UseProxy = false,
+                    ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
+                };
+            });
+
             services.AddRefitClient<IdEngageClient>(new RefitSettings
             {
                 ContentSerializer = new NewtonsoftJsonContentSerializer(
@@ -239,12 +255,6 @@ namespace bbt.gateway.messaging
                 httpClient.DefaultRequestHeaders.Add("channel", Configuration["Api:Fora:Channel"]);
                 httpClient.DefaultRequestHeaders.Add("branch", Configuration["Api:Fora:Branch"]);
                 httpClient.DefaultRequestHeaders.Add("user", Configuration["Api:Fora:User"]);
-            }).ConfigurePrimaryHttpMessageHandler(() =>
-            {
-                return new HttpClientHandler()
-                {
-                    UseProxy = false
-                };
             });
 
             services.AddScoped<InstantReminder>();

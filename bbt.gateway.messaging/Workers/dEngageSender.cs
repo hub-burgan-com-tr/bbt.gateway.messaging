@@ -864,8 +864,11 @@ namespace bbt.gateway.messaging.Workers
                 TemplateParams = sendTemplatedPushNotificationRequest.TemplateParams?.MaskFields(),
                 ContactId = sendTemplatedPushNotificationRequest.CitizenshipNo,
                 CustomParameters = sendTemplatedPushNotificationRequest.CustomParameters?.MaskFields(),
-                CreatedBy = sendTemplatedPushNotificationRequest.Process.MapTo<Process>()
+                CreatedBy = sendTemplatedPushNotificationRequest.Process.MapTo<Process>(),
+                SaveInbox = sendTemplatedPushNotificationRequest.saveInbox ?? false,
+                NotificationType = sendTemplatedPushNotificationRequest.NotificationType ?? string.Empty
             };
+
 
             var templateDetail = await GetContentDetail<PushContentDetail>(
                 GlobalConstants.PUSH_CONTENTS_SUFFIX + "_" + contentInfo.id);

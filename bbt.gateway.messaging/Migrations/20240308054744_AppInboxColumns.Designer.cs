@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using bbt.gateway.common;
 
@@ -11,9 +12,10 @@ using bbt.gateway.common;
 namespace bbt.gateway.messaging.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240308054744_AppInboxColumns")]
+    partial class AppInboxColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -129,6 +131,24 @@ namespace bbt.gateway.messaging.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Headers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("5dd6add1-f575-41f3-abcb-96ab9d5d31d0"),
+                            ContentType = 4,
+                            SmsPrefix = "",
+                            SmsSender = 1,
+                            SmsSuffix = ""
+                        },
+                        new
+                        {
+                            Id = new Guid("dc28e64c-2057-4514-8b2b-084cbd395c55"),
+                            Branch = 2000,
+                            ContentType = 1,
+                            SmsPrefix = "",
+                            SmsSender = 2
+                        });
                 });
 
             modelBuilder.Entity("bbt.gateway.common.Models.MailConfiguration", b =>
@@ -344,6 +364,78 @@ namespace bbt.gateway.messaging.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Operators");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            ControlDaysForOtp = 60,
+                            Status = 1,
+                            TokenCreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            TokenExpiredAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Type = 1,
+                            UseIvnWhenDeactive = false
+                        },
+                        new
+                        {
+                            Id = 2,
+                            ControlDaysForOtp = 60,
+                            Status = 1,
+                            TokenCreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            TokenExpiredAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Type = 2,
+                            UseIvnWhenDeactive = false
+                        },
+                        new
+                        {
+                            Id = 3,
+                            ControlDaysForOtp = 60,
+                            Status = 1,
+                            TokenCreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            TokenExpiredAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Type = 3,
+                            UseIvnWhenDeactive = false
+                        },
+                        new
+                        {
+                            Id = 4,
+                            ControlDaysForOtp = 60,
+                            Status = 1,
+                            TokenCreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            TokenExpiredAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Type = 4,
+                            UseIvnWhenDeactive = false
+                        },
+                        new
+                        {
+                            Id = 5,
+                            ControlDaysForOtp = 60,
+                            Status = 1,
+                            TokenCreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            TokenExpiredAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Type = 5,
+                            UseIvnWhenDeactive = false
+                        },
+                        new
+                        {
+                            Id = 6,
+                            ControlDaysForOtp = 0,
+                            Status = 1,
+                            TokenCreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            TokenExpiredAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Type = 6,
+                            UseIvnWhenDeactive = false
+                        },
+                        new
+                        {
+                            Id = 7,
+                            ControlDaysForOtp = 0,
+                            Status = 1,
+                            TokenCreatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            TokenExpiredAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Type = 7,
+                            UseIvnWhenDeactive = false
+                        });
                 });
 
             modelBuilder.Entity("bbt.gateway.common.Models.OtpRequestLog", b =>
@@ -495,8 +587,7 @@ namespace bbt.gateway.messaging.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ContactId")
-                        .HasMaxLength(11)
-                        .HasColumnType("nvarchar(11)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
@@ -516,10 +607,6 @@ namespace bbt.gateway.messaging.Migrations
                     b.Property<bool>("IsRead")
                         .HasColumnType("bit");
 
-                    b.Property<string>("NotificationType")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<int>("Operator")
                         .HasColumnType("int");
 
@@ -536,8 +623,6 @@ namespace bbt.gateway.messaging.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ContactId");
 
                     b.ToTable("PushNotificationRequestLogs");
                 });

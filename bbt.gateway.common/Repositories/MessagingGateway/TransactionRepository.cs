@@ -905,5 +905,7 @@ namespace bbt.gateway.common.Repositories
                             t.OtpRequestLog.ResponseLogs.Any(r => r.Operator == @operator && r.ResponseCode == SendSmsResponseStatus.Success)
                     );
         }
+
+        
     }
 }

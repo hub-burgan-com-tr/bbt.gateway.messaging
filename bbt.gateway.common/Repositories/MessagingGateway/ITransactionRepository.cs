@@ -33,5 +33,6 @@ namespace bbt.gateway.common.Repositories
         public Task<int> GetForeignSmsRequestCount(DateTime startDate, DateTime endDate, OperatorType @operator, bool isSuccess);
         public Task<Transaction> GetWithIdAsync(Guid TxnId);
         public Task<Transaction> GetWithIdAsNoTrackingAsync(Guid TxnId);
+        
     }
 }
