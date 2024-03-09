@@ -1,4 +1,5 @@
-﻿using bbt.gateway.common.Extensions;
+﻿using bbt.gateway.common.Api.Reminder;
+using bbt.gateway.common.Extensions;
 using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.v2;
@@ -14,6 +15,7 @@ using Swashbuckle.AspNetCore.Filters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -36,8 +38,10 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly InfobipSender _infobipSender;
         private readonly DaprClient _daprClient;
         private readonly ITransactionManager _transactionManager;
+        private readonly IReminderApi _reminderApi;
+
         public Administration(HeaderManager headerManager, OperatorManager operatorManager,
-            IRepositoryManager repositoryManager,
+            IRepositoryManager repositoryManager, IReminderApi reminderApi, 
             CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender, InfobipSender infobipSender, DaprClient daprClient,ITransactionManager transactionManager)
         {
             _headerManager = headerManager;
@@ -49,6 +53,71 @@ namespace bbt.gateway.messaging.Controllers.v2
             _daprClient = daprClient;
             _infobipSender = infobipSender;
             _transactionManager = transactionManager;
+            _reminderApi = reminderApi;
+        }
+
+        [SwaggerOperation(Summary = "Returns notifications",
+            Tags = new[] { "Notifications Management" })]
+        [HttpGet("notifications/{customerId}/{pageIndex}/{pageSize}")]
+        [SwaggerResponse(200, "Records was returned successfully", typeof(Notification[]))]
+        public async Task<IActionResult> GetNotifications(string customerId, int pageIndex, int pageSize)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            var notifications = await _daprClient.GetStateAsync<List<Notification>>(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
+            
+            if (notifications == null)
+            {
+                List<Task<List<Notification>>> taskList = new();
+                taskList.Add(GetNotificationFromReminder(customerId));
+                taskList.Add(GetNotificationFromMessagingGateway(customerId));
+                List<Notification>[] taskResults = await Task.WhenAll(taskList);
+                notifications = taskResults[0].Concat(taskResults[1]).ToList();
+                notifications.Sort(new NotificationSortByYear());
+                sw.Stop();
+                await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications", notifications, metadata: new Dictionary<string, string>() {
+                    {
+                        "ttlInSeconds", "60"
+                    }
+                });
+                _transactionManager.LogInformation("Notifications Fetched In  +" + sw.ElapsedMilliseconds + "ms");
+                Response.Headers.TryAdd("X-Cache", "Miss");
+            }
+            else
+            {
+                Response.Headers.TryAdd("X-Cache", "Hit");
+                sw.Stop();
+                _transactionManager.LogInformation("Notifications Fetched By Cache In +" + sw.ElapsedMilliseconds + "ms");
+            }
+            
+            return Ok(notifications.Skip((pageIndex - 1) * pageSize).Take(pageSize));
+        }
+
+        private async Task<List<Notification>> GetNotificationFromReminder(string customerId)
+        {
+            var notificationList = await _reminderApi.GetNotifications(customerId,1,10000);
+
+            return notificationList.Select( n => new Notification()
+            {
+                contentHtml = n.contentHTML,
+                date = n.date,
+                isRead = n.isRead,
+                notificationId = n.notificationId,
+                reminderType = n.reminderType
+            }).ToList();
+        }
+
+        private async Task<List<Notification>> GetNotificationFromMessagingGateway(string customerId)
+        {
+            var pushList = await _repositoryManager.PushNotificationRequestLogs.GetPushNotifications(customerId);
+            return pushList.Select(n => new Notification()
+            {
+                contentHtml = n.Content,
+                date = n.CreatedAt.ToString("d MMMM yyyy"),
+                isRead = n.IsRead,
+                notificationId = n.Id.ToString(),
+                reminderType = n.NotificationType
+            }).ToList();
         }
 
         [SwaggerOperation(Summary = "Update Old Blacklist Record's CustomerNo or ContactNo",

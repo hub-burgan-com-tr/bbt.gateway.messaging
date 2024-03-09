@@ -56,17 +56,6 @@ namespace bbt.gateway.common
                 .HasIndex(t => t.CustomerNo)
                 .IsClustered(false);
 
-            builder.Entity<Operator>().HasData(new Operator { Id = 1, Type = OperatorType.Turkcell, ControlDaysForOtp = 60, Status = OperatorStatus.Active });
-            builder.Entity<Operator>().HasData(new Operator { Id = 2, Type = OperatorType.Vodafone, ControlDaysForOtp = 60, Status = OperatorStatus.Active });
-            builder.Entity<Operator>().HasData(new Operator { Id = 3, Type = OperatorType.TurkTelekom, ControlDaysForOtp = 60, Status = OperatorStatus.Active });
-            builder.Entity<Operator>().HasData(new Operator { Id = 4, Type = OperatorType.MarketingChannel, ControlDaysForOtp = 60, Status = OperatorStatus.Active });
-            builder.Entity<Operator>().HasData(new Operator { Id = 5, Type = OperatorType.IVN, ControlDaysForOtp = 60, Status = OperatorStatus.Active });
-            builder.Entity<Operator>().HasData(new Operator { Id = 6, Type = OperatorType.dEngageBurgan, ControlDaysForOtp = 0, Status = OperatorStatus.Active });
-            builder.Entity<Operator>().HasData(new Operator { Id = 7, Type = OperatorType.dEngageOn, ControlDaysForOtp = 0, Status = OperatorStatus.Active });
-
-
-            builder.Entity<Header>().HasData(new Header { Id = Guid.NewGuid(), SmsSender = SenderType.Burgan, SmsPrefix = "", SmsSuffix = "", ContentType = MessageContentType.Otp });
-            builder.Entity<Header>().HasData(new Header { Id = Guid.NewGuid(), Branch = 2000, SmsSender = SenderType.On, SmsPrefix = "", ContentType = MessageContentType.Private });
         }
 
     }
