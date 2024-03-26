@@ -13,7 +13,7 @@ namespace bbt.gateway.common.Repositories
         }
         public async Task<List<PushNotificationRequestLog>> GetPushNotifications(string customerId)
         {
-            var notifications = await Context.PushNotificationRequestLogs.Where(t => t.ContactId == customerId && t.CreatedAt >= DateTime.Now.AddDays(-30) && t.SaveInbox && t.ResponseLogs.Any(r => r.ResponseCode.Equals("0")))
+            var notifications = await Context.PushNotificationRequestLogs.AsNoTracking().Where(t => t.ContactId == customerId && t.CreatedAt >= DateTime.Now.AddDays(-30) && t.SaveInbox && !t.IsDeleted && t.ResponseLogs.Any(r => r.ResponseCode.Equals("0")))
                 .ToListAsync();
 
             return notifications;

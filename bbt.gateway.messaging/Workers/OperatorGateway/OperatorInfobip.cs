@@ -117,7 +117,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             };
             infoBipSmsRequest.messages = new List<Message>()
             {
-                new Message() { destinations = destinations, from = GetSender(), text = message }
+                new Message() { destinations = destinations, from = GetSender(), text = message.ClearMaskingFields() }
             };
 
             return infoBipSmsRequest;

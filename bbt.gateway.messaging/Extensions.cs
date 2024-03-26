@@ -46,7 +46,7 @@ namespace bbt.gateway.messaging
         {
             return content.Mask("(<mask>)(.*?)(</mask>)", m =>
             {
-                return $"{m.Value.Substring(6, 1)}{new string('*', m.Value.Length - 14)}";
+                return $"{new string('*', 5)}";
 
             });
         }

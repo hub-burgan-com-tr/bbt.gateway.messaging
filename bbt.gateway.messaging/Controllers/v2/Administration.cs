@@ -57,6 +57,100 @@ namespace bbt.gateway.messaging.Controllers.v2
             _reminderApi = reminderApi;
         }
 
+        [SwaggerOperation(Summary = "Update Notification Read Status",
+            Tags = new[] { "Notifications Management" })]
+        [HttpPost("notification/{customerId}")]
+        [SwaggerResponse(200, "Record was updated successfully")]
+        public async Task<IActionResult> SetNotificationRead(string customerId, NotificationSetReadRequest notificationSetReadRequest)
+        {
+            var isGuid = Guid.TryParse(notificationSetReadRequest.notificationId,out Guid notificationId);
+            if(isGuid)
+            {
+                var notification = await _repositoryManager.PushNotificationRequestLogs.FirstOrDefaultAsync(p => p.Id.Equals(notificationId));
+                if(notification is { })
+                {
+                    notification.IsRead = true;
+                    notification.ReadAt = DateTime.Now;
+                    await _repositoryManager.SaveChangesAsync();
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            else
+            {
+                var ntfId = long.Parse(notificationSetReadRequest.notificationId);
+                await _reminderApi.SetNotificationRead(customerId, new common.Api.Reminder.Model.SetReadRequest() { 
+                    notificationId = ntfId
+                });
+                return Ok();
+            }
+        }
+
+        [SwaggerOperation(Summary = "Update Notification Delete Status",
+            Tags = new[] { "Notifications Management" })]
+        [HttpDelete("notification/{customerId}/{notificationId}")]
+        [SwaggerResponse(200, "Record was updated successfully")]
+        public async Task<IActionResult> SetNotificationDeleted(string customerId, string notificationId)
+        {
+            var isGuid = Guid.TryParse(notificationId, out Guid notificationIdGuid);
+            if (isGuid)
+            {
+                var notification = await _repositoryManager.PushNotificationRequestLogs.FirstOrDefaultAsync(p => p.Id.Equals(notificationIdGuid));
+                if (notification is { })
+                {
+                    notification.IsDeleted = true;
+                    notification.DeletedAt = DateTime.Now;
+                    await _repositoryManager.SaveChangesAsync();
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            else
+            {
+                var ntfId = long.Parse(notificationId);
+                await _reminderApi.DeleteNotification(customerId, notificationId);
+                return Ok();
+            }
+        }
+
+        [SwaggerOperation(Summary = "Update Notification Delete Status",
+            Tags = new[] { "Notifications Management" })]
+        [HttpDelete("notification/{customerId}")]
+        [SwaggerResponse(200, "Records was updated successfully")]
+        public async Task<IActionResult> SetNotificationsDeleted(string customerId)
+        {
+            List<Task> taskList = new();
+            taskList.Add(DeleteNotificationFromReminder(customerId));
+            taskList.Add(DeleteNotificationFromMessagingGateway(customerId));
+            await Task.WhenAll(taskList);
+
+            return Ok();
+        }
+
+        [SwaggerOperation(Summary = "Returns notifications",
+            Tags = new[] { "Notifications Management" })]
+        [HttpGet("notifications/statistics/{customerId}")]
+        [SwaggerResponse(200, "Records was returned successfully", typeof(NotificationsCountResponse))]
+        public async Task<IActionResult> GetNotificationStatics(string customerId)
+        {
+            List<Task<NotificationsCountResponse>> taskList = new();
+            taskList.Add(GetNotificationStatisticsFromReminder(customerId));
+            taskList.Add(GetNotificationStatisticsFromMessagingGateway(customerId));
+            NotificationsCountResponse[] taskResults = await Task.WhenAll(taskList);
+
+            return Ok(new NotificationsCountResponse()
+            {
+                readCount = taskResults[0].readCount + taskResults[1].readCount,
+                unreadCount = taskResults[0].unreadCount + taskResults[1].unreadCount,
+            });
+        }
+
         [SwaggerOperation(Summary = "Returns notifications",
             Tags = new[] { "Notifications Management" })]
         [HttpGet("notifications/{customerId}/{pageIndex}/{pageSize}")]
@@ -108,6 +202,22 @@ namespace bbt.gateway.messaging.Controllers.v2
             }).ToList();
         }
 
+        private async Task DeleteNotificationFromReminder(string customerId)
+        {
+            await _reminderApi.DeleteNotifications(customerId);
+        }
+
+        private async Task<NotificationsCountResponse> GetNotificationStatisticsFromReminder(string customerId)
+        {
+            var statistics = await _reminderApi.GetNoficationsCount(customerId);
+
+            return new NotificationsCountResponse()
+            {
+                readCount = statistics.readCount,
+                unreadCount = statistics.unreadCount
+            };
+        }
+
         private async Task<List<Notification>> GetNotificationFromMessagingGateway(string customerId)
         {
             var pushList = await _repositoryManager.PushNotificationRequestLogs.GetPushNotifications(customerId);
@@ -119,6 +229,28 @@ namespace bbt.gateway.messaging.Controllers.v2
                 notificationId = n.Id.ToString(),
                 reminderType = n.NotificationType
             }).ToList();
+        }
+
+        private async Task DeleteNotificationFromMessagingGateway(string customerId)
+        {
+            var notificationList = await _repositoryManager.PushNotificationRequestLogs.FindAsync(p => p.ContactId.Equals(customerId) && p.IsDeleted != true);
+            foreach(var notification in notificationList)
+            {
+                notification.IsDeleted = true;
+                notification.DeletedAt = DateTime.Now;
+            }
+            await _repositoryManager.SaveChangesAsync();
+        }
+
+        private async Task<NotificationsCountResponse> GetNotificationStatisticsFromMessagingGateway(string customerId)
+        {
+            var pushList = await _repositoryManager.PushNotificationRequestLogs.GetPushNotifications(customerId);
+            var readCount = pushList.Count(p => p.IsRead);
+            var unreadCount = pushList.Count() - readCount;
+            return new NotificationsCountResponse() { 
+                readCount = readCount,
+                unreadCount = unreadCount
+            };
         }
 
         [SwaggerOperation(Summary = "Update Old Blacklist Record's CustomerNo or ContactNo",
