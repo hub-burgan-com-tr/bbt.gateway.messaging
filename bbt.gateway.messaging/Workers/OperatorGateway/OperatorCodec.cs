@@ -60,7 +60,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                   }).ExecuteAsync(async () =>
                   {
                       var response = await _codecClient.SendSmsAsync(OperatorConfig.User, OperatorConfig.Password, GetSender(),
-                    phone.Concatenate(), content, string.Empty, false, Configuration["Api:Codec:HeaderCode"], 3, string.Empty, string.Empty,
+                    phone.Concatenate(), content.ClearMaskingFields(), string.Empty, false, Configuration["Api:Codec:HeaderCode"], 3, string.Empty, string.Empty,
                     "BIREYSEL", "BILGILENDIRME");
 
                       var parsedResponse = JsonConvert.DeserializeObject<CodecSmsResponse>(response);

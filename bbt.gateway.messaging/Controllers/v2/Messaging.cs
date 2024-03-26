@@ -166,7 +166,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 {
                     return await _tracer.CaptureTransaction("OtpSending", ApiConstants.TypeRequest, async () =>
                     {
-                        if (data.Phone.CountryCode != 90)
+                        if (data.Phone.CountryCode != 90 || _transactionManager.OtpRequestInfo.PhoneConfiguration.Operator == common.Models.OperatorType.Foreign)
                         {
                             if(infobipOperator?.Status == common.Models.OperatorStatus.Active)
                             {
