@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
-RUN apt-get update \ && DEBIAN_FRONTEND=noninteractive \    apt-get install --no-install-recommends --assume-yes \      libgdiplus
-RUN adduser -u 5679 --disabled-password --gecos "" smsgatewayuser && chown -R smsgatewayuser:smsgatewayuser /app
+RUN apt-get updateÂ \Â &&Â DEBIAN_FRONTEND=noninteractiveÂ \Â Â Â Â apt-getÂ installÂ --no-install-recommendsÂ --assume-yesÂ \Â Â Â Â Â Â libgdiplus
+RUN adduser smsgatewayuser --disabled-password --gecos "" && chown -R smsgatewayuser:smsgatewayuser /app
 USER smsgatewayuser
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
