@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-focal AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 ENV ASPNETCORE_URLS=http://*:5000
 EXPOSE 5000
 WORKDIR /app
@@ -9,7 +9,7 @@ RUN apt-get update \
 RUN adduser -u 5679 --disabled-password --gecos "" smsgatewayuser && chown -R smsgatewayuser:smsgatewayuser /app
 USER smsgatewayuser
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-focal AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 ENV DOTNET_NUGET_SIGNATURE_VERIFICATION false
 #COPY ["bbt.gateway.messaging/bbt.gateway.messaging.csproj", "bbt.gateway.messaging/"]
