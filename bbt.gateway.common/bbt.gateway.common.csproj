@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>8aa373cf-3fa7-4b56-b3aa-60e7f6690b77</UserSecretsId>
     <PackageId>BbtCoreExtensions</PackageId>
@@ -15,21 +15,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapr.Extensions.Configuration" Version="1.9.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.29" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.29" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.29">
+    <PackageReference Include="Dapr.Extensions.Configuration" Version="1.13.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-	  <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
-	  <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
-	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.3" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.2">
+	  <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.*" />
+	  <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.*" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Consul" Version="1.6.10.4" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
@@ -44,7 +42,7 @@
 	<PackageReference Include="Refit" Version="6.3.2" />
 	<PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
 	<PackageReference Include="Refit.Newtonsoft.Json" Version="6.3.2" />
-	<PackageReference Include="Dapr.Client" Version="1.9.0" />
+	<PackageReference Include="Dapr.Client" Version="1.13.0" />
   </ItemGroup>
 
   <ItemGroup>
