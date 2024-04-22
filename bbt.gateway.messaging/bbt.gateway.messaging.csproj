@@ -68,8 +68,8 @@
 	<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.4" />
 	<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.4" />
 	<PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
-	<!-- <PackageReference Include="OfficeOpenXml.Core.ExcelPackage" Version="1.0.0" />
-	<PackageReference Include="OfficeOpenXml.Extends" Version="1.0.6" /> -->
+	<PackageReference Include="OfficeOpenXml.Core.ExcelPackage" Version="1.0.0" />
+	<PackageReference Include="OfficeOpenXml.Extends" Version="1.0.6" />
 	<PackageReference Include="Polly" Version="7.2.3" />
 	<PackageReference Include="Refit" Version="6.3.2" />
 	<PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
