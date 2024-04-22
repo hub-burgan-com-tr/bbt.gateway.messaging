@@ -43,15 +43,15 @@
   <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.26.0" />
 
 
-  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
 
   <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
 
 
-  <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="8.0.0" />
+  <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.1.0" />
 
 
-  <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="8.0.0" />
+  <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
 
 
   <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.5" />
