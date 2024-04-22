@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>8aa373cf-3fa7-4b56-b3aa-60e7f6690b77</UserSecretsId>
     <PackageId>BbtCoreExtensions</PackageId>
