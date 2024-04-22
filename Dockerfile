@@ -14,7 +14,7 @@ WORKDIR /src
 #COPY ["bbt.gateway.messaging/bbt.gateway.messaging.csproj", "bbt.gateway.messaging/"]
 #RUN ls -l bbt.gateway.messaging/
 COPY . .
-RUN dotnet restore -s https://burgan-baget.burgan.com.tr/v3/index.json -verbosity detailed "bbt.gateway.messaging/bbt.gateway.messaging.csproj"
+RUN dotnet restore "bbt.gateway.messaging/bbt.gateway.messaging.csproj"
 WORKDIR "/src/bbt.gateway.messaging"
 RUN dotnet build "bbt.gateway.messaging.csproj" -c Release -o /app/build
 
