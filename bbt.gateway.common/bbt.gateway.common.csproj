@@ -38,6 +38,7 @@
 	<PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
 	<PackageReference Include="Refit.Newtonsoft.Json" Version="6.3.2" />
 	<PackageReference Include="Dapr.Client" Version="1.13.0" />
+
   </ItemGroup>
 
   <ItemGroup>
