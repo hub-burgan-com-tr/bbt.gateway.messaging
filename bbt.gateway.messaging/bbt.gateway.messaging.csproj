@@ -83,6 +83,8 @@
 	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
 	<PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="7.0.3" />
 	<PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.3.1" />
+	<PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.4" />
+
 	
 	
 
