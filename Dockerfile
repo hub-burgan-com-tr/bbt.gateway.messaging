@@ -11,6 +11,7 @@ USER smsgatewayuser
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
+ENV DOTNET_NUGET_SIGNATURE_VERIFICATION=false
 #COPY ["bbt.gateway.messaging/bbt.gateway.messaging.csproj", "bbt.gateway.messaging/"]
 #RUN ls -l bbt.gateway.messaging/
 COPY . .
