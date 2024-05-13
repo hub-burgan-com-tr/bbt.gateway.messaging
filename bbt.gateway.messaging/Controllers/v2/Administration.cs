@@ -22,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ZstdSharp.Unsafe;
 
 namespace bbt.gateway.messaging.Controllers.v2
 {
@@ -61,8 +62,15 @@ namespace bbt.gateway.messaging.Controllers.v2
             Tags = new[] { "Notifications Management" })]
         [HttpPost("notification/{customerId}")]
         [SwaggerResponse(200, "Record was updated successfully")]
-        public async Task<IActionResult> SetNotificationRead(string customerId, NotificationSetReadRequest notificationSetReadRequest)
-        {
+        public async Task<IActionResult> SetNotificationRead(string customerId, [FromBody] NotificationSetReadRequest? notificationSetReadRequest,[FromQuery(Name = "notificationId")] string notificationGuid)
+        {   
+            if(notificationSetReadRequest is not {})
+            {
+                notificationSetReadRequest = new NotificationSetReadRequest
+                {
+                    notificationId = notificationGuid
+                };
+            }
             var isGuid = Guid.TryParse(notificationSetReadRequest.notificationId,out Guid notificationId);
             if(isGuid)
             {
