@@ -185,7 +185,6 @@ namespace bbt.gateway.messaging.Controllers.v2
                         "ttlInSeconds", "60"
                     }
                 });
-                _transactionManager.LogInformation("Notifications Fetched In  +" + sw.ElapsedMilliseconds + "ms");
                 Response.Headers.TryAdd("X-Cache", "Miss");
             }
             else
