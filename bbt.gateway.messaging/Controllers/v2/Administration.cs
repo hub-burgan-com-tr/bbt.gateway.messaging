@@ -80,6 +80,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                     notification.IsRead = true;
                     notification.ReadAt = DateTime.Now;
                     await _repositoryManager.SaveChangesAsync();
+                    await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
                     return Ok();
                 }
                 else
@@ -93,6 +94,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 await _reminderApi.SetNotificationRead(customerId, new common.Api.Reminder.Model.SetReadRequest() { 
                     notificationId = ntfId
                 });
+                await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
                 return Ok();
             }
         }
@@ -112,6 +114,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                     notification.IsDeleted = true;
                     notification.DeletedAt = DateTime.Now;
                     await _repositoryManager.SaveChangesAsync();
+                    await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
                     return Ok();
                 }
                 else
@@ -123,6 +126,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
                 var ntfId = long.Parse(notificationId);
                 await _reminderApi.DeleteNotification(customerId, notificationId);
+                await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
                 return Ok();
             }
         }
@@ -137,6 +141,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             taskList.Add(DeleteNotificationFromReminder(customerId));
             taskList.Add(DeleteNotificationFromMessagingGateway(customerId));
             await Task.WhenAll(taskList);
+            await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
 
             return Ok();
         }
@@ -165,8 +170,6 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerResponse(200, "Records was returned successfully", typeof(Notification[]))]
         public async Task<IActionResult> GetNotifications(string customerId, int pageIndex, int pageSize)
         {
-            var sw = new Stopwatch();
-            sw.Start();
             var notifications = await _daprClient.GetStateAsync<List<Notification>>(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
             
             if (notifications == null)
@@ -177,7 +180,6 @@ namespace bbt.gateway.messaging.Controllers.v2
                 List<Notification>[] taskResults = await Task.WhenAll(taskList);
                 notifications = taskResults[0].Concat(taskResults[1]).ToList();
                 notifications.Sort(new NotificationSortByYear());
-                sw.Stop();
                 await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications", notifications, metadata: new Dictionary<string, string>() {
                     {
                         "ttlInSeconds", "60"
