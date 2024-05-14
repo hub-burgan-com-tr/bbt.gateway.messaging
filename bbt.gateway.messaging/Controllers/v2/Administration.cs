@@ -190,8 +190,6 @@ namespace bbt.gateway.messaging.Controllers.v2
             else
             {
                 Response.Headers.TryAdd("X-Cache", "Hit");
-                sw.Stop();
-                _transactionManager.LogInformation("Notifications Fetched By Cache In +" + sw.ElapsedMilliseconds + "ms");
             }
             
             return Ok(notifications.Skip((pageIndex - 1) * pageSize).Take(pageSize));
