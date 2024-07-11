@@ -197,7 +197,7 @@ namespace bbt.gateway.messaging.Middlewares
                         SetTransactionAsSms(_transactionManager);
                     }
                 }
-                if (_middlewareRequest.Phone.CountryCode == 0)
+                if (_middlewareRequest.Phone is {} && _middlewareRequest.Phone.CountryCode == 0)
                     _isInvalidModel = true;
 
             }
