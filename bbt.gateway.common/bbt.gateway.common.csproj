@@ -29,16 +29,17 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.13" />
     <PackageReference Include="VaultSharp" Version="1.13.0.1" />
-	<PackageReference Include="VaultSharp.Extensions.Configuration" Version="1.0.3" />
-	<PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
-	<PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
-	<PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
-	<PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.4.1" />
-	<PackageReference Include="Refit" Version="6.3.2" />
-	<PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
-	<PackageReference Include="Refit.Newtonsoft.Json" Version="6.3.2" />
-	<PackageReference Include="Dapr.Client" Version="1.13.0" />
-
+    <PackageReference Include="VaultSharp.Extensions.Configuration" Version="1.0.3" />
+    <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
+    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.4.1" />
+    <PackageReference Include="Refit" Version="6.3.2" />
+    <PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
+    <PackageReference Include="Refit.Newtonsoft.Json" Version="6.3.2" />
+    <PackageReference Include="Dapr.Client" Version="1.13.0" />
+    <PackageReference Include="System.Formats.asn1" Version="8.0.1" />
+    <PackageReference Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
 
   <ItemGroup>
