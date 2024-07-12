@@ -9,7 +9,6 @@ namespace bbt.gateway.common.Models.v2
         public SenderType Sender { get; set; }
         [Required(AllowEmptyStrings = false)]
         public string From { get; set; }
-        [Required]
         [EmailAddress]
         public string Email { get; set; }
         [Required(AllowEmptyStrings = false)]
