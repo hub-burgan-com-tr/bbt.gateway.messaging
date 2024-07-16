@@ -383,55 +383,55 @@ namespace bbt.gateway.messaging.Workers
             phoneConfiguration = _transactionManager.OtpRequestInfo.PhoneConfiguration;
 
             //Get blacklist records from current Otp System
-            //var oldBlacklistRecord = (await _repositoryManager.DirectBlacklists.FindAsync(b => b.GsmNumber == _dataV2.Phone.ToString())).OrderByDescending(b => b.RecordDate).FirstOrDefault();
+            var oldBlacklistRecord = (await _repositoryManager.DirectBlacklists.FindAsync(b => b.GsmNumber == _dataV2.Phone.ToString())).OrderByDescending(b => b.RecordDate).FirstOrDefault();
 
-            // if (oldBlacklistRecord != null)
-            // {
-            //     var blackListRecord = phoneConfiguration.BlacklistEntries.FirstOrDefault(b => b.SmsId == oldBlacklistRecord.SmsId);
-            //     if (blackListRecord != null)
-            //     {
-            //         if (blackListRecord.Status == BlacklistStatus.NotResolved && oldBlacklistRecord.IsVerified)
-            //         {
-            //             //Resolve Blacklist entry
-            //             blackListRecord.Status = BlacklistStatus.Resolved;
-            //             blackListRecord.ResolvedAt = oldBlacklistRecord.VerifyDate;
-            //             blackListRecord.ResolvedBy = new Process { Name = oldBlacklistRecord.VerifiedBy };
-            //         }
-            //         if (blackListRecord.Status == BlacklistStatus.NotResolved && !oldBlacklistRecord.IsVerified)
-            //         {
-            //             oldBlacklistRecord.TryCount++;
-            //             await _repositoryManager.SaveSmsBankingChangesAsync();
-            //         }
-            //     }
-            //     else
-            //     {
-            //         if (!oldBlacklistRecord.IsVerified)
-            //         {
+            if (oldBlacklistRecord != null)
+            {
+                var blackListRecord = phoneConfiguration.BlacklistEntries.FirstOrDefault(b => b.SmsId == oldBlacklistRecord.SmsId);
+                if (blackListRecord != null)
+                {
+                    if (blackListRecord.Status == BlacklistStatus.NotResolved && oldBlacklistRecord.IsVerified)
+                    {
+                        //Resolve Blacklist entry
+                        blackListRecord.Status = BlacklistStatus.Resolved;
+                        blackListRecord.ResolvedAt = oldBlacklistRecord.VerifyDate;
+                        blackListRecord.ResolvedBy = new Process { Name = oldBlacklistRecord.VerifiedBy };
+                    }
+                    if (blackListRecord.Status == BlacklistStatus.NotResolved && !oldBlacklistRecord.IsVerified)
+                    {
+                        oldBlacklistRecord.TryCount++;
+                        await _repositoryManager.SaveSmsBankingChangesAsync();
+                    }
+                }
+                else
+                {
+                    if (!oldBlacklistRecord.IsVerified)
+                    {
 
-            //             //Increase Try Count
-            //             oldBlacklistRecord.TryCount++;
-            //             await _repositoryManager.SaveSmsBankingChangesAsync();
+                        //Increase Try Count
+                        oldBlacklistRecord.TryCount++;
+                        await _repositoryManager.SaveSmsBankingChangesAsync();
 
-            //             //Insert Blacklist entry
-            //             var blacklistEntry = createBlackListEntryV2(phoneConfiguration, returnValue.ToString(), "SendMessageToKnownProcess", oldBlacklistRecord.SmsId);
-            //             phoneConfiguration.BlacklistEntries.Add(blacklistEntry);
-            //             await _repositoryManager.BlackListEntries.AddAsync(blacklistEntry);
-            //         }
-            //         else
-            //         {
-            //             _transactionManager.OldBlacklistVerifiedAt = oldBlacklistRecord.VerifyDate ?? DateTime.MinValue;
-            //             //Insert Blacklist entry
-            //             var blacklistEntry = createBlackListEntryV2(phoneConfiguration, returnValue.ToString(), "SendMessageToKnownProcess", oldBlacklistRecord.SmsId);
-            //             blacklistEntry.ResolvedAt = oldBlacklistRecord.VerifyDate;
-            //             blacklistEntry.Status = BlacklistStatus.Resolved;
-            //             blacklistEntry.ResolvedBy = new();
-            //             blacklistEntry.ResolvedBy.Name = "Migrated From Old Db";
-            //             blacklistEntry.ResolvedBy.Identity = oldBlacklistRecord.VerifiedBy;
-            //             phoneConfiguration.BlacklistEntries.Add(blacklistEntry);
-            //             await _repositoryManager.BlackListEntries.AddAsync(blacklistEntry);
-            //         }
-            //     }
-            // }
+                        //Insert Blacklist entry
+                        var blacklistEntry = createBlackListEntryV2(phoneConfiguration, returnValue.ToString(), "SendMessageToKnownProcess", oldBlacklistRecord.SmsId);
+                        phoneConfiguration.BlacklistEntries.Add(blacklistEntry);
+                        await _repositoryManager.BlackListEntries.AddAsync(blacklistEntry);
+                    }
+                    else
+                    {
+                        _transactionManager.OldBlacklistVerifiedAt = oldBlacklistRecord.VerifyDate ?? DateTime.MinValue;
+                        //Insert Blacklist entry
+                        var blacklistEntry = createBlackListEntryV2(phoneConfiguration, returnValue.ToString(), "SendMessageToKnownProcess", oldBlacklistRecord.SmsId);
+                        blacklistEntry.ResolvedAt = oldBlacklistRecord.VerifyDate;
+                        blacklistEntry.Status = BlacklistStatus.Resolved;
+                        blacklistEntry.ResolvedBy = new();
+                        blacklistEntry.ResolvedBy.Name = "Migrated From Old Db";
+                        blacklistEntry.ResolvedBy.Identity = oldBlacklistRecord.VerifiedBy;
+                        phoneConfiguration.BlacklistEntries.Add(blacklistEntry);
+                        await _repositoryManager.BlackListEntries.AddAsync(blacklistEntry);
+                    }
+                }
+            }
 
             // if known number without any blacklist entry 
             if (phoneConfiguration.Operator != null)
