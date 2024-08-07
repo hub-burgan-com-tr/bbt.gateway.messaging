@@ -44,10 +44,10 @@ namespace bbt.gateway.worker.SmsReports
                 {
                     try
                     {
-                        var endDate = DateTime.Now.AddHours(-6);
-                        var startDate = endDate.AddHours(-2);
+                        var startDate = DateTime.Now.AddDays(-1);
+                        var endDate = DateTime.Now;
                         var smsResponseLogs = await _dbContext.SmsResponseLog.
-                        FromSqlRaw("Select * from SmsResponseLog (NOLOCK) WHERE OperatorResponseCode = 0 AND CreatedAt Between {0} AND {1} AND (status is null OR status = '')", startDate.ToString("yyyy-MM-dd HH:mm"), endDate.ToString("yyyy-MM-dd HH:mm"))
+                        FromSqlRaw("Select * from SmsResponseLog (NOLOCK) WHERE OperatorResponseCode = 0 AND CreatedAt Between {0} AND {1} AND (status is null OR status = '')", startDate.ToString("yyyy-MM-dd"), endDate.ToString("yyyy-MM-dd"))
                         .AsNoTracking().ToListAsync();
 
                         _logManager.LogInformation("Sms Count : " + smsResponseLogs.Count);
