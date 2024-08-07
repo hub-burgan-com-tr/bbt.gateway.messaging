@@ -26,6 +26,7 @@
 		<PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.26.0" />
 		<PackageReference Include="System.Net.Http" Version="4.3.4" /> 
 		<PackageReference Include="System.Text.Regularexpressions" Version="4.3.1" />
+		<PackageReference Include="System.Net.Http.WinHttpHandler" Version="8.0.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\bbt.gateway.common\bbt.gateway.common.csproj" />
