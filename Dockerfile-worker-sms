@@ -1,10 +1,10 @@
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-focal AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 
 RUN adduser -u 5679 --disabled-password --gecos "" smsgateway-workeruser && chown -R smsgateway-workeruser:smsgateway-workeruser /app
 USER smsgateway-workeruser
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0-focal AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY ["bbt.gateway.worker.SmsReports/bbt.gateway.worker.SmsReports.csproj", "bbt.gateway.worker.SmsReports/"]
 RUN dotnet restore "bbt.gateway.worker.SmsReports/bbt.gateway.worker.SmsReports.csproj"

@@ -4,8 +4,12 @@ namespace bbt.gateway.common.GlobalConstants
 {
     public class GlobalConstants
     {
+        public static readonly string DAPR_LOCK_STORE = "messaginggateway-lockstore";
         public static readonly string DAPR_STATE_STORE = "messaginggateway-statestore";
         public static readonly string DAPR_SECRET_STORE = "messaginggateway-secretstore";
+
+        public static readonly string OPERATOR_CACHE_PREFIX = "OperatorInfo_";
+        public static readonly string OPERATOR_LOCK_PREFIX = "OperatorLock_";
 
         public static readonly string SMS_CONTENTS_SUFFIX = "SmsContents";
         public static readonly string MAIL_CONTENTS_SUFFIX = "MailContents";
