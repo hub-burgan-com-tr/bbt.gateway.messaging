@@ -6,6 +6,7 @@ USER smsgateway-workeruser
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
+ENV DOTNET_NUGET_SIGNATURE_VERIFICATION=false
 COPY ["bbt.gateway.worker.SmsReports/bbt.gateway.worker.SmsReports.csproj", "bbt.gateway.worker.SmsReports/"]
 RUN dotnet restore "bbt.gateway.worker.SmsReports/bbt.gateway.worker.SmsReports.csproj"
 COPY . .
