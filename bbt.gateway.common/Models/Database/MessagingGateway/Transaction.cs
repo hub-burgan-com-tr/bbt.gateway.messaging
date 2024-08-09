@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace bbt.gateway.common.Models
 {
@@ -16,8 +17,12 @@ namespace bbt.gateway.common.Models
         public string IpAdress { get; set; }
         public Process CreatedBy { get; set; }
 
+        public Guid SmsRequestLogId{get;set;}
+        public Guid MailRequestLogId{get;set;}
         public OtpRequestLog OtpRequestLog { get; set; }
+        [ForeignKey("SmsRequestLogId")]
         public SmsRequestLog SmsRequestLog { get; set; }
+        [ForeignKey("MailRequestLogId")]
         public MailRequestLog MailRequestLog { get; set; }
         public PushNotificationRequestLog PushNotificationRequestLog { get; set; }
 

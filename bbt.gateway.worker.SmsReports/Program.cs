@@ -1,3 +1,4 @@
+using System.Text.Json;
 using bbt.gateway.common;
 using bbt.gateway.common.Api.MessagingGateway;
 using bbt.gateway.common.Helpers;
@@ -18,6 +19,14 @@ IHost host = Host.CreateDefaultBuilder(args)
                 .UseSqlServer(context.Configuration.GetConnectionString("DefaultConnection"))
                 .Options);
         services.AddSingleton<LogManager>();
+        services.AddDaprClient(builder =>
+                   builder.UseJsonSerializationOptions(
+                       new JsonSerializerOptions()
+                       {
+                           PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                           PropertyNameCaseInsensitive = true,
+                       }));
+        services.AddScoped<KafkaHelper>();
 
     })
     .UseAllElasticApm()
