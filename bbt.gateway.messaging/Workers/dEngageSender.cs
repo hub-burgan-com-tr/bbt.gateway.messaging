@@ -55,7 +55,10 @@ namespace bbt.gateway.messaging.Workers
 
             int limit = 1000;
             int offsetMultiplexer = 0;
-            _operatordEngage.Type = type;
+
+            //Operator Cache Fix
+            //_operatordEngage.Type = type;
+            await _operatordEngage.GetOperatorAsync(type);
             while (true)
             {
                 var response = await _operatordEngage.GetMailContents(limit, (limit * offsetMultiplexer).ToString());
@@ -89,7 +92,9 @@ namespace bbt.gateway.messaging.Workers
 
             int limit = 1000;
             int offsetMultiplexer = 0;
-            _operatordEngage.Type = type;
+            //Operator Cache Fix
+            //_operatordEngage.Type = type;
+            await _operatordEngage.GetOperatorAsync(type);
             while (true)
             {
                 var response = await _operatordEngage.GetPushContents(limit, (limit * offsetMultiplexer).ToString());
@@ -123,7 +128,9 @@ namespace bbt.gateway.messaging.Workers
 
             int limit = 1000;
             int offsetMultiplexer = 0;
-            _operatordEngage.Type = type;
+            //Operator Cache Fix
+            //_operatordEngage.Type = type;
+            await _operatordEngage.GetOperatorAsync(type);
             while (true)
             {
                 var response = await _operatordEngage.GetSmsContents(limit, (limit * offsetMultiplexer).ToString());
@@ -158,7 +165,9 @@ namespace bbt.gateway.messaging.Workers
             var responseLog = txnInfo?.SmsRequestLog?.ResponseLogs?.Where(r => r.OperatorResponseCode == 0).SingleOrDefault();
             if (responseLog != null)
             {
-                _operatordEngage.Type = responseLog.Operator;
+                //Operator Cache Fix
+                //_operatordEngage.Type = responseLog.Operator;
+                await _operatordEngage.GetOperatorAsync(responseLog.Operator);
 
                 var response = await _operatordEngage.CheckSms(responseLog.StatusQueryId);
                 checkSmsStatusResponse.code = response.code;
@@ -189,7 +198,9 @@ namespace bbt.gateway.messaging.Workers
 
         public async Task<SmsTrackingLog> CheckSms(common.Models.v2.CheckFastSmsRequest checkFastSmsRequest)
         {
-            _operatordEngage.Type = checkFastSmsRequest.Operator;
+            //Operator Cache Fix
+            //_operatordEngage.Type = checkFastSmsRequest.Operator;
+            await _operatordEngage.GetOperatorAsync(checkFastSmsRequest.Operator);
             var response = await _operatordEngage.CheckSms(checkFastSmsRequest.StatusQueryId);
 
             if (response != null)
@@ -270,7 +281,9 @@ namespace bbt.gateway.messaging.Workers
 
         public async Task<MailTrackingLog> CheckMail(common.Models.v2.CheckMailStatusRequest checkMailStatusRequest)
         {
-            _operatordEngage.Type = checkMailStatusRequest.Operator;
+            //Operator Cache Fix
+            //_operatordEngage.Type = checkMailStatusRequest.Operator;
+            await _operatordEngage.GetOperatorAsync(checkMailStatusRequest.Operator);
             var response = await _operatordEngage.CheckMail(checkMailStatusRequest.StatusQueryId);
 
             if (response != null)
@@ -341,10 +354,13 @@ namespace bbt.gateway.messaging.Workers
 
             var header = await _headerManager.Get(sendMessageSmsRequest.ContentType, sendMessageSmsRequest.HeaderInfo);
 
+            //Operator Cache Fix
             if (_transactionManager.CustomerRequestInfo.BusinessLine == "X")
-                _operatordEngage.Type = OperatorType.dEngageOn;
+                //_operatordEngage.Type = OperatorType.dEngageOn;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageOn);
             else
-                _operatordEngage.Type = OperatorType.dEngageBurgan;
+                //_operatordEngage.Type = OperatorType.dEngageBurgan;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageBurgan);
 
             var smsRequest = new SmsRequestLog()
             {
@@ -384,10 +400,13 @@ namespace bbt.gateway.messaging.Workers
                     _transactionManager.CustomerRequestInfo.BusinessLine = sendTemplatedSmsRequest.HeaderInfo.Sender == SenderType.On ? "X" : "B";
             }
 
+            //Operator Cache Fix
             if (_transactionManager.CustomerRequestInfo.BusinessLine == "X")
-                _operatordEngage.Type = OperatorType.dEngageOn;
+                //_operatordEngage.Type = OperatorType.dEngageOn;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageOn);
             else
-                _operatordEngage.Type = OperatorType.dEngageBurgan;
+                //_operatordEngage.Type = OperatorType.dEngageBurgan;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageBurgan);
 
             var contentList = await GetContentList<SmsContentInfo>(_operatordEngage.Type.ToString() + "_" + GlobalConstants.SMS_CONTENTS_SUFFIX);
 
@@ -419,6 +438,14 @@ namespace bbt.gateway.messaging.Workers
 
         public async Task<SendEmailResponse> SendMail(SendMessageEmailRequest sendMessageEmailRequest)
         {
+            //Operator Cache Fix
+            if (_transactionManager.CustomerRequestInfo.BusinessLine == "X")
+                //_operatordEngage.Type = OperatorType.dEngageOn;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageOn);
+            else
+                //_operatordEngage.Type = OperatorType.dEngageBurgan;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageBurgan);
+
             SendEmailResponse sendEmailResponse = new SendEmailResponse()
             {
                 TxnId = _transactionManager.TxnId,
@@ -481,10 +508,13 @@ namespace bbt.gateway.messaging.Workers
                 if (sendTemplatedEmailRequest.HeaderInfo.Sender != SenderType.AutoDetect)
                     _transactionManager.CustomerRequestInfo.BusinessLine = sendTemplatedEmailRequest.HeaderInfo.Sender == SenderType.On ? "X" : "B";
             }
+            //Operator Cache Fix
             if (_transactionManager.CustomerRequestInfo.BusinessLine == "X")
-                _operatordEngage.Type = OperatorType.dEngageOn;
+                // _operatordEngage.Type = OperatorType.dEngageOn;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageOn);
             else
-                _operatordEngage.Type = OperatorType.dEngageBurgan;
+                // _operatordEngage.Type = OperatorType.dEngageBurgan;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageBurgan);
 
             var contentList = await GetContentList<ContentInfo>(_operatordEngage.Type.ToString() + "_" + GlobalConstants.MAIL_CONTENTS_SUFFIX);
 
@@ -537,10 +567,13 @@ namespace bbt.gateway.messaging.Workers
                 if (sendTemplatedPushNotificationRequest.HeaderInfo.Sender != SenderType.AutoDetect)
                     _transactionManager.CustomerRequestInfo.BusinessLine = sendTemplatedPushNotificationRequest.HeaderInfo.Sender == SenderType.On ? "X" : "B";
             }
+            //Operator Cache Fix
             if (_transactionManager.CustomerRequestInfo.BusinessLine == "X")
-                _operatordEngage.Type = OperatorType.dEngageOn;
+                //_operatordEngage.Type = OperatorType.dEngageOn;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageOn);
             else
-                _operatordEngage.Type = OperatorType.dEngageBurgan;
+                //_operatordEngage.Type = OperatorType.dEngageBurgan;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageBurgan);
 
             var contentList = await GetContentList<PushContentInfo>(_operatordEngage.Type.ToString() + "_" + GlobalConstants.PUSH_CONTENTS_SUFFIX);
 
@@ -578,11 +611,13 @@ namespace bbt.gateway.messaging.Workers
             if (templatedSmsRequest.Sender != common.Models.v2.SenderType.AutoDetect)
                 _transactionManager.CustomerRequestInfo.BusinessLine = templatedSmsRequest.Sender == common.Models.v2.SenderType.On ? "X" : "B";
 
-
+            //Operator Cache Fix
             if (_transactionManager.CustomerRequestInfo.BusinessLine == "X")
-                _operatordEngage.Type = OperatorType.dEngageOn;
+                //_operatordEngage.Type = OperatorType.dEngageOn;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageOn);
             else
-                _operatordEngage.Type = OperatorType.dEngageBurgan;
+                //_operatordEngage.Type = OperatorType.dEngageBurgan;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageBurgan);
 
             var contentList = await GetContentList<SmsContentInfo>(_operatordEngage.Type.ToString() + "_" + GlobalConstants.SMS_CONTENTS_SUFFIX);
 
@@ -658,10 +693,13 @@ namespace bbt.gateway.messaging.Workers
             if (sendSmsRequest.Sender != common.Models.v2.SenderType.AutoDetect)
                 _transactionManager.CustomerRequestInfo.BusinessLine = sendSmsRequest.Sender == common.Models.v2.SenderType.On ? "X" : "B";
 
+            //Operator Cache Fix
             if (_transactionManager.CustomerRequestInfo.BusinessLine == "X")
-                _operatordEngage.Type = OperatorType.dEngageOn;
+                //_operatordEngage.Type = OperatorType.dEngageOn;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageOn);
             else
-                _operatordEngage.Type = OperatorType.dEngageBurgan;
+                //_operatordEngage.Type = OperatorType.dEngageBurgan;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageBurgan);
 
 
             var smsRequest = new SmsRequestLog()
@@ -704,12 +742,16 @@ namespace bbt.gateway.messaging.Workers
 
             if (_transactionManager.CustomerRequestInfo.BusinessLine == "X")
             {
-                _operatordEngage.Type = OperatorType.dEngageOn;
+                //Operator Cache Fix
+                //_operatordEngage.Type = OperatorType.dEngageOn;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageOn);
                 mailRequestDto.From += ON_MAIL_SUFFIX;
             }
             else
             {
-                _operatordEngage.Type = OperatorType.dEngageBurgan;
+                //Operator Cache Fix
+                //_operatordEngage.Type = OperatorType.dEngageBurgan;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageBurgan);
                 mailRequestDto.From += BURGAN_MAIL_SUFFIX;
             }
 
@@ -756,10 +798,13 @@ namespace bbt.gateway.messaging.Workers
             if (templatedMailRequest.Sender != common.Models.v2.SenderType.AutoDetect)
                 _transactionManager.CustomerRequestInfo.BusinessLine = templatedMailRequest.Sender == common.Models.v2.SenderType.On ? "X" : "B";
 
+            //Operator Cache Fix
             if (_transactionManager.CustomerRequestInfo.BusinessLine == "X")
-                _operatordEngage.Type = OperatorType.dEngageOn;
+                //_operatordEngage.Type = OperatorType.dEngageOn;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageOn);
             else
-                _operatordEngage.Type = OperatorType.dEngageBurgan;
+                //_operatordEngage.Type = OperatorType.dEngageBurgan;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageBurgan);
 
             var contentList = await GetContentList<ContentInfo>(_operatordEngage.Type.ToString() + "_" + GlobalConstants.MAIL_CONTENTS_SUFFIX);
 
@@ -846,12 +891,15 @@ namespace bbt.gateway.messaging.Workers
             if (sendTemplatedPushNotificationRequest.Sender != common.Models.v2.SenderType.AutoDetect)
                 _transactionManager.CustomerRequestInfo.BusinessLine = sendTemplatedPushNotificationRequest.Sender == common.Models.v2.SenderType.On ? "X" : "B";
 
+            //Operator Cache fix
             if (_transactionManager.CustomerRequestInfo.BusinessLine == "X")
-                _operatordEngage.Type = OperatorType.dEngageOn;
+                //_operatordEngage.Type = OperatorType.dEngageOn;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageOn);
             else
-                _operatordEngage.Type = OperatorType.dEngageBurgan;
+                //_operatordEngage.Type = OperatorType.dEngageBurgan;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageBurgan);
 
-            
+
             var contentList = await GetContentList<PushContentInfo>(_operatordEngage.Type.ToString() + "_" + GlobalConstants.PUSH_CONTENTS_SUFFIX);
 
             var contentInfo = GetContentInfo(contentList, sendTemplatedPushNotificationRequest.Template);
@@ -929,10 +977,13 @@ namespace bbt.gateway.messaging.Workers
             if (sendPushNotificationRequest.Sender != common.Models.v2.SenderType.AutoDetect)
                 _transactionManager.CustomerRequestInfo.BusinessLine = sendPushNotificationRequest.Sender == common.Models.v2.SenderType.On ? "X" : "B";
 
+            //Operator Cache Fix
             if (_transactionManager.CustomerRequestInfo.BusinessLine == "X")
-                _operatordEngage.Type = OperatorType.dEngageOn;
+                //_operatordEngage.Type = OperatorType.dEngageOn;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageOn);
             else
-                _operatordEngage.Type = OperatorType.dEngageBurgan;
+                //_operatordEngage.Type = OperatorType.dEngageBurgan;
+                await _operatordEngage.GetOperatorAsync(OperatorType.dEngageBurgan);
 
             var contentList = await GetContentList<PushContentInfo>(_operatordEngage.Type.ToString() + "_" + GlobalConstants.PUSH_CONTENTS_SUFFIX);
 

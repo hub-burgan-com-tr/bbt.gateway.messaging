@@ -1,10 +1,14 @@
-﻿using bbt.gateway.common.Api.MessagingGateway;
+﻿using bbt.gateway.common;
+using bbt.gateway.common.Api.dEngage.Model.Transactional;
+using bbt.gateway.common.Api.MessagingGateway;
 using bbt.gateway.common.Extensions;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
 using bbt.gateway.messaging.Workers;
 using Elastic.Apm.Api;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Refit;
@@ -13,6 +17,7 @@ using Swashbuckle.AspNetCore.Filters;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -46,6 +51,60 @@ namespace bbt.gateway.messaging.Controllers.v2
             _configuration = configuration;
             _messagingGatewayApi = messagingGatewayApi;
             _tracer = Elastic.Apm.Agent.Tracer;
+        }
+
+        private async Task<IActionResult> ProcessSmsRequestAsync(SmsRequest data)
+        {
+            if (ModelState.IsValid)
+            {
+                var codecOperator = await _transactionManager.GetOperatorAsync(common.Models.OperatorType.Codec);
+                var infobipOperator = await _transactionManager.GetOperatorAsync(common.Models.OperatorType.Infobip);
+                if (data.SmsType == SmsTypes.Otp)
+                {
+
+                    if (data.Phone.CountryCode != 90 || _transactionManager.OtpRequestInfo.PhoneConfiguration.Operator == common.Models.OperatorType.Foreign)
+                    {
+                        if (infobipOperator?.Status == common.Models.OperatorStatus.Active)
+                        {
+                            return Ok(await _infobipSender.SendSms(data));
+                        }
+
+                        return Ok(await _otpSender.SendMessageV2(data));
+                    }
+                    else
+                    {
+                        return Ok(await _otpSender.SendMessageV2(data));
+                    }
+                }
+                else
+                {
+
+                    if ((data.Phone.CountryCode != 90 || _transactionManager.SmsRequestInfo?.PhoneConfiguration?.Operator == common.Models.OperatorType.Foreign) && infobipOperator?.Status == common.Models.OperatorStatus.Active)
+                    {
+
+                        return Ok(await _infobipSender.SendSms(data));
+
+                    }
+
+                    if (codecOperator.Status == common.Models.OperatorStatus.Active)
+                    {
+
+                        return Ok(await _codecSender.SendSmsV2(data));
+                    }
+                    else
+                    {
+
+                        return Ok(await _dEngageSender.SendSmsV2(data));
+
+                    }
+                }
+            }
+            else
+            {
+                _transactionManager.LogError("Model State is Not Valid | " +
+                    string.Join("|", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+                return BadRequest(ModelState);
+            }
         }
 
         [SwaggerOperation(
@@ -158,62 +217,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 };
             }
 
-            if (ModelState.IsValid)
-            {
-                var codecOperator = await _repositoryManager.Operators.GetOperatorAsNoTracking(common.Models.OperatorType.Codec);
-                var infobipOperator = await _repositoryManager.Operators.GetOperatorAsNoTracking(common.Models.OperatorType.Infobip);
-                if (data.SmsType == SmsTypes.Otp)
-                {
-                    return await _tracer.CaptureTransaction("OtpSending", ApiConstants.TypeRequest, async () =>
-                    {
-                        if (data.Phone.CountryCode != 90 || _transactionManager.OtpRequestInfo.PhoneConfiguration.Operator == common.Models.OperatorType.Foreign)
-                        {
-                            if(infobipOperator?.Status == common.Models.OperatorStatus.Active)
-                            {
-                                return Ok(await _infobipSender.SendSms(data));
-                            }
-
-                            return Ok(await _otpSender.SendMessageV2(data));
-                        }
-                        else
-                        {
-                            return Ok(await _otpSender.SendMessageV2(data));
-                        }
-                    });
-                }
-                else
-                {
-                    
-                    if(data.Phone.CountryCode != 90 && infobipOperator?.Status == common.Models.OperatorStatus.Active)
-                    {
-                        return await _tracer.CaptureTransaction("SmsSendingInfobip", ApiConstants.TypeRequest, async () =>
-                        {
-                            return Ok(await _infobipSender.SendSms(data));
-                        });
-                    }
-
-                    if (codecOperator.Status == common.Models.OperatorStatus.Active)
-                    {
-                        return await _tracer.CaptureTransaction("SmsSendingCodec", ApiConstants.TypeRequest, async () =>
-                        {
-                            return Ok(await _codecSender.SendSmsV2(data));
-                        });
-                    }
-                    else
-                    {
-                        return await _tracer.CaptureTransaction("SmsSendingdEngage", ApiConstants.TypeRequest, async () =>
-                        {
-                            return Ok(await _dEngageSender.SendSmsV2(data));
-                        });
-                    }
-                }
-            }
-            else
-            {
-                _transactionManager.LogError("Model State is Not Valid | " +
-                    string.Join("|", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
-                return BadRequest(ModelState);
-            }
+            return await ProcessSmsRequestAsync(data);
 
         }
 
@@ -428,57 +432,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 };
             }
 
-            if (ModelState.IsValid)
-            {
-                var codecOperator = await _repositoryManager.Operators.GetOperatorAsNoTracking(common.Models.OperatorType.Codec);
-                var infobipOperator = await _repositoryManager.Operators.GetOperatorAsNoTracking(common.Models.OperatorType.Infobip);
-                if (data.SmsType == SmsTypes.Otp)
-                {
-                    if (_data.Phone.CountryCode != 90)
-                    {
-                        if (infobipOperator?.Status == common.Models.OperatorStatus.Active)
-                        {
-                            return Ok(await _infobipSender.SendSms(_data));
-                        }
-
-                        return Ok(await _otpSender.SendMessageV2(_data));
-                    }
-                    else
-                    {
-                        return Ok(await _otpSender.SendMessageV2(_data));
-                    }
-                }
-                else
-                {
-                    if(_data.Phone.CountryCode != 90 && infobipOperator?.Status == common.Models.OperatorStatus.Active)
-                    {
-                        return await _tracer.CaptureTransaction("SmsSendingInfobip", ApiConstants.TypeRequest, async () =>
-                        {
-                            return Ok(await _infobipSender.SendSms(_data));
-                        });
-                    }
-                    if (codecOperator.Status == common.Models.OperatorStatus.Active)
-                    {
-                        return await _tracer.CaptureTransaction("SmsSendingCodec", ApiConstants.TypeRequest, async () =>
-                        {
-                            return Ok(await _codecSender.SendSmsV2(_data));
-                        });
-                    }
-                    else
-                    {
-                        return await _tracer.CaptureTransaction("SmsSendingdEngage", ApiConstants.TypeRequest, async () =>
-                        {
-                            return Ok(await _dEngageSender.SendSmsV2(_data));
-                        });
-                    }
-                }
-            }
-            else
-            {
-                _transactionManager.LogError("Model State is Not Valid | " +
-                    string.Join("|", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
-                return BadRequest(ModelState);
-            }
+            return await ProcessSmsRequestAsync(_data);
 
         }
 

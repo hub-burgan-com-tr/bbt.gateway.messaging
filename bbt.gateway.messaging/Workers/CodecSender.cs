@@ -19,7 +19,7 @@ namespace bbt.gateway.messaging.Workers
             CodecFactory codecFactory,
             IRepositoryManager repositoryManager,
             ITransactionManager transactionManager,
-            OperatorCodec operatorCodec,
+            IOperatorCodec operatorCodec,
             InstantReminder instantReminder
         )
         {
@@ -32,7 +32,9 @@ namespace bbt.gateway.messaging.Workers
 
         public async Task<SmsTrackingLog> CheckSms(common.Models.v2.CheckFastSmsRequest checkFastSmsRequest)
         {
-            _operatorCodec.Type = OperatorType.Codec;
+            //Operator Cache Fix
+            //_operatorCodec.Type = OperatorType.Codec;
+            await _operatorCodec.GetOperatorAsync(OperatorType.Codec);
             var response = await _operatorCodec.CheckSms(checkFastSmsRequest.StatusQueryId);
 
             if (response != null)
@@ -78,7 +80,9 @@ namespace bbt.gateway.messaging.Workers
 
             var header = await _headerManager.Get(sendMessageSmsRequest.ContentType, sendMessageSmsRequest.HeaderInfo);
 
-            _operatorCodec.Type = OperatorType.Codec;
+            //Operator Cache Fix
+            //_operatorCodec.Type = OperatorType.Codec;
+            await _operatorCodec.GetOperatorAsync(OperatorType.Codec);
 
             var smsRequest = new SmsRequestLog()
             {
@@ -120,7 +124,9 @@ namespace bbt.gateway.messaging.Workers
             if (sendSmsRequest.Sender != common.Models.v2.SenderType.AutoDetect)
                 _transactionManager.CustomerRequestInfo.BusinessLine = sendSmsRequest.Sender == common.Models.v2.SenderType.On ? "X" : "B";
 
-            _operatorCodec.Type = OperatorType.Codec;
+            //Operator Cache Fix
+            //_operatorCodec.Type = OperatorType.Codec;
+            await _operatorCodec.GetOperatorAsync(OperatorType.Codec);
 
             var smsRequest = new SmsRequestLog()
             {

@@ -22,6 +22,7 @@ namespace bbt.gateway.messaging.Workers
         public bool StringSend { get; set; }
         public int PrefixLength { get; set; }
         public int NumberLength { get; set; }
+        public Operator ActiveOperator { get; set; }
         public common.Models.v2.Phone GetPhoneFromString(common.Models.v2.PhoneString phoneString);
         public Task AddTransactionAsync();
         public Task SaveTransactionAsync();
@@ -29,6 +30,10 @@ namespace bbt.gateway.messaging.Workers
         public Task GetCustomerInfoByEmail();
         public Task GetCustomerInfoByCitizenshipNumber();
         public Task GetCustomerInfoByCustomerNo();
+
+        public Task<Operator> GetOperatorAsync(OperatorType type);
+        public Task RevokeOperatorsAsync();
+
         public string? GetTemplateLanguage();
         public void LogState();
 

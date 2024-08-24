@@ -10,6 +10,6 @@ namespace bbt.gateway.messaging.Services
     public interface IOperatorService
     {
         public Task<Operator> GetOperator(OperatorType type);
-        public Task RevokeCache(OperatorType type);
+        public Task RevokeCache();
     }
 }

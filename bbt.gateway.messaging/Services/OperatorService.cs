@@ -15,6 +15,7 @@ namespace bbt.gateway.messaging.Services
         private readonly DaprClient _daprClient;
         private readonly IRepositoryManager _repositoryManager;
         private readonly IConfiguration _configuration;
+
         public OperatorService(DaprClient daprClient, IRepositoryManager repositoryManager)
         {
             _daprClient = daprClient;
@@ -23,20 +24,20 @@ namespace bbt.gateway.messaging.Services
 
         public async Task<Operator> GetOperator(OperatorType type)
         {
-            var operatorInfo = await _daprClient.GetStateAsync<Operator>(GlobalConstants.DAPR_STATE_STORE,GlobalConstants.OPERATOR_CACHE_PREFIX+type.ToString());
-            if(operatorInfo is not {})
+            var operators = await _daprClient.GetStateAsync<IEnumerable<Operator>>(GlobalConstants.DAPR_STATE_STORE,GlobalConstants.OPERATORS_CACHE_KEY);
+            if(operators is not {})
             {
-                await using (var fileLock = await _daprClient.Lock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATOR_LOCK_PREFIX+type,"MessagingGateway",10))
+                await using (var fileLock = await _daprClient.Lock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATORS_LOCK_KEY,"MessagingGateway",10))
                 {
                     if (fileLock.Success)
                     {
-                        operatorInfo = await _repositoryManager.Operators.GetOperatorAsNoTracking(type);
-                        await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, GlobalConstants.OPERATOR_CACHE_PREFIX+type.ToString(), operatorInfo,metadata: new Dictionary<string, string>() {
+                        operators = await _repositoryManager.Operators.GetAllAsNoTrackingAsync();
+                        await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, GlobalConstants.OPERATORS_CACHE_KEY, operators,metadata: new Dictionary<string, string>() {
                             {
-                                "ttlInSeconds", "3600"
+                                "ttlInSeconds", "290"
                             }
                         });
-                        var response = await _daprClient.Unlock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATOR_LOCK_PREFIX+type,"MessagingGateway");
+                        var response = await _daprClient.Unlock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATORS_LOCK_KEY,"MessagingGateway");
                     }
                     else
                     {
@@ -44,12 +45,12 @@ namespace bbt.gateway.messaging.Services
                     }
                 }
             }
-            return operatorInfo;
+            return operators.FirstOrDefault(o => o.Type.Equals(type));
         }
 
-        public async Task RevokeCache(OperatorType type)
+        public async Task RevokeCache()
         {
-            await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,GlobalConstants.OPERATOR_CACHE_PREFIX+type.ToString());
+            await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,GlobalConstants.OPERATORS_CACHE_KEY);
         }
     }
 }

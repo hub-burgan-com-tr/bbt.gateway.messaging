@@ -17,12 +17,17 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             ITransactionManager transactionManager) : base(configuration, transactionManager)
         {
             _turkTelekomApi = turkTelekomApiFactory(TransactionManager.UseFakeSmtp);
-            Type = OperatorType.TurkTelekom;
+        }
+
+        private async Task SetOperatorAsync()
+        {
+            await GetOperatorAsync(OperatorType.TurkTelekom);
             _turkTelekomApi.SetOperatorType(OperatorConfig);
         }
 
         public async Task<bool> SendOtp(Phone phone, string content, ConcurrentBag<OtpResponseLog> responses, Header header)
         {
+            await SetOperatorAsync();
             var turkTelekomResponse = await _turkTelekomApi.SendSms(CreateSmsRequest(phone,content,header));
 
             var response =  turkTelekomResponse.BuildOperatorApiResponse();
@@ -32,6 +37,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
         }
         public async Task<OtpResponseLog> SendOtp(Phone phone, string content, Header header)
         {
+            await SetOperatorAsync();
             var turkTelekomResponse = await _turkTelekomApi.SendSms(CreateSmsRequest(phone, content, header));
 
             var response = turkTelekomResponse.BuildOperatorApiResponse();
@@ -45,8 +51,9 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             return new OtpResponseLog();
         }
 
-            public async Task<OtpTrackingLog> CheckMessageStatus(CheckSmsRequest checkSmsRequest)
+        public async Task<OtpTrackingLog> CheckMessageStatus(CheckSmsRequest checkSmsRequest)
         {
+            await SetOperatorAsync();
             var turkTelekomResponse = await _turkTelekomApi.CheckSmsStatus(CreateSmsStatusRequest(checkSmsRequest.StatusQueryId));
             return turkTelekomResponse.BuildOperatorApiTrackingResponse(checkSmsRequest);
         }

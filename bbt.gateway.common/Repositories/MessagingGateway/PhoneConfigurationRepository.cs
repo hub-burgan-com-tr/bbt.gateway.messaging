@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Transactions;
 
 namespace bbt.gateway.common.Repositories
 {
@@ -20,6 +21,7 @@ namespace bbt.gateway.common.Repositories
 
         public async Task<PhoneConfiguration> GetWithBlacklistEntriesAsync(int countryCode, int prefix, int number, DateTime blackListValidDate)
         {
+           
             return await Context.PhoneConfigurations.Where(i =>
                 i.Phone.CountryCode == countryCode &&
                 i.Phone.Prefix == prefix &&

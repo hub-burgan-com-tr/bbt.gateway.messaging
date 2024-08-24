@@ -9,11 +9,11 @@ namespace bbt.gateway.common.GlobalConstants
         public static readonly string DAPR_SECRET_STORE = "messaginggateway-secretstore";
         public static readonly string DAPR_QUEUE_STORE = "messaginggateway-queuestore";
 
-        public static readonly string SMS_TRACKING_QUEUE_NAME = "sms-tracking-topic";
-        public static readonly string MAIL_TRACKING_QUEUE_NAME = "mail-tracking-topic";
+        public static readonly string SMS_TRACKING_QUEUE_NAME = "msgtw-sms-tracking-topic";
+        public static readonly string MAIL_TRACKING_QUEUE_NAME = "msgtw-mail-tracking-topic";
 
-        public static readonly string OPERATOR_CACHE_PREFIX = "OperatorInfo_";
-        public static readonly string OPERATOR_LOCK_PREFIX = "OperatorLock_";
+        public static readonly string OPERATORS_CACHE_KEY = "MsGtwOperatorsInfo";
+        public static readonly string OPERATORS_LOCK_KEY = "MsGtwOperatorsLock";
 
         public static readonly string SMS_CONTENTS_SUFFIX = "SmsContents";
         public static readonly string MAIL_CONTENTS_SUFFIX = "MailContents";

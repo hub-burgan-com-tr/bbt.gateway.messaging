@@ -1,9 +1,9 @@
-﻿using Elasticsearch.Net;
+﻿using Elastic.Serilog.Sinks;
+using Elastic.Transport;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Sinks.Elasticsearch;
 using VaultSharp.Extensions.Configuration;
 
 namespace bbt.gateway.common
@@ -31,19 +31,14 @@ namespace bbt.gateway.common
 
                 var configuration = builder.Build();
                 
-                ApiKeyAuthenticationCredentials k = new ApiKeyAuthenticationCredentials(configuration["ElasticSearch:ApiKey"]);
+                //ApiKeyAuthenticationCredentials k = new ApiKeyAuthenticationCredentials(configuration["ElasticSearch:ApiKey"]);
                 indexFormat = (environmentName != "Prod" ? ( environmentName != "Drc" ? "nonprod-" : "drc") : "prod-") + indexFormat;
                 Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .Enrich.WithEnvironmentName()
                 .Enrich.WithMachineName()
                 .WriteTo.Console()
-                .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(configuration["ElasticSearch:Url"]))
-                {
-                    IndexFormat = indexFormat + "-{0:yyyy-MM}",
-                    ModifyConnectionSettings = c => c.ApiKeyAuthentication(k),
-                    TypeName = null
-                })
+                .WriteTo.Elasticsearch([new Uri(configuration["ElasticSearch:Url"])], configureTransport: (transport) => { transport.Authentication(new ApiKey(configuration["ElasticSearch:ApiKey"])); })
                 .ReadFrom.Configuration(configuration)
                 .CreateLogger();
             }).UseSerilog();

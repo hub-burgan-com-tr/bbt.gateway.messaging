@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 using bbt.gateway.common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using System.Transactions;
 
 namespace bbt.gateway.messaging.Workers.OperatorGateway
 {
-    public abstract class OperatorGatewayBase:IOperatorGatewayBase
+    public abstract class OperatorGatewayBase : IOperatorGatewayBase
     {
         private OperatorType type;
         private readonly IConfiguration _configuration;
@@ -29,8 +30,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             set
             {
                 type = value;
-                using var databaseContext = new DatabaseContext(_dbOptions);
-                OperatorConfig = databaseContext.Operators.AsNoTracking().FirstOrDefault(o => o.Type == type);
+                OperatorConfig = _transactionManager.ActiveOperator;
             }
         }
         public Operator OperatorConfig { get; set; }
@@ -44,6 +44,8 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             using var databaseContext = new DatabaseContext(_dbOptions);
             databaseContext.Operators.Update(OperatorConfig);
             await databaseContext.SaveChangesAsync();
+
+            await _transactionManager.RevokeOperatorsAsync();
         }
 
         public async Task<PhoneConfiguration> GetPhoneConfiguration(Phone phone)
@@ -57,6 +59,11 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                 .FirstOrDefaultAsync();
         }
 
+        public async Task GetOperatorAsync(OperatorType type)
+        {
+            this.type = type;
+            OperatorConfig = await _transactionManager.GetOperatorAsync(type);
+        }
     }
 
 

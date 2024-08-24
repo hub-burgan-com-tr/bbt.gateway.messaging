@@ -31,7 +31,9 @@ namespace bbt.gateway.messaging.Workers
 
         public async Task<SmsTrackingLog> CheckSms(common.Models.v2.CheckFastSmsRequest checkFastSmsRequest)
         {
-            _operatorInfobip.Type = OperatorType.Infobip;
+            //Operator Cache Fix
+            //_operatorInfobip.Type = OperatorType.Infobip;
+            await _operatorInfobip.GetOperatorAsync(OperatorType.Infobip);
             var response = await _operatorInfobip.CheckSms(checkFastSmsRequest.StatusQueryId);
 
             return response.BuildInfobipTrackingResponse(checkFastSmsRequest);
@@ -39,7 +41,9 @@ namespace bbt.gateway.messaging.Workers
 
         public async Task<OtpTrackingLog> CheckSms(common.Models.CheckSmsRequest checkSmsRequest)
         {
-            _operatorInfobip.Type = OperatorType.Infobip;
+            //Operator Cache Fix
+            //_operatorInfobip.Type = OperatorType.Infobip;
+            await _operatorInfobip.GetOperatorAsync(OperatorType.Infobip);
             var response = await _operatorInfobip.CheckSms(checkSmsRequest.StatusQueryId);
 
             return response.BuildInfobipTrackingResponse(checkSmsRequest);
@@ -57,7 +61,9 @@ namespace bbt.gateway.messaging.Workers
             if (sendSmsRequest.Sender != common.Models.v2.SenderType.AutoDetect)
                 _transactionManager.CustomerRequestInfo.BusinessLine = sendSmsRequest.Sender == common.Models.v2.SenderType.On ? "X" : "B";
 
-            _operatorInfobip.Type = OperatorType.Infobip;
+            //Operator Cache Fix
+            //_operatorInfobip.Type = OperatorType.Infobip;
+            await _operatorInfobip.GetOperatorAsync(OperatorType.Infobip);
 
             var smsRequest = new SmsRequestLog()
             {
