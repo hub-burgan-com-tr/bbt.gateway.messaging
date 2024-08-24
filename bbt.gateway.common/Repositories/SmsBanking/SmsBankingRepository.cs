@@ -30,6 +30,11 @@ namespace bbt.gateway.common.Repositories
            return await Context.Set<TEntity>().Where(predicate).ToListAsync();           
         }
 
+        public async Task<IEnumerable<TEntity>> GetAllAsNoTrackingAsync()
+        {
+            return await Context.Set<TEntity>().AsNoTracking().ToListAsync();
+        }
+
         public IEnumerable<TEntity> GetAll()
         {
             return Context.Set<TEntity>().ToList();
