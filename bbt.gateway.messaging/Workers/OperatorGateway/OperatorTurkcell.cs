@@ -20,12 +20,17 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             ITransactionManager transactionManager) : base(configuration, transactionManager)
         {
             _turkcellApi = turkcellApiFactory(TransactionManager.UseFakeSmtp);
-            Type = OperatorType.Turkcell;
+        }
+
+        private async Task SetOperatorAsync()
+        {
+            await GetOperatorAsync(OperatorType.Turkcell);
             _turkcellApi.SetOperatorType(OperatorConfig);
         }
 
         private async Task<OperatorApiAuthResponse> Auth()
         {
+            await SetOperatorAsync();
             OperatorApiAuthResponse response = new();
             if (string.IsNullOrEmpty(OperatorConfig.AuthToken) || OperatorConfig.TokenExpiredAt <= System.DateTime.Now.AddMinutes(-1))
             {

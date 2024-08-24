@@ -9,6 +9,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
         public IConfiguration Configuration { get; }
         public Task<PhoneConfiguration> GetPhoneConfiguration(Phone phone);
         public Task SaveOperator();
+        public Task GetOperatorAsync(OperatorType type);
         public Operator OperatorConfig { get; set; }
         public OperatorType Type { get; set; }
         public ITransactionManager TransactionManager { get; }

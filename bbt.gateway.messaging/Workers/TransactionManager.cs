@@ -7,6 +7,7 @@ using bbt.gateway.messaging.Api.Pusula;
 using bbt.gateway.messaging.Api.Pusula.Model.GetByCitizenshipNumber;
 using bbt.gateway.messaging.Api.Pusula.Model.GetByPhone;
 using bbt.gateway.messaging.Api.Pusula.Model.GetCustomer;
+using bbt.gateway.messaging.Services;
 using Newtonsoft.Json;
 using Serilog;
 using System;
@@ -22,6 +23,8 @@ namespace bbt.gateway.messaging.Workers
         private readonly PusulaClient _pusulaClient;
         private readonly ForaClient _foraClient;
         private readonly IRepositoryManager _repositoryManager;
+        private readonly IOperatorService _operatorService;
+        private Operator _activeOperator;
         public Transaction Transaction { get; set; }
 
         public Guid TxnId { get { return _txnId; } }
@@ -40,14 +43,16 @@ namespace bbt.gateway.messaging.Workers
         public bool StringSend { get; set; }
         public int PrefixLength { get; set; }
         public int NumberLength { get; set; }
+        public Operator ActiveOperator { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public TransactionManager(PusulaClient pusulaClient, ForaClient foraClient, IRepositoryManager repositoryManager)
+        public TransactionManager(PusulaClient pusulaClient, IOperatorService operatorService, ForaClient foraClient, IRepositoryManager repositoryManager)
         {
             _txnId = Guid.NewGuid();
             _logger = Log.ForContext<TransactionManager>();
             _pusulaClient = pusulaClient;
             _foraClient = foraClient;
             _repositoryManager = repositoryManager;
+            _operatorService = operatorService;
 
             Transaction = new()
             {
@@ -354,6 +359,16 @@ namespace bbt.gateway.messaging.Workers
             {
                 return null;
             }
+        }
+
+        public async Task<Operator> GetOperatorAsync(OperatorType type)
+        {
+            return await _operatorService.GetOperator(type);
+        }
+
+        public async Task RevokeOperatorsAsync()
+        {
+            await _operatorService.RevokeCache();
         }
     }
 

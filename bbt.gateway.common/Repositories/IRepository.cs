@@ -8,6 +8,7 @@ namespace bbt.gateway.common.Repositories
     {
         IEnumerable<TEntity> GetAll();
         Task<IEnumerable<TEntity>> GetAllAsync();
+        Task<IEnumerable<TEntity>> GetAllAsNoTrackingAsync();
         Task<IEnumerable<TEntity>> GetWithPaginationAsync(int page, int pageSize);
         Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate);
         Task<TEntity> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate);

@@ -18,12 +18,17 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             ITransactionManager transactionManager) : base(configuration, transactionManager)
         {
             _vodafoneApi = vodafoneApiFactory(TransactionManager.UseFakeSmtp);
-            Type = OperatorType.Vodafone;
+        }
+
+        private async Task SetOperatorAsync()
+        {
+            await GetOperatorAsync(OperatorType.Vodafone);
             _vodafoneApi.SetOperatorType(OperatorConfig);
         }
 
         private async Task<OperatorApiAuthResponse> Auth()
         {
+            await SetOperatorAsync();
             OperatorApiAuthResponse authResponse = new();
             if (string.IsNullOrEmpty(OperatorConfig.AuthToken) || OperatorConfig.TokenExpiredAt <= System.DateTime.Now.AddMinutes(-1))
             {

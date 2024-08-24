@@ -30,10 +30,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.13" />
     <PackageReference Include="VaultSharp" Version="1.13.0.1" />
     <PackageReference Include="VaultSharp.Extensions.Configuration" Version="1.0.3" />
-    <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
-    <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
-    <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
-    <PackageReference Include="Serilog.Sinks.Elasticsearch" Version="8.4.1" />
+	<PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
+	<PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+	<PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+	<PackageReference Include="Elastic.Serilog.Sinks" Version="8.11.1" />
     <PackageReference Include="Refit" Version="6.3.2" />
     <PackageReference Include="Refit.HttpClientFactory" Version="6.3.2" />
     <PackageReference Include="Refit.Newtonsoft.Json" Version="6.3.2" />
