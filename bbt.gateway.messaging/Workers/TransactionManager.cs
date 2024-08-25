@@ -24,7 +24,6 @@ namespace bbt.gateway.messaging.Workers
         private readonly ForaClient _foraClient;
         private readonly IRepositoryManager _repositoryManager;
         private readonly IOperatorService _operatorService;
-        private Operator _activeOperator;
         public Transaction Transaction { get; set; }
 
         public Guid TxnId { get { return _txnId; } }
@@ -43,7 +42,6 @@ namespace bbt.gateway.messaging.Workers
         public bool StringSend { get; set; }
         public int PrefixLength { get; set; }
         public int NumberLength { get; set; }
-        public Operator ActiveOperator { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public TransactionManager(PusulaClient pusulaClient, IOperatorService operatorService, ForaClient foraClient, IRepositoryManager repositoryManager)
         {

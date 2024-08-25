@@ -30,7 +30,6 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             set
             {
                 type = value;
-                OperatorConfig = _transactionManager.ActiveOperator;
             }
         }
         public Operator OperatorConfig { get; set; }
