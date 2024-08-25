@@ -39,6 +39,7 @@ using bbt.gateway.common.Api.MessagingGateway;
 using bbt.gateway.messaging.Api.Infobip;
 using System.Linq;
 using bbt.gateway.common.Api.Reminder;
+using bbt.gateway.messaging.Services;
 
 namespace bbt.gateway.messaging
 {
@@ -257,6 +258,7 @@ namespace bbt.gateway.messaging
                 httpClient.DefaultRequestHeaders.Add("user", Configuration["Api:Fora:User"]);
             });
 
+            services.AddScoped<IOperatorService, OperatorService>();
             services.AddScoped<InstantReminder>();
             services.AddScoped<IFakeSmtpHelper, FakeSmtpHelper>();
             services.AddScoped<ITransactionManager, TransactionManager>();
