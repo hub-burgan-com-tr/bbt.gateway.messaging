@@ -19,7 +19,6 @@ namespace bbt.gateway.messaging.Workers
             CodecFactory codecFactory,
             IRepositoryManager repositoryManager,
             ITransactionManager transactionManager,
-            IOperatorCodec operatorCodec,
             InstantReminder instantReminder
         )
         {
