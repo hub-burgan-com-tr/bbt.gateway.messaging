@@ -37,7 +37,7 @@ namespace bbt.gateway.messaging.Services
                                 "ttlInSeconds", "290"
                             }
                         });
-                        var response = await _daprClient.Unlock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATORS_LOCK_KEY,"MessagingGateway");
+                        //var response = await _daprClient.Unlock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATORS_LOCK_KEY,"MessagingGateway");
                 //    }
                 //    else
                 //    {
