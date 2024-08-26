@@ -27,10 +27,10 @@ namespace bbt.gateway.messaging.Services
             var operators = await _daprClient.GetStateAsync<IEnumerable<Operator>>(GlobalConstants.DAPR_STATE_STORE,GlobalConstants.OPERATORS_CACHE_KEY);
             if(operators is not {})
             {
-                await using (var fileLock = await _daprClient.Lock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATORS_LOCK_KEY,"MessagingGateway",10))
-                {
-                    if (fileLock.Success)
-                    {
+                //await using (var fileLock = await _daprClient.Lock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATORS_LOCK_KEY,"MessagingGateway",10))
+                //{
+                //    if (fileLock.Success)
+                //    {
                         operators = await _repositoryManager.Operators.GetAllAsNoTrackingAsync();
                         await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, GlobalConstants.OPERATORS_CACHE_KEY, operators,metadata: new Dictionary<string, string>() {
                             {
@@ -38,12 +38,12 @@ namespace bbt.gateway.messaging.Services
                             }
                         });
                         var response = await _daprClient.Unlock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATORS_LOCK_KEY,"MessagingGateway");
-                    }
-                    else
-                    {
-                        return await GetOperator(type);
-                    }
-                }
+                //    }
+                //    else
+                //    {
+                //        return await GetOperator(type);
+                //    }
+                //}
             }
             return operators.FirstOrDefault(o => o.Type.Equals(type));
         }
