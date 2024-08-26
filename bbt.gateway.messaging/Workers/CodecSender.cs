@@ -142,7 +142,7 @@ namespace bbt.gateway.messaging.Workers
             _transactionManager.Transaction.SmsRequestLog = smsRequest;
 
             var response = await _operatorCodec.SendSms(sendSmsRequest.Phone.MapTo<Phone>(), header.BuildContentForSms(sendSmsRequest.Content));
-
+            
             smsRequest.ResponseLogs.Add(response);
 
 
