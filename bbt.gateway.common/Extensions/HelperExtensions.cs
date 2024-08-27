@@ -65,9 +65,10 @@ namespace bbt.gateway.common.Extensions
 
             var returnList = Activator.CreateInstance<List<TDestination>>();
 
-            var destination = Activator.CreateInstance<TDestination>();
+            
             foreach (var item in source)
             {
+                var destination = Activator.CreateInstance<TDestination>();
                 MatchAndMap(item, destination);
                 returnList.Add(destination);
             }
