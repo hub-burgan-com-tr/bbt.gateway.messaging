@@ -29,7 +29,7 @@ namespace bbt.gateway.messaging.Helpers
                 try
                 {
                     _transactionManager.LogInformation("Reminder initialized");
-                    _operatordEngage.Type = common.Models.OperatorType.dEngageBurgan;
+                    await _operatordEngage.GetOperatorAsync(common.Models.OperatorType.dEngageBurgan);
       
                     var rt = await _operatordEngage.SendMail(_configuration["InstantReminder:To"], "noreply@m.burgan.com.tr", subject, content, null, null, attachments, null, null, null, checkIsVerified: false);
                     _transactionManager.LogInformation("Reminder Response Message:" + rt.ResponseMessage);

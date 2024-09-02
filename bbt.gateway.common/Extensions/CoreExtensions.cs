@@ -1,8 +1,10 @@
-﻿using Elastic.Serilog.Sinks;
+﻿using Elastic.Ingest.Elasticsearch.DataStreams;
+using Elastic.Serilog.Sinks;
 using Elastic.Transport;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Serilog;
 using VaultSharp.Extensions.Configuration;
 
@@ -38,7 +40,7 @@ namespace bbt.gateway.common
                 .Enrich.WithEnvironmentName()
                 .Enrich.WithMachineName()
                 .WriteTo.Console()
-                .WriteTo.Elasticsearch([new Uri(configuration["ElasticSearch:Url"])], configureTransport: (transport) => { transport.Authentication(new ApiKey(configuration["ElasticSearch:ApiKey"])); })
+                .WriteTo.Elasticsearch([new Uri(configuration["ElasticSearch:Url"])], configureOptions : (o) => { o.DataStream = new DataStreamName(indexFormat); } ,configureTransport: (transport) => { transport.Authentication(new ApiKey(configuration["ElasticSearch:ApiKey"])); })
                 .ReadFrom.Configuration(configuration)
                 .CreateLogger();
             }).UseSerilog();

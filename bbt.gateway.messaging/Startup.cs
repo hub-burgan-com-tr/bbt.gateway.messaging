@@ -40,6 +40,11 @@ using bbt.gateway.messaging.Api.Infobip;
 using System.Linq;
 using bbt.gateway.common.Api.Reminder;
 using bbt.gateway.messaging.Services;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using System.Configuration;
+using Google.Apis.Http;
+using bbt.gateway.common.Http;
 
 namespace bbt.gateway.messaging
 {
@@ -193,7 +198,7 @@ namespace bbt.gateway.messaging
                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                            PropertyNameCaseInsensitive = true,
                        }));
-
+            
             services.AddStackExchangeRedisCache(opt =>
             {
                 opt.Configuration = $"{Configuration["Redis:Host"]}:{Configuration["Redis:Port"]},password={Configuration["Redis:Password"]}";
@@ -258,6 +263,15 @@ namespace bbt.gateway.messaging
                 httpClient.DefaultRequestHeaders.Add("user", Configuration["Api:Fora:User"]);
             });
 
+            var factory = new ProxyByPassHttpClientFactory();
+            GoogleCredential credential = GoogleCredential.FromJson(Configuration["Firebase"]);
+            credential = credential.CreateWithHttpClientFactory(factory);
+            FirebaseApp.Create(new AppOptions()
+            {
+                Credential = credential,
+                HttpClientFactory = factory
+            });
+
             services.AddScoped<IOperatorService, OperatorService>();
             services.AddScoped<InstantReminder>();
             services.AddScoped<IFakeSmtpHelper, FakeSmtpHelper>();
@@ -268,6 +282,7 @@ namespace bbt.gateway.messaging
             services.AddScoped<OperatorIVN>();
             services.AddScoped<OperatordEngage>();
             services.AddScoped<OperatordEngageMock>();
+            services.AddScoped<IOperatorFirebase,OperatorFirebase>();
             services.AddScoped<OperatorCodec>();
             services.AddScoped<OperatorCodecMock>();
             services.AddScoped<OperatorInfobip>();
@@ -348,6 +363,7 @@ namespace bbt.gateway.messaging
             services.AddScoped<InfobipSender>();
             services.AddScoped<OtpSender>();
             services.AddScoped<dEngageSender>();
+            services.AddScoped<FirebaseSender>();
             services.AddScoped<CodecSender>();
             services.AddScoped<HeaderManager>();
             services.AddScoped<OperatorManager>();

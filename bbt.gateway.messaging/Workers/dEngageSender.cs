@@ -794,7 +794,6 @@ namespace bbt.gateway.messaging.Workers
                 TxnId = _transactionManager.TxnId,
             };
 
-
             if (templatedMailRequest.Sender != common.Models.v2.SenderType.AutoDetect)
                 _transactionManager.CustomerRequestInfo.BusinessLine = templatedMailRequest.Sender == common.Models.v2.SenderType.On ? "X" : "B";
 
