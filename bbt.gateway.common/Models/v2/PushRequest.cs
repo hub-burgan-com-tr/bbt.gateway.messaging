@@ -8,6 +8,8 @@ namespace bbt.gateway.common.Models.v2
         [Required]
         public SenderType Sender { get; set; }
         public string CitizenshipNo { get; set; }
+        public bool? IsFirebase { get; set; } = false;
+        public string? Title { get; set; }
         [Required]
         public string Content { get; set; }
         public long? CustomerNo { get; set; }

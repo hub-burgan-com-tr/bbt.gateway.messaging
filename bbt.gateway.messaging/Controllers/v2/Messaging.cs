@@ -34,11 +34,12 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly dEngageSender _dEngageSender;
         private readonly CodecSender _codecSender;
         private readonly InfobipSender _infobipSender;
+        private readonly FirebaseSender _firebaseSender;
         private readonly IRepositoryManager _repositoryManager;
         private readonly ITracer _tracer;
         private readonly IConfiguration _configuration;
         private readonly IMessagingGatewayApi _messagingGatewayApi;
-        public Messaging(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender
+        public Messaging(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender, FirebaseSender firebaseSender
             , IRepositoryManager repositoryManager, CodecSender codecSender,IConfiguration configuration,IMessagingGatewayApi messagingGatewayApi
             ,InfobipSender infobipSender)
         {
@@ -50,6 +51,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             _repositoryManager = repositoryManager;
             _configuration = configuration;
             _messagingGatewayApi = messagingGatewayApi;
+            _firebaseSender = firebaseSender;
             _tracer = Elastic.Apm.Agent.Tracer;
         }
 
@@ -683,8 +685,16 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerResponse(500, "Internal Server Error. Get Contact With Integration", typeof(void))]
         public async Task<IActionResult> SendPushNotification([FromBody] PushRequest data)
         {
-            var response = await _dEngageSender.SendPushNotificationV2(data);
-            return Ok(response);
+            if(data?.IsFirebase ?? false)
+            {
+                var response = await _firebaseSender.SendPushNotificationAsync(data);
+                return Ok(response);
+            }
+            else
+            {
+                var response = await _dEngageSender.SendPushNotificationV2(data);
+                return Ok(response);
+            }
         }
 
         [SwaggerOperation(

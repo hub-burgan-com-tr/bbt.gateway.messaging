@@ -17,6 +17,7 @@ namespace bbt.gateway.common.Models
         Codec = 8,
         Foreign = 9,
         ForeignVodafone = 10,
-        Infobip = 11
+        Infobip = 11,
+        Firebase = 12
     }
 }
