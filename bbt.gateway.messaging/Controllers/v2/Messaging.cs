@@ -40,7 +40,7 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly IConfiguration _configuration;
         private readonly IMessagingGatewayApi _messagingGatewayApi;
         public Messaging(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender, FirebaseSender firebaseSender
-            , IRepositoryManager repositoryManager, CodecSender codecSender,IConfiguration configuration,IMessagingGatewayApi messagingGatewayApi
+            , IRepositoryManager repositoryManager, CodecSender codecSender,IConfiguration configuration, IMessagingGatewayApi messagingGatewayApi
             ,InfobipSender infobipSender)
         {
             _transactionManager = transactionManager;
