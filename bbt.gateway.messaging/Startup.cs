@@ -45,6 +45,7 @@ using Google.Apis.Auth.OAuth2;
 using System.Configuration;
 using Google.Apis.Http;
 using bbt.gateway.common.Http;
+using bbt.gateway.common.Api.Amorphie;
 
 namespace bbt.gateway.messaging
 {
@@ -213,6 +214,9 @@ namespace bbt.gateway.messaging
 
             services.AddRefitClient<IMessagingGatewayApi>()
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(Configuration["Api:MessagingGateway:BaseAddress"]));
+
+            services.AddRefitClient<IUserApi>()
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri(Configuration["Api:Amorphie:User:BaseAddress"]));
 
             services.AddRefitClient<IReminderApi>()
             .ConfigureHttpClient(c => {

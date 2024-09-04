@@ -1,6 +1,8 @@
-﻿using bbt.gateway.common.Extensions;
+﻿using bbt.gateway.common.Api.Amorphie;
+using bbt.gateway.common.Extensions;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Repositories;
+using bbt.gateway.messaging.Exceptions;
 using bbt.gateway.messaging.Helpers;
 using bbt.gateway.messaging.Workers.OperatorGateway;
 using FirebaseAdmin;
@@ -19,12 +21,14 @@ namespace bbt.gateway.messaging.Workers
         private readonly ITransactionManager _transactionManager;
         private readonly IOperatorFirebase _operatorFirebase;
         private readonly InstantReminder _instantReminder;
+        private readonly IUserApi _userApi;
 
         public FirebaseSender(HeaderManager headerManager,
             IOperatorFirebase operatorFirebase,
             IRepositoryManager repositoryManager,
             ITransactionManager transactionManager,
             InstantReminder instantReminder,
+            IUserApi userApi,
             IConfiguration configuration
         )
         {
@@ -33,7 +37,7 @@ namespace bbt.gateway.messaging.Workers
             _transactionManager = transactionManager;
             _operatorFirebase = operatorFirebase;
             _instantReminder = instantReminder;
-
+            _userApi = userApi;
             
         }
 
@@ -49,7 +53,7 @@ namespace bbt.gateway.messaging.Workers
                 TxnId = _transactionManager.TxnId,
             };
 
-            //await _operatorFirebase.GetOperatorAsync(OperatorType.Firebase);
+            await _operatorFirebase.GetOperatorAsync(OperatorType.Firebase);
 
             var pushRequest = new PushNotificationRequestLog()
             {
@@ -61,8 +65,16 @@ namespace bbt.gateway.messaging.Workers
                 CreatedBy = data.Process.MapTo<Process>()
             };
 
-            var response = await _operatorFirebase.SendPushNotificationAsync("cdFUifAaRhOkK94m0Si-F3:APA91bFpNuNwPTkWMwwUER9Z6MmwAuG62ZTl0ynKA97K-MPGOZzOYkX6k-h7XEGF7nznutiR9Gkew6PePatJTuAIvdBXzK9bB1w2TI3kOuMSWeh4mj4VKdHUotYaZMvdw0WtcxQJjjof", data.Title ?? string.Empty , data.Content);
-            return firebasePushResponse;
+            try
+            {
+                var deviceToken = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
+                var response = await _operatorFirebase.SendPushNotificationAsync(deviceToken, data.Title ?? string.Empty, data.Content);
+                return firebasePushResponse;
+            }
+            catch (System.Exception ex)
+            {
+                throw new WorkflowException("Device is not found",System.Net.HttpStatusCode.NotFound);
+            }
             
         }
     }
