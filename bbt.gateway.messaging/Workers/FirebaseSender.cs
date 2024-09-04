@@ -53,7 +53,7 @@ namespace bbt.gateway.messaging.Workers
                 TxnId = _transactionManager.TxnId,
             };
 
-            //await _operatorFirebase.GetOperatorAsync(OperatorType.Firebase);
+            await _operatorFirebase.GetOperatorAsync(OperatorType.Firebase);
 
             var pushRequest = new PushNotificationRequestLog()
             {
