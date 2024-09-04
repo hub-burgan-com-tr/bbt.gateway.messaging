@@ -7,7 +7,7 @@ namespace bbt.gateway.common.Api.Amorphie
     public interface IUserApi
     {
         [Get("/userDevice/deviceToken/{reference}")]
-        Task<string> GetDeviceTokenAsync(string reference);
+        Task<HttpResponseMessage> GetDeviceTokenAsync(string reference);
        
     }
 }

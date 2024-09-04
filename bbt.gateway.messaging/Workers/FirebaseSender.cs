@@ -68,7 +68,7 @@ namespace bbt.gateway.messaging.Workers
             try
             {
                 var deviceToken = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
-                var response = await _operatorFirebase.SendPushNotificationAsync(deviceToken, data.Title ?? string.Empty, data.Content);
+                var response = await _operatorFirebase.SendPushNotificationAsync(await deviceToken.Content.ReadAsStringAsync(), data.Title ?? string.Empty, data.Content);
                 return firebasePushResponse;
             }
             catch (System.Exception ex)
