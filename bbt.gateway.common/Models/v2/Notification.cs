@@ -39,7 +39,20 @@ namespace bbt.gateway.common.Models.v2
             {"kasim",11},
             {"kasım",11},
             {"aralik",12},
-            {"aralık",12}
+            {"aralık",12},
+            {"january",1},
+            {"february",2},
+            {"march",3},
+            {"april",4},
+            {"aprıl",4},
+            {"may",5},
+            {"june",6},
+            {"july",7},
+            {"august",8},
+            {"september",9},
+            {"october",10},
+            {"november",11},
+            {"december",12}
         };
         public override int Compare(Notification x, Notification y)
         {
