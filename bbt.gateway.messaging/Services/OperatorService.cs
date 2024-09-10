@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using bbt.gateway.common;
 using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Repositories;
 using Dapr.Client;
-using Elastic.Apm.Config;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace bbt.gateway.messaging.Services
 {
@@ -15,11 +17,16 @@ namespace bbt.gateway.messaging.Services
         private readonly DaprClient _daprClient;
         private readonly IRepositoryManager _repositoryManager;
         private readonly IConfiguration _configuration;
+        private DbContextOptions<DatabaseContext> _dbOptions;
 
-        public OperatorService(DaprClient daprClient, IRepositoryManager repositoryManager)
+        public OperatorService(DaprClient daprClient, IRepositoryManager repositoryManager,IConfiguration configuration)
         {
             _daprClient = daprClient;
             _repositoryManager = repositoryManager;
+            _configuration = configuration;
+            _dbOptions = new DbContextOptionsBuilder<DatabaseContext>()
+                .UseSqlServer(_configuration.GetConnectionString("DefaultConnection"))
+                .Options;
         }
 
         public async Task<Operator> GetOperator(OperatorType type)
@@ -31,7 +38,9 @@ namespace bbt.gateway.messaging.Services
                 //{
                 //    if (fileLock.Success)
                 //    {
-                        operators = await _repositoryManager.Operators.GetAllAsNoTrackingAsync();
+                        //operators = await _repositoryManager.Operators.GetAllAsNoTrackingAsync();
+                        using var databaseContext = new DatabaseContext(_dbOptions);
+                        operators = await databaseContext.Operators.AsNoTracking().ToListAsync();
                         await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, GlobalConstants.OPERATORS_CACHE_KEY, operators,metadata: new Dictionary<string, string>() {
                             {
                                 "ttlInSeconds", "290"
