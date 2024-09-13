@@ -19,13 +19,17 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             ITransactionManager transactionManager) : base(configuration, transactionManager)
         {
             _infobipApi = infobipApi;
-            Type = OperatorType.Infobip;
+        }
+
+        private async Task SetOperatorAsync()
+        {
+            await GetOperatorAsync(OperatorType.Infobip);
             _infobipApi.SetOperatorType(OperatorConfig);
         }
 
         public async Task<InfobipApiSmsStatusResponse> CheckSms(string refId)
         {
-
+            await SetOperatorAsync();
             try
             {
                 var res = await _infobipApi.CheckSmsStatus(new InfobipSmsStatusRequest { MessageId = refId });
@@ -42,6 +46,8 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
         public async Task<(SmsResponseLog, OtpResponseLog)> SendSms(Phone phone, string content)
         {
+            await SetOperatorAsync();
+
             SmsResponseLog smsResponseLog = new()
             {
                 CreatedAt = DateTime.Now,
