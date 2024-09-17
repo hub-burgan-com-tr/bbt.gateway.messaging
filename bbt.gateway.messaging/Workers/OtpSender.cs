@@ -633,13 +633,16 @@ namespace bbt.gateway.messaging.Workers
                 case OperatorType.ForeignVodafone:
                     gateway = _operatorRepository(OperatorType.Vodafone);
                     break;
+                case OperatorType.Infobip:
+                    gateway = _operatorRepository(OperatorType.Turkcell);
+                    break;
                 default:
                     // Serious Exception
                     break;
             }
 
             if (phoneConfiguration.Operator == OperatorType.Foreign
-                || phoneConfiguration.Operator == OperatorType.ForeignVodafone)
+                || phoneConfiguration.Operator == OperatorType.ForeignVodafone || phoneConfiguration.Operator == OperatorType.Infobip)
             { 
                 var resultForeign = await gateway.SendOtpForeign(_dataV2.Phone.MapTo<Phone>(), header.BuildContentForSms(_dataV2.Content), header);
                 return resultForeign;

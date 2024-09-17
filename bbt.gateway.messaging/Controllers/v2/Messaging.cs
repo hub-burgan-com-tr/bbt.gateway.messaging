@@ -1,25 +1,17 @@
-﻿using bbt.gateway.common;
-using bbt.gateway.common.Api.dEngage.Model.Transactional;
-using bbt.gateway.common.Api.MessagingGateway;
-using bbt.gateway.common.Extensions;
+﻿using bbt.gateway.common.Api.MessagingGateway;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
 using bbt.gateway.messaging.Workers;
 using Elastic.Apm.Api;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using Refit;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace bbt.gateway.messaging.Controllers.v2
@@ -40,8 +32,8 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly IConfiguration _configuration;
         private readonly IMessagingGatewayApi _messagingGatewayApi;
         public Messaging(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender, FirebaseSender firebaseSender
-            , IRepositoryManager repositoryManager, CodecSender codecSender,IConfiguration configuration, IMessagingGatewayApi messagingGatewayApi
-            ,InfobipSender infobipSender)
+            , IRepositoryManager repositoryManager, CodecSender codecSender, IConfiguration configuration, IMessagingGatewayApi messagingGatewayApi
+            , InfobipSender infobipSender)
         {
             _transactionManager = transactionManager;
             _otpSender = otpSender;
@@ -64,7 +56,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 if (data.SmsType == SmsTypes.Otp)
                 {
 
-                    if (data.Phone.CountryCode != 90 || _transactionManager.OtpRequestInfo.PhoneConfiguration.Operator == common.Models.OperatorType.Foreign)
+                    if (data.Phone.CountryCode != 90)
                     {
                         if (infobipOperator?.Status == common.Models.OperatorStatus.Active)
                         {
@@ -292,7 +284,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 {
 
                     return Ok(await _codecSender.SendSmsV2(data));
-                   
+
                 }
             }
             else
@@ -472,7 +464,7 @@ namespace bbt.gateway.messaging.Controllers.v2
         public async Task<IActionResult> SendTemplatedEmailMultiple([FromBody] TemplatedMailMultipleRequest data)
         {
             var response = new TemplatedMailMultipleResponse();
-            
+
             List<Task> taskList = new List<Task>();
             ConcurrentBag<(string, TemplatedMailResponse)> bag = new ConcurrentBag<(string, TemplatedMailResponse)>();
 
@@ -650,7 +642,7 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerResponse(500, "Internal Server Error. Get Contact With Integration", typeof(void))]
         public async Task<IActionResult> SendMessageEmail([FromBody] MailRequest data)
         {
-           
+
             if (data.Email == null)
             {
                 data.Email = _transactionManager.CustomerRequestInfo.MainEmail;
@@ -685,7 +677,7 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerResponse(500, "Internal Server Error. Get Contact With Integration", typeof(void))]
         public async Task<IActionResult> SendPushNotification([FromBody] PushRequest data)
         {
-            if(data?.IsFirebase ?? false)
+            if (data?.IsFirebase ?? false)
             {
                 var response = await _firebaseSender.SendPushNotificationAsync(data);
                 return Ok(response);
@@ -735,7 +727,7 @@ namespace bbt.gateway.messaging.Controllers.v2
 
 
 
-        private async Task ProcessTemplatedMailRequest(ConcurrentBag<(string,TemplatedMailResponse)> bag,TemplatedMailRequest request)
+        private async Task ProcessTemplatedMailRequest(ConcurrentBag<(string, TemplatedMailResponse)> bag, TemplatedMailRequest request)
         {
             try
             {
@@ -756,7 +748,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 templatedMailResponse.StatusMessage = "Internal Server Error";
                 bag.Add((request.Email, templatedMailResponse));
             }
-            
+
         }
 
         private async Task ProcessMailRequest(ConcurrentBag<(string, MailResponse)> bag, MailRequest request)
