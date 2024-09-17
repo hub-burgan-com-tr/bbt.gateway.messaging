@@ -39,7 +39,6 @@ namespace bbt.gateway.common
                 .Enrich.FromLogContext()
                 .Enrich.WithEnvironmentName()
                 .Enrich.WithMachineName()
-                .WriteTo.Console()
                 .WriteTo.Elasticsearch([new Uri(configuration["ElasticSearch:Url"])], configureOptions : (o) => { o.DataStream = new DataStreamName(indexFormat); } ,configureTransport: (transport) => { transport.Authentication(new ApiKey(configuration["ElasticSearch:ApiKey"])); })
                 .ReadFrom.Configuration(configuration)
                 .CreateLogger();
