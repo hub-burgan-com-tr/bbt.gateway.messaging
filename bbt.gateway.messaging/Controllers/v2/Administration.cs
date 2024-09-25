@@ -607,6 +607,8 @@ namespace bbt.gateway.messaging.Controllers.v2
                         oldBlacklistRecord.IsVerified = true;
                         await _repositoryManager.SaveSmsBankingChangesAsync();
                     }
+
+                    return Ok();
                 }
                 else
                 {
