@@ -39,7 +39,7 @@ namespace bbt.gateway.common
                 .Enrich.FromLogContext()
                 .Enrich.WithEnvironmentName()
                 .Enrich.WithMachineName()
-                .WriteTo.Elasticsearch([new Uri(configuration["ElasticSearch:Url"])], configureOptions : (o) => { o.DataStream = new DataStreamName(indexFormat + "-{0:yyyy-MM}"); } ,configureTransport: (transport) => { transport.Authentication(new ApiKey(configuration["ElasticSearch:ApiKey"])); })
+                .WriteTo.Elasticsearch([new Uri(configuration["ElasticSearch:Url"])], configureOptions : (o) => { o.DataStream = new DataStreamName(indexFormat, dataSet: DateTime.Now.ToString("MM"), @namespace: DateTime.Now.ToString("yyyy")); } ,configureTransport: (transport) => { transport.Authentication(new ApiKey(configuration["ElasticSearch:ApiKey"])); })
                 .ReadFrom.Configuration(configuration)
                 .CreateLogger();
             }).UseSerilog();
