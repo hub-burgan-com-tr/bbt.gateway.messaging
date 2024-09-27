@@ -5,6 +5,7 @@ namespace bbt.gateway.messaging
 {
     public class Constant
     {
+
         public static readonly Dictionary<string, dEngageResponseCodes> dEngageStatusCodes = new()
         {
             { "0", dEngageResponseCodes.Success },

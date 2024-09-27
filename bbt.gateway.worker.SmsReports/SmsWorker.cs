@@ -19,11 +19,10 @@ namespace bbt.gateway.worker.SmsReports
         private readonly ITracer _tracer;
         private readonly LogManager _logManager;
         private readonly DatabaseContext _dbContext;
-        private readonly KafkaHelper _kafkaHelper;
         private IHostApplicationLifetime _hostApplicationLifetime;
         public SmsWorker(LogManager logManager, ITracer tracer,
             IMessagingGatewayApi messagingGatewayApi, DbContextOptions<DatabaseContext> dbContextOptions,
-            IHostApplicationLifetime hostApplicationLifetime, KafkaHelper kafkaHelper
+            IHostApplicationLifetime hostApplicationLifetime
             )
         {
             _logManager = logManager;
@@ -31,7 +30,6 @@ namespace bbt.gateway.worker.SmsReports
             _messagingGatewayApi = messagingGatewayApi;
             _dbContext = new DatabaseContext(dbContextOptions);
             _hostApplicationLifetime = hostApplicationLifetime;
-            _kafkaHelper = kafkaHelper;
         }
 
 
@@ -80,26 +78,6 @@ namespace bbt.gateway.worker.SmsReports
                             if (entities.smsResponseLog != null)
                             {
                                 _dbContext.SmsResponseLog.Update(entities.smsResponseLog);
-                                
-                                var smsRequestLog = await _dbContext.SmsRequestLog.FirstOrDefaultAsync(t => t.Id.Equals(entities.smsResponseLog.SmsRequestLogId));
-                                if(smsRequestLog is {})
-                                {
-                                    var transaction = await _dbContext.Transactions.FirstOrDefaultAsync(t => t.SmsRequestLogId.Equals(smsRequestLog.Id));
-                                    var topicModel = new SmsTrackingTopicModel
-                                    {
-                                        TransactionId = transaction.Id.ToString(),
-                                        PhoneCountryCode = transaction.Phone.CountryCode.ToString(),
-                                        PhonePrefix = transaction.Phone.Prefix.ToString(),
-                                        PhoneNumber = transaction.Phone.Number.ToString(),
-                                        CreatedAt = transaction.CreatedAt,
-                                        CreatedByName = transaction.CreatedBy.Name,
-                                        CreatedByItemId = transaction.CreatedBy.ItemId,
-                                        CustomerNo = transaction.CustomerNo,
-                                        ResponseCode =  entities.smsResponseLog.OperatorResponseCode,
-                                        DeliveryStatus = entities.smsResponseLog.Status
-                                    };
-                                    await _kafkaHelper.SendToQueue(topicModel, GlobalConstants.SMS_TRACKING_QUEUE_NAME);
-                                }
                             }
 
                             await _dbContext.SaveChangesAsync();

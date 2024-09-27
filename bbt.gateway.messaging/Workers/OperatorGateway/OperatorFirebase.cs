@@ -1,4 +1,5 @@
-﻿using bbt.gateway.common.Models;
+﻿using Azure;
+using bbt.gateway.common.Models;
 using bbt.gateway.messaging.Api.Codec.Model;
 using CodecFastApi;
 using FirebaseAdmin.Messaging;
@@ -55,15 +56,21 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                       try
                       {
                           var response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+                          pushNotificationResponseLog.ResponseCode = "0";
+                          pushNotificationResponseLog.ResponseMessage = "Successfuly sended to Firebase";
+                          pushNotificationResponseLog.StatusQueryId = response;
                       }
                       catch (Exception ex)
                       {
+                          pushNotificationResponseLog.ResponseMessage = ex.Message;
+                          pushNotificationResponseLog.ResponseCode = "-9999";
                       }
                   });
             }
             catch (Exception ex)
             {
-
+                pushNotificationResponseLog.ResponseMessage = ex.Message;
+                pushNotificationResponseLog.ResponseCode = "-9999";
             }
 
             return pushNotificationResponseLog;
