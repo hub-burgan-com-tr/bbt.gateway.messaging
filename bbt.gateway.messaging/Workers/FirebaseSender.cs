@@ -67,8 +67,15 @@ namespace bbt.gateway.messaging.Workers
 
             try
             {
+                await _repositoryManager.PushNotificationRequestLogs.AddAsync(pushRequest);
+                _transactionManager.Transaction.PushNotificationRequestLog = pushRequest;
+
                 var deviceToken = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
                 var response = await _operatorFirebase.SendPushNotificationAsync(await deviceToken.Content.ReadAsStringAsync(), data.Title ?? string.Empty, data.Content);
+                pushRequest.ResponseLogs.Add(response);
+
+                firebasePushResponse.Status = response.Status.Equals("0") ? FirebasePushResponseCodes.Success : FirebasePushResponseCodes.Failed;
+
                 return firebasePushResponse;
             }
             catch (System.Exception ex)

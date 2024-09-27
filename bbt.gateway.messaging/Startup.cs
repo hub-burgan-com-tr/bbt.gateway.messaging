@@ -69,6 +69,7 @@ namespace bbt.gateway.messaging
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
             //var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Security:Key"]));
             //var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
             //var jwtSecurityToken = new JwtSecurityToken(

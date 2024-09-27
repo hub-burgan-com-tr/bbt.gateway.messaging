@@ -57,11 +57,13 @@ namespace bbt.gateway.messaging.Middlewares
 
                     //Deserialize Request Body 
                     _middlewareRequest = JsonConvert.DeserializeObject<MiddlewareRequest>(body);
+                    if (_middlewareRequest.CustomerNo < 0)
+                        _middlewareRequest.CustomerNo = 0;
 
                     _transactionManager.Transaction.CreatedBy = _middlewareRequest.Process;
                     _transactionManager.Transaction.Mail = _middlewareRequest.Email;
                     _transactionManager.Transaction.Phone = _middlewareRequest.Phone;
-                    _transactionManager.Transaction.CustomerNo = _middlewareRequest.CustomerNo.GetValueOrDefault();
+                    _transactionManager.Transaction.CustomerNo = Convert.ToUInt64(_middlewareRequest.CustomerNo.GetValueOrDefault());
                     _transactionManager.Transaction.CitizenshipNo = String.IsNullOrWhiteSpace(_middlewareRequest.ContactId) ?
                         _middlewareRequest.CitizenshipNo : _middlewareRequest.ContactId;
                     _transactionManager.HeaderInfo = _middlewareRequest.HeaderInfo;
