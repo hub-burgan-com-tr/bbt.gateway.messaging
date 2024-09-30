@@ -19,14 +19,18 @@ IHost host = Host.CreateDefaultBuilder(args)
                 .UseSqlServer(context.Configuration.GetConnectionString("DefaultConnection"))
                 .Options);
         services.AddSingleton<LogManager>();
-        services.AddDaprClient(builder =>
-                   builder.UseJsonSerializationOptions(
-                       new JsonSerializerOptions()
-                       {
-                           PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                           PropertyNameCaseInsensitive = true,
-                       }));
-        services.AddScoped<KafkaHelper>();
+        services.AddStackExchangeRedisCache(opt =>
+        {
+            opt.Configuration = $"{context.Configuration["Redis:Host"]}:{context.Configuration["Redis:Port"]},password={context.Configuration["Redis:Password"]}";
+        });
+        //services.AddDaprClient(builder =>
+        //           builder.UseJsonSerializationOptions(
+        //               new JsonSerializerOptions()
+        //               {
+        //                   PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        //                   PropertyNameCaseInsensitive = true,
+        //               }));
+        //services.AddScoped<KafkaHelper>();
 
     })
     .UseAllElasticApm()
