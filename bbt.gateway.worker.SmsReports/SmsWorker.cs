@@ -8,6 +8,7 @@ using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.Queue;
 using Elastic.Apm.Api;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Refit;
 using System.Collections.Concurrent;
 
@@ -20,9 +21,13 @@ namespace bbt.gateway.worker.SmsReports
         private readonly LogManager _logManager;
         private readonly DatabaseContext _dbContext;
         private IHostApplicationLifetime _hostApplicationLifetime;
+        private IDistributedCache _distributedCache;
+        private IConfiguration _configuration;
+
+        private Dictionary<int, DataDateRange> _dateRanges;
         public SmsWorker(LogManager logManager, ITracer tracer,
             IMessagingGatewayApi messagingGatewayApi, DbContextOptions<DatabaseContext> dbContextOptions,
-            IHostApplicationLifetime hostApplicationLifetime
+            IHostApplicationLifetime hostApplicationLifetime, IDistributedCache distributedCache, IConfiguration configuration
             )
         {
             _logManager = logManager;
@@ -30,6 +35,9 @@ namespace bbt.gateway.worker.SmsReports
             _messagingGatewayApi = messagingGatewayApi;
             _dbContext = new DatabaseContext(dbContextOptions);
             _hostApplicationLifetime = hostApplicationLifetime;
+            _distributedCache = distributedCache;
+            _dateRanges = new Dictionary<int, DataDateRange>();
+            _configuration = configuration;
         }
 
 
@@ -47,10 +55,47 @@ namespace bbt.gateway.worker.SmsReports
                 {
                     try
                     {
-                        var startDate = DateTime.Now.AddDays(-1);
-                        var endDate = DateTime.Now;
+                        var workerCount = Convert.ToInt32(_configuration["WorkerCount"]);
+
+                        var hourRange = 24 / workerCount;
+
+                        var lastDay = DateTime.Now.AddDays(-1);
+                        var today = DateTime.Today;
+
+                        for (int i = 0; i < workerCount-1; i++)
+                        {
+                            _dateRanges.Add(i + 1, new DataDateRange()
+                            {
+                                 startDate = lastDay.AddHours(hourRange*i),
+                                 endDate = lastDay.AddHours(hourRange*(i+1))
+                            });
+                        }
+
+                        //Add Last Part
+                        _dateRanges.Add(workerCount, new DataDateRange()
+                        {
+                            startDate = _dateRanges[workerCount - 1].endDate,
+                            endDate = today
+                        });
+
+                        int currentProcessIndex;
+                        var processOrderFromCache = _distributedCache.GetString("bbt_gateway_worker_sms_reports_process_order"+lastDay.ToString("dd_MM_yyyy"));
+                        if(processOrderFromCache is null )
+                        {
+                            currentProcessIndex = 1;
+                            await _distributedCache.SetStringAsync("bbt_gateway_worker_sms_reports_process_order" + lastDay.ToString("dd_MM_yyyy"),currentProcessIndex.ToString(),new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromHours(24)});
+                        }
+                        else
+                        {
+                            currentProcessIndex = Convert.ToInt32(processOrderFromCache);
+                        }
+
+                        _logManager.LogInformation("Current Process Index : "+currentProcessIndex);
+                        _logManager.LogInformation("Start Date : "+ _dateRanges[currentProcessIndex].startDate.ToString("yyyy-MM-dd HH:mm:ss"));
+                        _logManager.LogInformation("End Date : " + _dateRanges[currentProcessIndex].startDate.ToString("yyyy-MM-dd HH:mm:ss"));
+
                         var smsResponseLogs = await _dbContext.SmsResponseLog.
-                        FromSqlRaw("Select * from SmsResponseLog (NOLOCK) WHERE OperatorResponseCode = 0 AND CreatedAt Between {0} AND {1} AND (status is null OR status = '')", startDate.ToString("yyyy-MM-dd"), endDate.ToString("yyyy-MM-dd"))
+                        FromSqlRaw("Select * from SmsResponseLog (NOLOCK) WHERE OperatorResponseCode = 0 AND CreatedAt Between {0} AND {1} AND (status is null OR status = '')", _dateRanges[currentProcessIndex].startDate.ToString("yyyy-MM-dd HH:mm:ss"), _dateRanges[currentProcessIndex].endDate.ToString("yyyy-MM-dd HH:mm:ss"))
                         .AsNoTracking().ToListAsync();
 
                         _logManager.LogInformation("Sms Count : " + smsResponseLogs.Count);
@@ -143,6 +188,12 @@ namespace bbt.gateway.worker.SmsReports
     {
         public SmsResponseLog smsResponseLog { get; set; }
         public SmsTrackingLog smsTrackingLog { get; set; }
+    }
+
+    public class DataDateRange 
+    {
+        public DateTime startDate { get; set; }
+        public DateTime endDate { get; set; }
     }
 
 }
