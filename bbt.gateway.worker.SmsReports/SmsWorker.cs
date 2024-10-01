@@ -16,6 +16,8 @@ namespace bbt.gateway.worker.SmsReports
 {
     public class SmsWorker : BackgroundService
     {
+        private const string PROCESS_NO_CACHE_KEY = "bbt_gateway_worker_sms_reports_process_no";
+
         private readonly IMessagingGatewayApi _messagingGatewayApi;
         private readonly ITracer _tracer;
         private readonly LogManager _logManager;
@@ -79,22 +81,22 @@ namespace bbt.gateway.worker.SmsReports
                         });
 
                         int currentProcessIndex;
-                        var processOrderFromCache = _distributedCache.GetString("bbt_gateway_worker_sms_reports_process_order"+lastDay.ToString("dd_MM_yyyy"));
+                        var processOrderFromCache = _distributedCache.GetString(PROCESS_NO_CACHE_KEY+"_"+lastDay.ToString("dd_MM_yyyy"));
                         if(processOrderFromCache is null )
                         {
                             currentProcessIndex = 1;
-                            await _distributedCache.SetStringAsync("bbt_gateway_worker_sms_reports_process_order" + lastDay.ToString("dd_MM_yyyy"),currentProcessIndex.ToString(),new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromHours(24)});
+                            await _distributedCache.SetStringAsync(PROCESS_NO_CACHE_KEY +"_"+ lastDay.ToString("dd_MM_yyyy"),currentProcessIndex.ToString(),new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromHours(24)});
                         }
                         else
                         {
                             currentProcessIndex = Convert.ToInt32(processOrderFromCache) + 1;
-                            await _distributedCache.SetStringAsync("bbt_gateway_worker_sms_reports_process_order" + lastDay.ToString("dd_MM_yyyy"), currentProcessIndex.ToString(), new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromHours(24) });
+                            await _distributedCache.SetStringAsync(PROCESS_NO_CACHE_KEY +"_"+ lastDay.ToString("dd_MM_yyyy"), currentProcessIndex.ToString(), new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromHours(24) });
 
                         }
 
                         _logManager.LogInformation("Current Process Index : "+currentProcessIndex);
                         _logManager.LogInformation("Start Date : "+ _dateRanges[currentProcessIndex].startDate.ToString("yyyy-MM-dd HH:mm:ss"));
-                        _logManager.LogInformation("End Date : " + _dateRanges[currentProcessIndex].startDate.ToString("yyyy-MM-dd HH:mm:ss"));
+                        _logManager.LogInformation("End Date : " + _dateRanges[currentProcessIndex].endDate.ToString("yyyy-MM-dd HH:mm:ss"));
 
                         var smsResponseLogs = await _dbContext.SmsResponseLog.
                         FromSqlRaw("Select * from SmsResponseLog (NOLOCK) WHERE OperatorResponseCode = 0 AND CreatedAt Between {0} AND {1} AND (status is null OR status = '')", _dateRanges[currentProcessIndex].startDate.ToString("yyyy-MM-dd HH:mm:ss"), _dateRanges[currentProcessIndex].endDate.ToString("yyyy-MM-dd HH:mm:ss"))
