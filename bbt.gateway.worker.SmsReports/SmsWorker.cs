@@ -59,7 +59,7 @@ namespace bbt.gateway.worker.SmsReports
 
                         var hourRange = 24 / workerCount;
 
-                        var lastDay = DateTime.Now.AddDays(-1);
+                        var lastDay = DateTime.Now.AddDays(-1).Date;
                         var today = DateTime.Today;
 
                         for (int i = 0; i < workerCount-1; i++)
@@ -87,7 +87,9 @@ namespace bbt.gateway.worker.SmsReports
                         }
                         else
                         {
-                            currentProcessIndex = Convert.ToInt32(processOrderFromCache);
+                            currentProcessIndex = Convert.ToInt32(processOrderFromCache) + 1;
+                            await _distributedCache.SetStringAsync("bbt_gateway_worker_sms_reports_process_order" + lastDay.ToString("dd_MM_yyyy"), currentProcessIndex.ToString(), new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromHours(24) });
+
                         }
 
                         _logManager.LogInformation("Current Process Index : "+currentProcessIndex);
