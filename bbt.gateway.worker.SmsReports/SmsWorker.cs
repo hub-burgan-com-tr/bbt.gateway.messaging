@@ -118,18 +118,28 @@ namespace bbt.gateway.worker.SmsReports
                        
                         foreach (var entities in concurrentBag)
                         {
-                            if (entities.smsTrackingLog != null)
+                            try
                             {
-                                await _dbContext.SmsTrackingLog.AddAsync(entities.smsTrackingLog);
+                                if (entities.smsTrackingLog != null)
+                                {
+                                    await _dbContext.SmsTrackingLog.AddAsync(entities.smsTrackingLog);
+                                }
+                                if (entities.smsResponseLog != null)
+                                {
+                                    _dbContext.SmsResponseLog.Update(entities.smsResponseLog);
+                                }
                             }
-                            if (entities.smsResponseLog != null)
+                            catch (Exception)
                             {
-                                _dbContext.SmsResponseLog.Update(entities.smsResponseLog);
+                                _logManager.LogError("Messaging Gateway Worker Error | Db Context Error");
                             }
+                            
 
-                            await _dbContext.SaveChangesAsync();
+                            
                         }
-                     
+
+                        await _dbContext.SaveChangesAsync();
+
                     }
                     catch (Exception ex)
                     {
