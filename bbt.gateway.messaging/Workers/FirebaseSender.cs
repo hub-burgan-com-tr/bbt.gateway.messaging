@@ -74,7 +74,7 @@ namespace bbt.gateway.messaging.Workers
                 _transactionManager.Transaction.PushNotificationRequestLog = pushRequest;
 
                 var deviceToken = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
-                var response = await _operatorFirebase.SendPushNotificationAsync(await deviceToken.Content.ReadAsStringAsync(), data.Title ?? string.Empty, data.Content);
+                var response = await _operatorFirebase.SendPushNotificationAsync(await deviceToken.Content.ReadAsStringAsync(), data.Title ?? string.Empty, data.Content, data.CustomParameters);
                 pushRequest.ResponseLogs.Add(response);
 
                 firebasePushResponse.Status = response.ResponseCode.Equals("0") ? FirebasePushResponseCodes.Success : FirebasePushResponseCodes.Failed;
