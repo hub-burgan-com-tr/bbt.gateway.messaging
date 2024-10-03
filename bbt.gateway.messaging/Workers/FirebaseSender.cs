@@ -74,7 +74,7 @@ namespace bbt.gateway.messaging.Workers
                 var response = await _operatorFirebase.SendPushNotificationAsync(await deviceToken.Content.ReadAsStringAsync(), data.Title ?? string.Empty, data.Content);
                 pushRequest.ResponseLogs.Add(response);
 
-                firebasePushResponse.Status = response.Status.Equals("0") ? FirebasePushResponseCodes.Success : FirebasePushResponseCodes.Failed;
+                firebasePushResponse.Status = response.ResponseCode.Equals("0") ? FirebasePushResponseCodes.Success : FirebasePushResponseCodes.Failed;
 
                 return firebasePushResponse;
             }
