@@ -62,7 +62,10 @@ namespace bbt.gateway.messaging.Workers
                 Content = data.Content.MaskFields(),
                 TemplateId = "",
                 TemplateParams = "",
-                CreatedBy = data.Process.MapTo<Process>()
+                CustomParameters = data.CustomParameters?.MaskFields(),
+                CreatedBy = data.Process.MapTo<Process>(),
+                SaveInbox = data.saveInbox ?? false,
+                NotificationType = data.NotificationType ?? string.Empty
             };
 
             try
