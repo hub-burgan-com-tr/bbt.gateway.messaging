@@ -59,7 +59,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
                       if (!string.IsNullOrWhiteSpace(customParams))
                       {
-                          message.Data = JsonConvert.DeserializeObject<List<KeyValuePair<string,string>>>(customParams?.ClearMaskingFields()).ToDictionary(x => x.Key, x => x.Value);
+                          message.Data = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(customParams?.ClearMaskingFields()).ToDictionary(x => x.Keys.First(), x => x.Values.First());
                       }
 
                       // Send the message
