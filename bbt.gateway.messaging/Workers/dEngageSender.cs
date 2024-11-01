@@ -886,7 +886,6 @@ namespace bbt.gateway.messaging.Workers
                 TxnId = _transactionManager.TxnId,
             };
 
-
             if (sendTemplatedPushNotificationRequest.Sender != common.Models.v2.SenderType.AutoDetect)
                 _transactionManager.CustomerRequestInfo.BusinessLine = sendTemplatedPushNotificationRequest.Sender == common.Models.v2.SenderType.On ? "X" : "B";
 
