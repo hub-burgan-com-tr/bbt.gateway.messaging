@@ -716,7 +716,7 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         public async Task<IActionResult> SendTemplatedPushNotification([FromBody] TemplatedPushRequest data)
         {
-            var responseFirebase = await _firebaseSender.SendTemplatedPushNotificationAsync(data);
+            //var responseFirebase = await _firebaseSender.SendTemplatedPushNotificationAsync(data);
 
             var responseDengage = await _dEngageSender.SendTemplatedPushNotificationV2(data);          
 
