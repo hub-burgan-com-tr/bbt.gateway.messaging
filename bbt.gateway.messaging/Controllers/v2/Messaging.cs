@@ -677,16 +677,11 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerResponse(500, "Internal Server Error. Get Contact With Integration", typeof(void))]
         public async Task<IActionResult> SendPushNotification([FromBody] PushRequest data)
         {
-            if (data?.IsFirebase ?? false)
-            {
-                var response = await _firebaseSender.SendPushNotificationAsync(data);
-                return Ok(response);
-            }
-            else
-            {
-                var response = await _dEngageSender.SendPushNotificationV2(data);
-                return Ok(response);
-            }
+            var responseFirebase = await _firebaseSender.SendPushNotificationAsync(data);
+
+            var responseDengage = await _dEngageSender.SendPushNotificationV2(data);
+
+            return Ok(responseDengage);
         }
 
         [SwaggerOperation(
@@ -721,11 +716,12 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         public async Task<IActionResult> SendTemplatedPushNotification([FromBody] TemplatedPushRequest data)
         {
-            var response = await _dEngageSender.SendTemplatedPushNotificationV2(data);
-            return Ok(response);
+            var responseFirebase = await _firebaseSender.SendTemplatedPushNotificationAsync(data);
+
+            var responseDengage = await _dEngageSender.SendTemplatedPushNotificationV2(data);          
+
+            return Ok(responseDengage);
         }
-
-
 
         private async Task ProcessTemplatedMailRequest(ConcurrentBag<(string, TemplatedMailResponse)> bag, TemplatedMailRequest request)
         {
