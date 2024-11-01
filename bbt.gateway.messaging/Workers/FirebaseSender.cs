@@ -122,8 +122,8 @@ namespace bbt.gateway.messaging.Workers
             {
                 Operator = _operatorFirebase.Type,
                 ContactId = data.CitizenshipNo,
-                TemplateId = "",
-                TemplateParams = "",
+                TemplateId = data.Template,
+                TemplateParams = data.TemplateParams?.MaskFields(),
                 CustomParameters = data.CustomParameters?.MaskFields(),
                 CreatedBy = data.Process.MapTo<Process>(),
                 SaveInbox = data.saveInbox ?? false,
@@ -142,7 +142,7 @@ namespace bbt.gateway.messaging.Workers
                 if (!string.IsNullOrWhiteSpace(data.TemplateParams))
                 {
                     pushRequest.Content = templateContent.message;
-                    var templateParamsJson = JsonConvert.DeserializeObject<JObject>(pushRequest.TemplateParams);
+                    var templateParamsJson = JsonConvert.DeserializeObject<JObject>(data.TemplateParams.ClearMaskingFields());
                     var templateParamsList = templateContent?.message.GetWithRegexMultiple("({%=)(.*?)(%})", 2);
 
                     foreach (var element in templateParamsJson)
