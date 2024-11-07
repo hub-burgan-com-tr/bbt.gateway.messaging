@@ -32,7 +32,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             throw new NotImplementedException();
         }
 
-        public async Task<PushNotificationResponseLog> SendPushNotificationAsync(string deviceToken, string title, string content, string customParams)
+        public async Task<PushNotificationResponseLog> SendPushNotificationAsync(string deviceToken, string title, string content, string customParams, string targetUrl = "")
         {
             var pushNotificationResponseLog = new PushNotificationResponseLog()
             {
@@ -59,7 +59,12 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
                       if (!string.IsNullOrWhiteSpace(customParams))
                       {
-                          message.Data = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(customParams?.ClearMaskingFields()).ToDictionary(x => x.Keys.First(), x => x.Values.First());
+                          var data = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(customParams?.ClearMaskingFields()).ToDictionary(x => x.Keys.First(), x => x.Values.First());
+                          if (!string.IsNullOrWhiteSpace(targetUrl))
+                          {
+                              data.Add("deeplink", targetUrl);
+                          }
+                          message.Data = data;
                       }
 
                       // Send the message
