@@ -19,10 +19,18 @@ namespace bbt.gateway.common.Api.dEngage.Model.Contents
         public List<PushContent> contents { get; set; }
     }
 
+    public class OsData
+    {
+        public string targetUrl { get; set; }
+    }
+
     public class PushContent
     {
         public string language { get; set; }
         public string title { get; set; }
         public string message { get; set; }
+        public OsData ios { get; set; }
+        public OsData android { get; set; }
+        public OsData web { get; set; }
     }
 }

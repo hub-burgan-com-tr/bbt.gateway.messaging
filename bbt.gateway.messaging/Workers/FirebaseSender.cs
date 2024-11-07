@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace bbt.gateway.messaging.Workers
@@ -132,13 +133,15 @@ namespace bbt.gateway.messaging.Workers
 
             var pushTemplateTitle = "";
 
+            var targetUrls = new List<KeyValuePair<string,string>>();
+
             var templateDetail = await GetContentDetail<PushContentDetail>(GlobalConstants.PUSH_CONTENTS_SUFFIX + "_" + contentInfo.id);
 
             if (templateDetail != null)
             {
                 var templateContent = templateDetail.contents.FirstOrDefault();
                 pushTemplateTitle = templateContent != null ? templateContent.title : "";
-
+                
                 if (!string.IsNullOrWhiteSpace(data.TemplateParams))
                 {
                     pushRequest.Content = templateContent.message;
@@ -161,6 +164,16 @@ namespace bbt.gateway.messaging.Workers
                 {
                     pushRequest.Content = templateContent.message;
                 }
+
+                //dEngage deeplinks
+                if(!string.IsNullOrWhiteSpace(templateContent.android?.targetUrl))
+                {
+                    targetUrls.Add(new KeyValuePair<string,string>("android", templateContent.android?.targetUrl));
+                }
+                if (!string.IsNullOrWhiteSpace(templateContent.ios?.targetUrl))
+                {
+                    targetUrls.Add(new KeyValuePair<string, string>("ios", templateContent.android?.targetUrl));
+                }
             }            
 
             try
@@ -168,8 +181,14 @@ namespace bbt.gateway.messaging.Workers
                 await _repositoryManager.PushNotificationRequestLogs.AddAsync(pushRequest);
                 _transactionManager.Transaction.PushNotificationRequestLog = pushRequest;
 
-                var deviceToken = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
-                var response = await _operatorFirebase.SendPushNotificationAsync(await deviceToken.Content.ReadAsStringAsync(), pushTemplateTitle, pushRequest.Content, data.CustomParameters);
+                var device = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
+                var targetUrl = string.Empty;
+                if(targetUrls?.Count > 0)
+                {
+                    targetUrl = targetUrls.FirstOrDefault(t => t.Key.Equals(device.os)).Value;
+                }
+
+                var response = await _operatorFirebase.SendPushNotificationAsync(device.token, pushTemplateTitle, pushRequest.Content, data.CustomParameters, targetUrls);
                 pushRequest.ResponseLogs.Add(response);
 
                 firebasePushResponse.Status = response.ResponseCode.Equals("0") ? FirebasePushResponseCodes.Success : FirebasePushResponseCodes.Failed;
