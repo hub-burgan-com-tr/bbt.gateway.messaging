@@ -185,7 +185,7 @@ namespace bbt.gateway.messaging.Workers
                 var targetUrl = string.Empty;
                 if(targetUrls?.Count > 0)
                 {
-                    targetUrl = targetUrls.FirstOrDefault(t => t.Key.Equals(device.os)).Value;
+                    targetUrl = targetUrls.FirstOrDefault(t => t.Key.Equals(device.os.ToLower())).Value;
                 }
 
                 var response = await _operatorFirebase.SendPushNotificationAsync(device.token, pushTemplateTitle, pushRequest.Content, data.CustomParameters, targetUrl);
