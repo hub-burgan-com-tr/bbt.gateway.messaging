@@ -132,6 +132,7 @@ namespace bbt.gateway.messaging.Workers
             };
 
             var pushTemplateTitle = "";
+            var targetUrl = string.Empty;
 
             var targetUrls = new List<KeyValuePair<string,string>>();
 
@@ -159,21 +160,41 @@ namespace bbt.gateway.messaging.Workers
                     {
                         pushRequest.Content = pushRequest.Content.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
                     }
+
+                    //dEngage deeplinks
+                    if (!string.IsNullOrWhiteSpace(templateContent.android?.targetUrl))
+                    {
+                        var tUrl = templateContent.android?.targetUrl;
+                        foreach (string templateParam in templateParamsList)
+                        {
+                            tUrl = templateContent.android?.targetUrl.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
+                        }
+                        targetUrls.Add(new KeyValuePair<string, string>("android", tUrl));
+                    }
+                    if (!string.IsNullOrWhiteSpace(templateContent.ios?.targetUrl))
+                    {
+                        var tUrl = templateContent.ios?.targetUrl;
+                        foreach (string templateParam in templateParamsList)
+                        {
+                            tUrl = templateContent.ios?.targetUrl.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
+                        }
+                        targetUrls.Add(new KeyValuePair<string, string>("ios", tUrl));
+                    }
                 }
                 else
                 {
                     pushRequest.Content = templateContent.message;
+                    if (!string.IsNullOrWhiteSpace(templateContent.android?.targetUrl))
+                    {
+                        targetUrls.Add(new KeyValuePair<string, string>("android", templateContent.android?.targetUrl));
+                    }
+                    if (!string.IsNullOrWhiteSpace(templateContent.ios?.targetUrl))
+                    {
+                        targetUrls.Add(new KeyValuePair<string, string>("ios", templateContent.ios?.targetUrl));
+                    }
                 }
 
-                //dEngage deeplinks
-                if(!string.IsNullOrWhiteSpace(templateContent.android?.targetUrl))
-                {
-                    targetUrls.Add(new KeyValuePair<string,string>("android", templateContent.android?.targetUrl));
-                }
-                if (!string.IsNullOrWhiteSpace(templateContent.ios?.targetUrl))
-                {
-                    targetUrls.Add(new KeyValuePair<string, string>("ios", templateContent.android?.targetUrl));
-                }
+                
             }            
 
             try
@@ -182,7 +203,6 @@ namespace bbt.gateway.messaging.Workers
                 _transactionManager.Transaction.PushNotificationRequestLog = pushRequest;
 
                 var device = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
-                var targetUrl = string.Empty;
                 if(targetUrls?.Count > 0)
                 {
                     targetUrl = targetUrls.FirstOrDefault(t => t.Key.Equals(device.os.ToLower())).Value;
