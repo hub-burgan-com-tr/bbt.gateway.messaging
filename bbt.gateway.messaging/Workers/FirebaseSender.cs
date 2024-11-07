@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace bbt.gateway.messaging.Workers
 {
@@ -138,6 +139,7 @@ namespace bbt.gateway.messaging.Workers
 
             var templateDetail = await GetContentDetail<PushContentDetail>(GlobalConstants.PUSH_CONTENTS_SUFFIX + "_" + contentInfo.id);
 
+            _transactionManager.LogInformation($"Template Detail : {JsonConvert.SerializeObject(templateDetail)}");
             if (templateDetail != null)
             {
                 var templateContent = templateDetail.contents.FirstOrDefault();
@@ -203,11 +205,12 @@ namespace bbt.gateway.messaging.Workers
                 _transactionManager.Transaction.PushNotificationRequestLog = pushRequest;
 
                 var device = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
-                if(targetUrls?.Count > 0)
+                _transactionManager.LogInformation($"Target Url's : {JsonConvert.SerializeObject(targetUrls)}");
+                if (targetUrls?.Count > 0)
                 {
                     targetUrl = targetUrls.FirstOrDefault(t => t.Key.Equals(device.os.ToLower())).Value;
                 }
-
+                _transactionManager.LogInformation($"Selected Target Url : {targetUrl}");
                 var response = await _operatorFirebase.SendPushNotificationAsync(device.token, pushTemplateTitle, pushRequest.Content, data.CustomParameters, targetUrl);
                 pushRequest.ResponseLogs.Add(response);
 
