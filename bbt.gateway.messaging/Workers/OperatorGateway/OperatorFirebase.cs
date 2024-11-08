@@ -62,9 +62,22 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                           var data = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(customParams?.ClearMaskingFields()).ToDictionary(x => x.Keys.First(), x => x.Values.First());
                           if (!string.IsNullOrWhiteSpace(targetUrl))
                           {
-                              data.Add("deeplink", targetUrl);
+                              if(data.ContainsKey("deeplink"))
+                              {
+                                  data.Remove("deeplink");
+                                  data.Add("deeplink", targetUrl);
+                              }
                           }
                           message.Data = data;
+                      }
+                      else
+                      {
+                          if (!string.IsNullOrWhiteSpace(targetUrl))
+                          {
+                              var data = new Dictionary<string, string>();
+                              data.Add("deeplink", targetUrl);
+                              message.Data = data;
+                          }                          
                       }
 
                       // Send the message
