@@ -70,6 +70,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                       // Send the message
                       try
                       {
+                          TransactionManager.LogInformation("Firebase Push Request : "+JsonConvert.SerializeObject(message));
                           var response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
                           pushNotificationResponseLog.ResponseCode = "0";
                           pushNotificationResponseLog.ResponseMessage = "Successfuly sended to Firebase";

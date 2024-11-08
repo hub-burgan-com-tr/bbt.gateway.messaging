@@ -167,18 +167,20 @@ namespace bbt.gateway.messaging.Workers
                     if (!string.IsNullOrWhiteSpace(templateContent.android?.targetUrl))
                     {
                         var tUrl = templateContent.android?.targetUrl;
-                        foreach (string templateParam in templateParamsList)
+                        var templateParamsListAndroid = templateContent?.android?.targetUrl.GetWithRegexMultiple("({%=)(.*?)(%})", 2);
+                        foreach (string templateParam in templateParamsListAndroid)
                         {
-                            tUrl = templateContent.android?.targetUrl.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
+                            tUrl = tUrl.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
                         }
                         targetUrls.Add(new KeyValuePair<string, string>("android", tUrl));
                     }
                     if (!string.IsNullOrWhiteSpace(templateContent.ios?.targetUrl))
                     {
                         var tUrl = templateContent.ios?.targetUrl;
-                        foreach (string templateParam in templateParamsList)
+                        var templateParamsListIos = templateContent?.android?.targetUrl.GetWithRegexMultiple("({%=)(.*?)(%})", 2);
+                        foreach (string templateParam in templateParamsListIos)
                         {
-                            tUrl = templateContent.ios?.targetUrl.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
+                            tUrl = tUrl.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
                         }
                         targetUrls.Add(new KeyValuePair<string, string>("ios", tUrl));
                     }
