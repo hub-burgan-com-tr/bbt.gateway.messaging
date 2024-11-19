@@ -1,4 +1,5 @@
 ﻿using bbt.gateway.common.Api.Amorphie;
+using bbt.gateway.common.Api.Amorphie.Model;
 using bbt.gateway.common.Api.dEngage.Model.Contents;
 using bbt.gateway.common.Extensions;
 using bbt.gateway.common.GlobalConstants;
@@ -29,6 +30,7 @@ namespace bbt.gateway.messaging.Workers
         private readonly IOperatorFirebase _operatorFirebase;
         private readonly InstantReminder _instantReminder;
         private readonly IUserApi _userApi;
+        private readonly IUserApiPrep _userApiPrep;
         private readonly DaprClient _daprClient;
 
         public FirebaseSender(HeaderManager headerManager,
@@ -37,6 +39,7 @@ namespace bbt.gateway.messaging.Workers
             ITransactionManager transactionManager,
             InstantReminder instantReminder,
             IUserApi userApi,
+            IUserApiPrep userApiPrep,
             IConfiguration configuration,
             DaprClient daprClient
         )
@@ -47,6 +50,7 @@ namespace bbt.gateway.messaging.Workers
             _operatorFirebase = operatorFirebase;
             _instantReminder = instantReminder;
             _userApi = userApi;
+            _userApiPrep = userApiPrep;
             _daprClient = daprClient;
         }
 
@@ -77,22 +81,59 @@ namespace bbt.gateway.messaging.Workers
                 NotificationType = data.NotificationType ?? string.Empty
             };
 
+            List<RevampDevice> deviceList = new();
+            try
+            {
+                var deviceToken = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
+                deviceList.Add(deviceToken);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (env.Equals("Test"))
+            {
+                try
+                {
+                    var prepDeviceToken = await _userApiPrep.GetDeviceTokenAsync(data.CitizenshipNo);
+                    deviceList.Add(prepDeviceToken);
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }
+            
+            
+
             try
             {
                 await _repositoryManager.PushNotificationRequestLogs.AddAsync(pushRequest);
                 _transactionManager.Transaction.PushNotificationRequestLog = pushRequest;
 
-                var deviceToken = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
-                var response = await _operatorFirebase.SendPushNotificationAsync(deviceToken.token, data.Title ?? string.Empty, data.Content, data.CustomParameters);
-                pushRequest.ResponseLogs.Add(response);
+                
+                if(deviceList.Count > 0)
+                {
+                    foreach (var device in deviceList)
+                    {
+                        var response = await _operatorFirebase.SendPushNotificationAsync(device.token, data.Title ?? string.Empty, data.Content, data.CustomParameters);
+                        pushRequest.ResponseLogs.Add(response);
+                    }
+                }
+                else
+                {
+                    throw new WorkflowException("Device Not Found", System.Net.HttpStatusCode.InternalServerError);
+                }
 
-                firebasePushResponse.Status = response.ResponseCode.Equals("0") ? FirebasePushResponseCodes.Success : FirebasePushResponseCodes.Failed;
+                firebasePushResponse.Status = pushRequest.ResponseLogs.Any(l => l.ResponseCode.Equals("0")) ? FirebasePushResponseCodes.Success : FirebasePushResponseCodes.Failed;
 
                 return firebasePushResponse;
             }
             catch (System.Exception ex)
             {
-                throw new WorkflowException("Device is not found", System.Net.HttpStatusCode.NotFound);
+                throw new WorkflowException("An Error Occured", System.Net.HttpStatusCode.InternalServerError);
             }
         }
 

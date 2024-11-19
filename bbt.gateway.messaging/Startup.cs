@@ -219,6 +219,9 @@ namespace bbt.gateway.messaging
             services.AddRefitClient<IUserApi>()
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(Configuration["Api:Amorphie:User:BaseAddress"]));
 
+            services.AddRefitClient<IUserApiPrep>()
+            .ConfigureHttpClient(c => c.BaseAddress = new Uri(Configuration["Api:Amorphie:User:PrepBaseAddress"]));
+
             services.AddRefitClient<IReminderApi>()
             .ConfigureHttpClient(c => {
                 c.BaseAddress = new Uri(Configuration["Api:Reminder:BaseAddress"]);
