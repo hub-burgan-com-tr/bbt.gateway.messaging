@@ -1,4 +1,5 @@
 ﻿using bbt.gateway.common.Api.Amorphie;
+using bbt.gateway.common.Api.Amorphie.Model;
 using bbt.gateway.common.Api.dEngage.Model.Contents;
 using bbt.gateway.common.Extensions;
 using bbt.gateway.common.GlobalConstants;
@@ -15,7 +16,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace bbt.gateway.messaging.Workers
 {
@@ -27,6 +30,7 @@ namespace bbt.gateway.messaging.Workers
         private readonly IOperatorFirebase _operatorFirebase;
         private readonly InstantReminder _instantReminder;
         private readonly IUserApi _userApi;
+        private readonly IUserApiPrep _userApiPrep;
         private readonly DaprClient _daprClient;
 
         public FirebaseSender(HeaderManager headerManager,
@@ -35,6 +39,7 @@ namespace bbt.gateway.messaging.Workers
             ITransactionManager transactionManager,
             InstantReminder instantReminder,
             IUserApi userApi,
+            IUserApiPrep userApiPrep,
             IConfiguration configuration,
             DaprClient daprClient
         )
@@ -45,6 +50,7 @@ namespace bbt.gateway.messaging.Workers
             _operatorFirebase = operatorFirebase;
             _instantReminder = instantReminder;
             _userApi = userApi;
+            _userApiPrep = userApiPrep;
             _daprClient = daprClient;
         }
 
@@ -75,22 +81,59 @@ namespace bbt.gateway.messaging.Workers
                 NotificationType = data.NotificationType ?? string.Empty
             };
 
+            List<RevampDevice> deviceList = new();
+            try
+            {
+                var deviceToken = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
+                deviceList.Add(deviceToken);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (env.Equals("Test"))
+            {
+                try
+                {
+                    var prepDeviceToken = await _userApiPrep.GetDeviceTokenAsync(data.CitizenshipNo);
+                    deviceList.Add(prepDeviceToken);
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }
+
+
+
             try
             {
                 await _repositoryManager.PushNotificationRequestLogs.AddAsync(pushRequest);
                 _transactionManager.Transaction.PushNotificationRequestLog = pushRequest;
 
-                var deviceToken = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
-                var response = await _operatorFirebase.SendPushNotificationAsync(await deviceToken.Content.ReadAsStringAsync(), data.Title ?? string.Empty, data.Content, data.CustomParameters);
-                pushRequest.ResponseLogs.Add(response);
 
-                firebasePushResponse.Status = response.ResponseCode.Equals("0") ? FirebasePushResponseCodes.Success : FirebasePushResponseCodes.Failed;
+                if (deviceList.Count > 0)
+                {
+                    foreach (var device in deviceList)
+                    {
+                        var response = await _operatorFirebase.SendPushNotificationAsync(device.token, data.Title ?? string.Empty, data.Content, data.CustomParameters);
+                        pushRequest.ResponseLogs.Add(response);
+                    }
+                }
+                else
+                {
+                    throw new WorkflowException("Device Not Found", System.Net.HttpStatusCode.InternalServerError);
+                }
+
+                firebasePushResponse.Status = pushRequest.ResponseLogs.Any(l => l.ResponseCode.Equals("0")) ? FirebasePushResponseCodes.Success : FirebasePushResponseCodes.Failed;
 
                 return firebasePushResponse;
             }
             catch (System.Exception ex)
             {
-                throw new WorkflowException("Device is not found", System.Net.HttpStatusCode.NotFound);
+                throw new WorkflowException("An Error Occured", System.Net.HttpStatusCode.InternalServerError);
             }
         }
 
@@ -131,9 +174,13 @@ namespace bbt.gateway.messaging.Workers
             };
 
             var pushTemplateTitle = "";
+            var targetUrl = string.Empty;
+
+            var targetUrls = new List<KeyValuePair<string, string>>();
 
             var templateDetail = await GetContentDetail<PushContentDetail>(GlobalConstants.PUSH_CONTENTS_SUFFIX + "_" + contentInfo.id);
 
+            _transactionManager.LogInformation($"Template Detail : {JsonConvert.SerializeObject(templateDetail)}");
             if (templateDetail != null)
             {
                 var templateContent = templateDetail.contents.FirstOrDefault();
@@ -156,20 +203,58 @@ namespace bbt.gateway.messaging.Workers
                     {
                         pushRequest.Content = pushRequest.Content.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
                     }
+
+                    //dEngage deeplinks
+                    if (!string.IsNullOrWhiteSpace(templateContent.android?.targetUrl))
+                    {
+                        var tUrl = templateContent.android?.targetUrl;
+                        var templateParamsListAndroid = templateContent?.android?.targetUrl.GetWithRegexMultiple("({%=)(.*?)(%})", 2);
+                        foreach (string templateParam in templateParamsListAndroid)
+                        {
+                            tUrl = tUrl.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
+                        }
+                        targetUrls.Add(new KeyValuePair<string, string>("android", tUrl));
+                    }
+                    if (!string.IsNullOrWhiteSpace(templateContent.ios?.targetUrl))
+                    {
+                        var tUrl = templateContent.ios?.targetUrl;
+                        var templateParamsListIos = templateContent?.android?.targetUrl.GetWithRegexMultiple("({%=)(.*?)(%})", 2);
+                        foreach (string templateParam in templateParamsListIos)
+                        {
+                            tUrl = tUrl.Replace("{%=" + templateParam + "%}", (string)templateParamsJson[templateParam.Split(".")[1]]);
+                        }
+                        targetUrls.Add(new KeyValuePair<string, string>("ios", tUrl));
+                    }
                 }
                 else
                 {
                     pushRequest.Content = templateContent.message;
+                    if (!string.IsNullOrWhiteSpace(templateContent.android?.targetUrl))
+                    {
+                        targetUrls.Add(new KeyValuePair<string, string>("android", templateContent.android?.targetUrl));
+                    }
+                    if (!string.IsNullOrWhiteSpace(templateContent.ios?.targetUrl))
+                    {
+                        targetUrls.Add(new KeyValuePair<string, string>("ios", templateContent.ios?.targetUrl));
+                    }
                 }
-            }            
+
+
+            }
 
             try
             {
                 await _repositoryManager.PushNotificationRequestLogs.AddAsync(pushRequest);
                 _transactionManager.Transaction.PushNotificationRequestLog = pushRequest;
 
-                var deviceToken = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
-                var response = await _operatorFirebase.SendPushNotificationAsync(await deviceToken.Content.ReadAsStringAsync(), pushTemplateTitle, pushRequest.Content, data.CustomParameters);
+                var device = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
+                _transactionManager.LogInformation($"Target Url's : {JsonConvert.SerializeObject(targetUrls)}");
+                if (targetUrls?.Count > 0)
+                {
+                    targetUrl = targetUrls.FirstOrDefault(t => t.Key.Equals(device.os.ToLower())).Value;
+                }
+                _transactionManager.LogInformation($"Selected Target Url : {targetUrl}");
+                var response = await _operatorFirebase.SendPushNotificationAsync(device.token, pushTemplateTitle, pushRequest.Content, data.CustomParameters, targetUrl);
                 pushRequest.ResponseLogs.Add(response);
 
                 firebasePushResponse.Status = response.ResponseCode.Equals("0") ? FirebasePushResponseCodes.Success : FirebasePushResponseCodes.Failed;

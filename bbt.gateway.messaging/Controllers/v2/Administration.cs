@@ -1,4 +1,5 @@
-﻿using bbt.gateway.common.Api.Reminder;
+﻿using Asp.Versioning;
+using bbt.gateway.common.Api.Reminder;
 using bbt.gateway.common.Extensions;
 using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Models;

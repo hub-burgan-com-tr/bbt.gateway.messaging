@@ -1,8 +1,14 @@
-﻿using bbt.gateway.common.Api.MessagingGateway;
+﻿using Asp.Versioning;
+using bbt.gateway.common.Api.MessagingGateway;
+using bbt.gateway.common.GlobalConstants;
+using bbt.gateway.common.Helpers;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
 using bbt.gateway.messaging.Workers;
+using Dapr;
+using Dapr.Client;
 using Elastic.Apm.Api;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Refit;
@@ -19,7 +25,7 @@ namespace bbt.gateway.messaging.Controllers.v2
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiVersion("2.0")]
-    public class Messaging : ControllerBase
+    public class MessagingController : ControllerBase
     {
         private readonly OtpSender _otpSender;
         private readonly ITransactionManager _transactionManager;
@@ -31,9 +37,10 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly ITracer _tracer;
         private readonly IConfiguration _configuration;
         private readonly IMessagingGatewayApi _messagingGatewayApi;
-        public Messaging(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender, FirebaseSender firebaseSender
+        private readonly DaprClient _daprClient;
+        public MessagingController(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender, FirebaseSender firebaseSender
             , IRepositoryManager repositoryManager, CodecSender codecSender, IConfiguration configuration, IMessagingGatewayApi messagingGatewayApi
-            , InfobipSender infobipSender)
+            , InfobipSender infobipSender, DaprClient daprClient)
         {
             _transactionManager = transactionManager;
             _otpSender = otpSender;
@@ -45,6 +52,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             _messagingGatewayApi = messagingGatewayApi;
             _firebaseSender = firebaseSender;
             _tracer = Elastic.Apm.Agent.Tracer;
+            _daprClient = daprClient;
         }
 
         private async Task<IActionResult> ProcessSmsRequestAsync(SmsRequest data)
@@ -374,6 +382,9 @@ namespace bbt.gateway.messaging.Controllers.v2
             + "",
            Tags = new[] { "Sms" }
            )]
+        [Topic(GlobalConstants.DAPR_QUEUE_STORE, GlobalConstants.SMS_QUEUE_BULK_NAME)]
+        [Topic(GlobalConstants.DAPR_QUEUE_STORE, GlobalConstants.SMS_QUEUE_FAST_NAME)]
+        [Topic(GlobalConstants.DAPR_QUEUE_STORE, GlobalConstants.SMS_QUEUE_OTP_NAME)]
         [HttpPost("sms/message/string")]
         [SwaggerRequestExample(typeof(SmsRequestString), typeof(SmsRequestExampleFilter))]
         [SwaggerResponse(200, "Sms was sent successfully", typeof(SmsResponse))]
@@ -430,7 +441,45 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         }
 
+        [SwaggerOperation(
+           Summary = "Send Sms message asynchronously",
+           Description = ""
+            + "<div>To Send Sms With Plain Text Asynchronously Use This Method</div>"
+            + "<div>Sender,SmsType,Content,Phone,Process Fields are Mandatory</div>"
+            + "<div>When Customer Type(Burgan/On) is Not Known, Sender Field Should Be Set To AutoDetect"
+            + " <br />Otherwise This Field Must Be Set Burgan or On</div>"
+            + "<div>You can use advantages of headers by creating header from Header Management Services"
+            + "<br /> When message services are called, we get customer info(BusinessLine,BranchCode)"
+            + "<br /> Then try to find header matches with (BusinessLine[BL],BranchCode[BC],SmsType[ST])"
+            + "<br /> Match Order by priority is (BL-BC-ST)-(BL-ST)-(BL-SC)-(BL)"
+            + "<br /> If any header is matches, we add matched header prefix and suffix to beginning of message and end of the message</div>"
+            + "<div>Content Field Will Be Logged After This Method Called. If You Need To Masking Critical Information You Should Surround"
+            + " Critical Information with &lt;Mask&gt;&lt;/Mask&gt; . "
+            + "<br />Example : \"Content\" : \"Your password is &lt;Mask&gt;1000&lt;/Mask&gt;.\"</div>"
+            + "",
+           Tags = new[] { "Sms" }
+           )]
+        [HttpPost("sms/message/stringAsync")]
+        [SwaggerRequestExample(typeof(SmsRequestString), typeof(SmsRequestExampleFilter))]
+        public async Task<IActionResult> SendMessageSmsStringAsync([FromBody] SmsRequestString data)
+        {
+            var kafkaHelper = new KafkaHelper(_daprClient);
 
+            switch (data.SmsType)
+            {
+                case SmsTypes.Bulk:
+                    await kafkaHelper.SendToQueue(data, GlobalConstants.SMS_QUEUE_BULK_NAME);
+                    break;
+                case SmsTypes.Fast:
+                    await kafkaHelper.SendToQueue(data, GlobalConstants.SMS_QUEUE_FAST_NAME);
+                    break;
+                case SmsTypes.Otp:
+                    await kafkaHelper.SendToQueue(data, GlobalConstants.SMS_QUEUE_OTP_NAME);
+                    break;
+            }
+
+            return Ok();
+        }
 
         [SwaggerOperation(
            Summary = "Send Multiple templated Email message",
@@ -718,7 +767,7 @@ namespace bbt.gateway.messaging.Controllers.v2
         {
             var responseFirebase = await _firebaseSender.SendTemplatedPushNotificationAsync(data);
 
-            var responseDengage = await _dEngageSender.SendTemplatedPushNotificationV2(data);          
+            var responseDengage = await _dEngageSender.SendTemplatedPushNotificationV2(data);
 
             return Ok(responseDengage);
         }

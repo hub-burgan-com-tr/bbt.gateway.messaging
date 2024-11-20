@@ -18,13 +18,13 @@ using System.Threading.Tasks;
 
 namespace bbt.gateway.messaging.Workers.OperatorGateway
 {
-    public class OperatorFirebase : OperatorGatewayBase,IOperatorFirebase
+    public class OperatorFirebase : OperatorGatewayBase, IOperatorFirebase
     {
 
         public OperatorFirebase(IConfiguration configuration,
             ITransactionManager transactionManager) : base(configuration, transactionManager)
         {
-            
+
         }
 
         public Task CheckPushNotificationAsync()
@@ -32,7 +32,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             throw new NotImplementedException();
         }
 
-        public async Task<PushNotificationResponseLog> SendPushNotificationAsync(string deviceToken, string title, string content, string customParams)
+        public async Task<PushNotificationResponseLog> SendPushNotificationAsync(string deviceToken, string title, string content, string customParams, string targetUrl = "")
         {
             var pushNotificationResponseLog = new PushNotificationResponseLog()
             {
@@ -54,17 +54,36 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                               Body = content
                           },
                           Token = deviceToken,
-                          
+
                       };
 
                       if (!string.IsNullOrWhiteSpace(customParams))
                       {
-                          message.Data = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(customParams?.ClearMaskingFields()).ToDictionary(x => x.Keys.First(), x => x.Values.First());
+                          var data = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(customParams?.ClearMaskingFields()).ToDictionary(x => x.Keys.First(), x => x.Values.First());
+                          if (!string.IsNullOrWhiteSpace(targetUrl))
+                          {
+                              if (data.ContainsKey("deeplink"))
+                              {
+                                  data.Remove("deeplink");
+                                  data.Add("deeplink", targetUrl);
+                              }
+                          }
+                          message.Data = data;
+                      }
+                      else
+                      {
+                          if (!string.IsNullOrWhiteSpace(targetUrl))
+                          {
+                              var data = new Dictionary<string, string>();
+                              data.Add("deeplink", targetUrl);
+                              message.Data = data;
+                          }
                       }
 
                       // Send the message
                       try
                       {
+                          TransactionManager.LogInformation("Firebase Push Request : " + JsonConvert.SerializeObject(message));
                           var response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
                           pushNotificationResponseLog.ResponseCode = "0";
                           pushNotificationResponseLog.ResponseMessage = "Successfuly sended to Firebase";
@@ -86,6 +105,6 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
             return pushNotificationResponseLog;
         }
 
-        
+
     }
 }

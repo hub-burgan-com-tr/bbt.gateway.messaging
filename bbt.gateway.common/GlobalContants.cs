@@ -7,10 +7,14 @@ namespace bbt.gateway.common.GlobalConstants
         public static readonly string DAPR_LOCK_STORE = "messaginggateway-lockstore";
         public static readonly string DAPR_STATE_STORE = "messaginggateway-statestore";
         public static readonly string DAPR_SECRET_STORE = "messaginggateway-secretstore";
-        public static readonly string DAPR_QUEUE_STORE = "messaginggateway-queuestore";
+        public const string DAPR_QUEUE_STORE = "messaginggateway-pubsub";
 
         public static readonly string SMS_TRACKING_QUEUE_NAME = "msgtw-sms-tracking-topic";
         public static readonly string MAIL_TRACKING_QUEUE_NAME = "msgtw-mail-tracking-topic";
+
+        public const string SMS_QUEUE_BULK_NAME = "msgtw-sms-queue-bulk";
+        public const string SMS_QUEUE_FAST_NAME = "msgtw-sms-queue-fast";
+        public const string SMS_QUEUE_OTP_NAME = "msgtw-sms-queue-otp";
 
         public static readonly string OPERATORS_CACHE_KEY = "MsGtwOperatorsInfo";
         public static readonly string OPERATORS_LOCK_KEY = "MsGtwOperatorsLock";
@@ -20,9 +24,9 @@ namespace bbt.gateway.common.GlobalConstants
         public static readonly string PUSH_CONTENTS_SUFFIX = "PushContents";
 
         public static readonly string SMS_DAILY_REPORT = "SmsDailyReport";
-        public static readonly string[] AVAILABLE_TEMPLATE_LANGUAGES = new string[]{"EN","TR"};
+        public static readonly string[] AVAILABLE_TEMPLATE_LANGUAGES = new string[] { "EN", "TR" };
 
-        public static readonly Dictionary<int,OperatorReportInfo> reportOperators = new Dictionary<int, OperatorReportInfo>()
+        public static readonly Dictionary<int, OperatorReportInfo> reportOperators = new Dictionary<int, OperatorReportInfo>()
         {
             {1, new(){ OperatorType = OperatorType.Turkcell,isFast = false,isOtp = true,AdditionalOperatorType = null} },
             {2, new(){ OperatorType = OperatorType.Vodafone,isFast = false,isOtp = true,AdditionalOperatorType = null} },
