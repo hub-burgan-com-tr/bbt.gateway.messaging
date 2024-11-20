@@ -15,7 +15,7 @@ namespace bbt.gateway.common.Api.dEngage.Model.Contents
     }
 
     public class PushContentDetail
-    { 
+    {
         public List<PushContent> contents { get; set; }
     }
 

@@ -1,4 +1,5 @@
-﻿using bbt.gateway.common.Api.dEngage.Model.Contents;
+﻿using Asp.Versioning;
+using bbt.gateway.common.Api.dEngage.Model.Contents;
 using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.v1;

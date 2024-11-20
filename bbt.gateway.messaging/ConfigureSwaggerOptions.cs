@@ -1,4 +1,5 @@
-﻿using bbt.gateway.common.Models.v2;
+﻿using Asp.Versioning.ApiExplorer;
+using bbt.gateway.common.Models.v2;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

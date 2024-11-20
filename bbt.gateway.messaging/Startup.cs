@@ -46,6 +46,12 @@ using System.Configuration;
 using Google.Apis.Http;
 using bbt.gateway.common.Http;
 using bbt.gateway.common.Api.Amorphie;
+using Asp.Versioning.ApiExplorer;
+using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using bbt.gateway.common.GlobalConstants;
+using bbt.gateway.common.Models.v2;
 
 namespace bbt.gateway.messaging
 {
@@ -111,7 +117,15 @@ namespace bbt.gateway.messaging
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Security:Key"]))
                 };
             });
-                
+
+            services.AddDaprClient(builder =>
+               builder.UseJsonSerializationOptions(
+                   new JsonSerializerOptions()
+                   {
+                       PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                       PropertyNameCaseInsensitive = true,
+                   }));
+
             services.AddHealthChecks();
 
             services.AddControllers()
@@ -128,11 +142,10 @@ namespace bbt.gateway.messaging
 
             services.AddApiVersioning(v =>
             {
-                v.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+                v.DefaultApiVersion = new ApiVersion(1, 0);
                 v.AssumeDefaultVersionWhenUnspecified = true;
-            });
-
-            services.AddVersionedApiExplorer(setup =>
+            })
+            .AddApiExplorer(setup =>
             {
                 setup.GroupNameFormat = "'v'VVV";
                 setup.SubstituteApiVersionInUrl = true;
@@ -193,13 +206,7 @@ namespace bbt.gateway.messaging
             
             services.AddSwaggerExamplesFromAssemblyOf<Startup>();
 
-            services.AddDaprClient(builder =>
-                   builder.UseJsonSerializationOptions(
-                       new JsonSerializerOptions()
-                       {
-                           PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                           PropertyNameCaseInsensitive = true,
-                       }));
+        
             
             services.AddStackExchangeRedisCache(opt =>
             {
@@ -279,6 +286,8 @@ namespace bbt.gateway.messaging
                 Credential = credential,
                 HttpClientFactory = factory
             });
+
+            services.AddAllElasticApm();
 
             services.AddScoped<IOperatorService, OperatorService>();
             services.AddScoped<InstantReminder>();
@@ -367,7 +376,6 @@ namespace bbt.gateway.messaging
                 }
             });
 
-
             services.AddScoped<InfobipSender>();
             services.AddScoped<OtpSender>();
             services.AddScoped<dEngageSender>();
@@ -382,8 +390,7 @@ namespace bbt.gateway.messaging
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
-        {
-            app.UseAllElasticApm(Configuration);
+        {            
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Mock")
             {
                 app.UseGatewayMiddleware();
@@ -419,21 +426,18 @@ namespace bbt.gateway.messaging
             }
             });
 
+            app.UseCloudEvents();
+            
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
-            {
+            {                
                 endpoints.MapControllers();
+                endpoints.MapSubscribeHandler();
             });
-
-            
-            
         }
     }
-
-
-
 }
