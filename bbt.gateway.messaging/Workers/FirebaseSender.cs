@@ -105,16 +105,16 @@ namespace bbt.gateway.messaging.Workers
 
                 }
             }
-
-
+            
+            
 
             try
             {
                 await _repositoryManager.PushNotificationRequestLogs.AddAsync(pushRequest);
                 _transactionManager.Transaction.PushNotificationRequestLog = pushRequest;
 
-
-                if (deviceList.Count > 0)
+                
+                if(deviceList.Count > 0)
                 {
                     foreach (var device in deviceList)
                     {
@@ -176,7 +176,7 @@ namespace bbt.gateway.messaging.Workers
             var pushTemplateTitle = "";
             var targetUrl = string.Empty;
 
-            var targetUrls = new List<KeyValuePair<string, string>>();
+            var targetUrls = new List<KeyValuePair<string,string>>();
 
             var templateDetail = await GetContentDetail<PushContentDetail>(GlobalConstants.PUSH_CONTENTS_SUFFIX + "_" + contentInfo.id);
 
@@ -185,7 +185,7 @@ namespace bbt.gateway.messaging.Workers
             {
                 var templateContent = templateDetail.contents.FirstOrDefault();
                 pushTemplateTitle = templateContent != null ? templateContent.title : "";
-
+                
                 if (!string.IsNullOrWhiteSpace(data.TemplateParams))
                 {
                     pushRequest.Content = templateContent.message;
@@ -239,8 +239,8 @@ namespace bbt.gateway.messaging.Workers
                     }
                 }
 
-
-            }
+                
+            }            
 
             try
             {

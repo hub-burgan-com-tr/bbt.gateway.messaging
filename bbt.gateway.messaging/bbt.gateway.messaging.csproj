@@ -75,11 +75,13 @@
 	<PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.0" />
 	<PackageReference Include="OfficeOpenXml.Core.ExcelPackage" Version="1.0.0" />
 	<PackageReference Include="OfficeOpenXml.Extends" Version="1.0.6" />
+
 	<PackageReference Include="Polly" Version="8.5.0" />
 	<PackageReference Include="Refit" Version="8.0.0" />
 	<PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
 	<PackageReference Include="Refit.Newtonsoft.Json" Version="8.0.0" />
 	<PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+
 	<PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
 	<PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
 	<PackageReference Include="Elastic.Serilog.Sinks" Version="8.12.2" />

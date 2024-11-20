@@ -9,6 +9,6 @@ namespace bbt.gateway.common.Api.Amorphie
     {
         [Get("/userDevice/deviceToken/{reference}")]
         Task<RevampDevice> GetDeviceTokenAsync(string reference);
-
+       
     }
 }
