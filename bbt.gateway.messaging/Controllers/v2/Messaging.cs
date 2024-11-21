@@ -25,7 +25,7 @@ namespace bbt.gateway.messaging.Controllers.v2
     [ApiController]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiVersion("2.0")]
-    public class MessagingController : ControllerBase
+    public class Messaging : ControllerBase
     {
         private readonly OtpSender _otpSender;
         private readonly ITransactionManager _transactionManager;
@@ -38,7 +38,7 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly IConfiguration _configuration;
         private readonly IMessagingGatewayApi _messagingGatewayApi;
         private readonly DaprClient _daprClient;
-        public MessagingController(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender, FirebaseSender firebaseSender
+        public Messaging(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender, FirebaseSender firebaseSender
             , IRepositoryManager repositoryManager, CodecSender codecSender, IConfiguration configuration, IMessagingGatewayApi messagingGatewayApi
             , InfobipSender infobipSender, DaprClient daprClient)
         {
@@ -55,7 +55,8 @@ namespace bbt.gateway.messaging.Controllers.v2
             _daprClient = daprClient;
         }
 
-        private async Task<IActionResult> ProcessSmsRequestAsync(SmsRequest data)
+        [NonAction]
+        public async Task<IActionResult> ProcessSmsRequestAsync(SmsRequest data)
         {
             if (ModelState.IsValid)
             {
@@ -382,9 +383,6 @@ namespace bbt.gateway.messaging.Controllers.v2
             + "",
            Tags = new[] { "Sms" }
            )]
-        [Topic(GlobalConstants.DAPR_QUEUE_STORE, GlobalConstants.SMS_QUEUE_BULK_NAME)]
-        [Topic(GlobalConstants.DAPR_QUEUE_STORE, GlobalConstants.SMS_QUEUE_FAST_NAME)]
-        [Topic(GlobalConstants.DAPR_QUEUE_STORE, GlobalConstants.SMS_QUEUE_OTP_NAME)]
         [HttpPost("sms/message/string")]
         [SwaggerRequestExample(typeof(SmsRequestString), typeof(SmsRequestExampleFilter))]
         [SwaggerResponse(200, "Sms was sent successfully", typeof(SmsResponse))]
@@ -438,7 +436,6 @@ namespace bbt.gateway.messaging.Controllers.v2
             }
 
             return await ProcessSmsRequestAsync(_data);
-
         }
 
         [SwaggerOperation(
