@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Refit;
 using System.Text.Json;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 var host = Host.CreateDefaultBuilder()
     .UseVaultSecrets(typeof(Program))
     .UseSeriLog("entegrasyon")
@@ -42,5 +43,6 @@ var host = Host.CreateDefaultBuilder()
     })
     .UseAllElasticApm()
     .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 await host.RunAsync();
