@@ -386,6 +386,7 @@ namespace bbt.gateway.messaging
             services.AddScoped<OperatorIVN>();
             services.AddScoped<PusulaClient>();
             services.AddScoped<ForaClient>();
+            services.AddScoped<SmsStringHelper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

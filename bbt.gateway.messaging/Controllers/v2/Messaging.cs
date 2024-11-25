@@ -1,9 +1,11 @@
 ﻿using Asp.Versioning;
+using bbt.gateway.common.Api.dEngage.Model.Transactional;
 using bbt.gateway.common.Api.MessagingGateway;
 using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Helpers;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
+using bbt.gateway.messaging.Helpers;
 using bbt.gateway.messaging.Workers;
 using Dapr;
 using Dapr.Client;
@@ -38,9 +40,10 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly IConfiguration _configuration;
         private readonly IMessagingGatewayApi _messagingGatewayApi;
         private readonly DaprClient _daprClient;
+        private readonly SmsStringHelper _smsStringHelper;
         public Messaging(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender, FirebaseSender firebaseSender
             , IRepositoryManager repositoryManager, CodecSender codecSender, IConfiguration configuration, IMessagingGatewayApi messagingGatewayApi
-            , InfobipSender infobipSender, DaprClient daprClient)
+            , InfobipSender infobipSender, DaprClient daprClient, SmsStringHelper smsStringHelper)
         {
             _transactionManager = transactionManager;
             _otpSender = otpSender;
@@ -53,54 +56,14 @@ namespace bbt.gateway.messaging.Controllers.v2
             _firebaseSender = firebaseSender;
             _tracer = Elastic.Apm.Agent.Tracer;
             _daprClient = daprClient;
-        }
 
-        [NonAction]
-        public async Task<IActionResult> ProcessSmsRequestAsync(SmsRequest data)
+            _smsStringHelper = smsStringHelper;
+        }
+        private async Task<IActionResult> ProcessSmsRequestAsync(SmsRequest data)
         {
             if (ModelState.IsValid)
             {
-                var codecOperator = await _transactionManager.GetOperatorAsync(common.Models.OperatorType.Codec);
-                var infobipOperator = await _transactionManager.GetOperatorAsync(common.Models.OperatorType.Infobip);
-                if (data.SmsType == SmsTypes.Otp)
-                {
-
-                    if (data.Phone.CountryCode != 90)
-                    {
-                        if (infobipOperator?.Status == common.Models.OperatorStatus.Active)
-                        {
-                            return Ok(await _infobipSender.SendSms(data));
-                        }
-
-                        return Ok(await _otpSender.SendMessageV2(data));
-                    }
-                    else
-                    {
-                        return Ok(await _otpSender.SendMessageV2(data));
-                    }
-                }
-                else
-                {
-
-                    if ((data.Phone.CountryCode != 90 || _transactionManager.SmsRequestInfo?.PhoneConfiguration?.Operator == common.Models.OperatorType.Foreign) && infobipOperator?.Status == common.Models.OperatorStatus.Active)
-                    {
-
-                        return Ok(await _infobipSender.SendSms(data));
-
-                    }
-
-                    if (codecOperator.Status == common.Models.OperatorStatus.Active)
-                    {
-
-                        return Ok(await _codecSender.SendSmsV2(data));
-                    }
-                    else
-                    {
-
-                        return Ok(await _dEngageSender.SendSmsV2(data));
-
-                    }
-                }
+                return await _smsStringHelper.ProcessSmsRequestAsync(data);
             }
             else
             {
@@ -460,6 +423,14 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerRequestExample(typeof(SmsRequestString), typeof(SmsRequestExampleFilter))]
         public async Task<IActionResult> SendMessageSmsStringAsync([FromBody] SmsRequestString data)
         {
+            if (!ModelState.IsValid)
+            {
+                _transactionManager.LogError("Model State is Not Valid | " +
+                    string.Join("|", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+
+                return BadRequest(ModelState);
+            }
+
             var kafkaHelper = new KafkaHelper(_daprClient);
 
             switch (data.SmsType)
@@ -474,6 +445,61 @@ namespace bbt.gateway.messaging.Controllers.v2
                     await kafkaHelper.SendToQueue(data, GlobalConstants.SMS_QUEUE_OTP_NAME);
                     break;
             }
+
+            return Ok();
+        }
+
+        [HttpPost("sms/message/stringAsyncBulk")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IActionResult> SendMessageSmsStringAsyncBulk(string to, int count, SmsTypes smsType)
+        {
+            string topic = GlobalConstants.SMS_QUEUE_OTP_NAME;
+
+            switch (smsType)
+            {
+                case SmsTypes.Bulk:
+                    topic = GlobalConstants.SMS_QUEUE_BULK_NAME;
+                    break;
+                case SmsTypes.Fast:
+                    topic = GlobalConstants.SMS_QUEUE_FAST_NAME;
+                    break;
+                case SmsTypes.Otp:
+                    topic = GlobalConstants.SMS_QUEUE_OTP_NAME;
+                    break;
+            }
+
+
+            var listData = new List<SmsRequestString>();
+
+            var toList = to.Split('|');
+
+            foreach (var item in toList)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    Random generator = new Random();
+                    String r = generator.Next(0, 1000000).ToString("D6");
+                    PhoneString phone = new PhoneString();
+                    phone.Prefix = item.Substring(0,3);
+                    phone.Number = item.Substring(3);
+                    phone.CountryCode = "90";
+
+                    SmsRequestString smsRequestString = new SmsRequestString
+                    {
+                        SmsType = smsType,
+                        Sender = SenderType.AutoDetect,
+                        CitizenshipNo = "",
+                        Content = "Test " + r,
+                        CustomerNo = 0,
+                        InstantReminder = false,
+                        Phone = phone
+                    };
+
+                    listData.Add(smsRequestString);
+                }
+            }
+
+            await _daprClient.BulkPublishEventAsync(GlobalConstants.DAPR_QUEUE_STORE, topic, listData);
 
             return Ok();
         }
@@ -723,7 +749,13 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerResponse(500, "Internal Server Error. Get Contact With Integration", typeof(void))]
         public async Task<IActionResult> SendPushNotification([FromBody] PushRequest data)
         {
-            var responseFirebase = await _firebaseSender.SendPushNotificationAsync(data);
+            try
+            {
+                var responseFirebase = await _firebaseSender.SendPushNotificationAsync(data);
+            }
+            catch (Exception ex)
+            {
+            }
 
             var responseDengage = await _dEngageSender.SendPushNotificationV2(data);
 
@@ -762,7 +794,13 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         public async Task<IActionResult> SendTemplatedPushNotification([FromBody] TemplatedPushRequest data)
         {
-            var responseFirebase = await _firebaseSender.SendTemplatedPushNotificationAsync(data);
+            try
+            {
+                var responseFirebase = await _firebaseSender.SendTemplatedPushNotificationAsync(data);
+            }
+            catch (Exception ex)
+            {
+            }
 
             var responseDengage = await _dEngageSender.SendTemplatedPushNotificationV2(data);
 
