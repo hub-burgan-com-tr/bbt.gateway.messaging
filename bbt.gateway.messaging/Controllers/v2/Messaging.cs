@@ -808,6 +808,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             }
             catch (Exception ex)
             {
+
             }
 
             var responseDengage = await _dEngageSender.SendTemplatedPushNotificationV2(data);
