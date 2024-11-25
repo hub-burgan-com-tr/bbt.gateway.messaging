@@ -97,7 +97,7 @@ namespace bbt.gateway.messaging.Middlewares
         public static IApplicationBuilder UseWhitelistMiddleware(this IApplicationBuilder builder)
         {
             return builder.UseWhen(context => (context.Request.Path.Value.IndexOf("/Messaging") != -1
-            && context.Request.Path.Value.IndexOf("/sms/check") == -1
+            && context.Request.Path.Value.IndexOf("/sms/check") == -1 && context.Request.Path.Value.IndexOf("/sms/message/stringAsync") == -1
             ), builder =>
             {
                 builder.UseMiddleware<WhitelistMiddleware>();

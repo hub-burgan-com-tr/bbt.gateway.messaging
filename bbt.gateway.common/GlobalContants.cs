@@ -15,6 +15,7 @@ namespace bbt.gateway.common.GlobalConstants
         public const string SMS_QUEUE_BULK_NAME = "msgtw-sms-queue-bulk";
         public const string SMS_QUEUE_FAST_NAME = "msgtw-sms-queue-fast";
         public const string SMS_QUEUE_OTP_NAME = "msgtw-sms-queue-otp";
+        public const string SMS_QUEUE_DEAD_LETTER_NAME = "msgtw-sms-queue-dead";
 
         public static readonly string OPERATORS_CACHE_KEY = "MsGtwOperatorsInfo";
         public static readonly string OPERATORS_LOCK_KEY = "MsGtwOperatorsLock";

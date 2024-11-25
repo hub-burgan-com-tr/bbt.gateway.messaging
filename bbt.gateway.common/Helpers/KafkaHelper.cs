@@ -10,5 +10,13 @@ namespace bbt.gateway.common.Helpers
         {
             await _daprClient.PublishEventAsync<T>(GlobalConstants.GlobalConstants.DAPR_QUEUE_STORE, topicName, model);
         }
+
+        public async Task SendToQueueRaw<T>(T model, string topicName)
+        {
+            var dic = new Dictionary<string, string>();
+            dic["rawPayload"] = "true";
+
+            await _daprClient.PublishEventAsync<T>(GlobalConstants.GlobalConstants.DAPR_QUEUE_STORE, topicName, model, dic);
+        }
     }
 }
