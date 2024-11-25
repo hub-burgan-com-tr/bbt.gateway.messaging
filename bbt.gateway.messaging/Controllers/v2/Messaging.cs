@@ -13,6 +13,7 @@ using Elastic.Apm.Api;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Refit;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
@@ -453,6 +454,13 @@ namespace bbt.gateway.messaging.Controllers.v2
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> SendMessageSmsStringAsyncBulk(string to, int count, SmsTypes smsType)
         {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+            if (environment == "Prod" || environment == "Production" || environment == "Drc")
+            {
+                return Ok();
+            }
+
             string topic = GlobalConstants.SMS_QUEUE_OTP_NAME;
 
             switch (smsType)
@@ -480,7 +488,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                     Random generator = new Random();
                     String r = generator.Next(0, 1000000).ToString("D6");
                     PhoneString phone = new PhoneString();
-                    phone.Prefix = item.Substring(0,3);
+                    phone.Prefix = item.Substring(0, 3);
                     phone.Number = item.Substring(3);
                     phone.CountryCode = "90";
 
