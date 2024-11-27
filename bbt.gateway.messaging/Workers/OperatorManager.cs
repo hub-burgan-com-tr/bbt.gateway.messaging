@@ -1,6 +1,8 @@
-﻿using bbt.gateway.common.Extensions;
+﻿using bbt.gateway.common;
+using bbt.gateway.common.Extensions;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Repositories;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,6 +56,27 @@ namespace bbt.gateway.messaging.Workers
         private async Task loadOperators()
         {
             operators = (await _repositoryManager.Operators.GetAllAsync()).ToList();
+        }
+
+        public async Task<int?> GetFastOperator()
+        {
+            var codecOperator = await _repositoryManager.Operators.FirstOrDefaultAsync(t => t.Id == (int)OperatorType.Codec);
+
+            if (codecOperator != null)
+                return (int)codecOperator.Status;
+
+            return null;
+        }
+
+        public async Task ChangeFastOperator(int status)
+        {
+            var codecOperator = await _repositoryManager.Operators.FirstOrDefaultAsync(t => t.Id == (int)OperatorType.Codec);
+
+            if (codecOperator != null)
+            {
+                codecOperator.Status = (OperatorStatus)status;
+                await _repositoryManager.SaveChangesAsync();
+            }
         }
     }
 }
