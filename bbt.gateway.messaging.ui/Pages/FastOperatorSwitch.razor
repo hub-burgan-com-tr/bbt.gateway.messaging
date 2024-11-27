@@ -1,0 +1,29 @@
+﻿@page "/fastOperatorSwitch"
+@using bbt.gateway.common.Models
+@using bbt.gateway.messaging.ui.Data
+@using bbt.gateway.common.Models.v2;
+@inject IMessagingGatewayService MessagingGatewayService
+@inherits bbt.gateway.messaging.ui.Pages.Base.BaseComponent
+<PageTitle>Fast Operatör Switch</PageTitle>
+<h2>Fast Operatör Switch</h2>
+<div class="row mb-2">
+</div>
+
+<EditForm Model="@fastOperatorModel">
+    <div class="col-md-3">
+
+        <RadzenRadioButtonList @bind-Value=@fastOperatorModel.FastOperatorValue>
+            <Items>
+                <RadzenRadioButtonListItem Text="Codec" Value="1" />
+                <RadzenRadioButtonListItem Text="Dengage" Value="2" />
+            </Items>
+        </RadzenRadioButtonList>
+    </div>
+    <br />
+    <div class="row mb-2">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <RadzenButton class="btn btn-primary" Click=@(args => Save()) ButtonStyle="ButtonStyle.Primary">Kaydet</RadzenButton>
+        </div>
+    </div>
+
+</EditForm>
