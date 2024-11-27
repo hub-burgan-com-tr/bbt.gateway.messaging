@@ -58,7 +58,7 @@ namespace bbt.gateway.messaging.Helpers
                     message.Attachments.Add(attachment);
                 }
             }
-            client.Send(message);
+            //client.Send(message);
         }
     }
 }

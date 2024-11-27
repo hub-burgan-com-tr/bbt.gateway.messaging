@@ -2,10 +2,13 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet8.0 AS base
 WORKDIR /app
+RUN apt-get update \ && DEBIAN_FRONTEND=noninteractive \    apt-get install --no-install-recommends --assume-yes \      libgdiplus
+RUN adduser smsgatewayuser --disabled-password --gecos "" && chown -R smsgatewayuser:smsgatewayuser /app
 EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
+ENV DOTNET_NUGET_SIGNATURE_VERIFICATION false
 COPY ["bbt.gateway.messaging.ui/bbt.gateway.messaging.ui.csproj", "bbt.gateway.messaging.ui/"]
 COPY ["bbt.gateway.common/bbt.gateway.common.csproj", "bbt.gateway.common/"]
 RUN dotnet restore "bbt.gateway.messaging.ui/bbt.gateway.messaging.ui.csproj"

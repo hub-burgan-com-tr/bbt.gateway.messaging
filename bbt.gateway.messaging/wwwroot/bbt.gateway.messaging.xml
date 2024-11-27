@@ -973,7 +973,7 @@
         <member name="T:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.SuccessXml.getStatusResponse">
             <remarks/>
         </member>
-        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.SuccessXml.getStatusResponse.result">
+        <member name="P:bbt.gateway.messaging.Api.Turkcell.Model.SmsStatus.SuccessXml.getStatusResponse.return">
             <remarks/>
         </member>
         <member name="T:bbt.gateway.messaging.Api.Vodafone.Model.Auth.ErrorXml.Envelope">

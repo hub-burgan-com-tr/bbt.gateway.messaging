@@ -19,7 +19,7 @@ namespace bbt.gateway.messaging.Services
         private readonly IConfiguration _configuration;
         private DbContextOptions<DatabaseContext> _dbOptions;
 
-        public OperatorService(DaprClient daprClient, IRepositoryManager repositoryManager,IConfiguration configuration)
+        public OperatorService(DaprClient daprClient, IRepositoryManager repositoryManager, IConfiguration configuration)
         {
             _daprClient = daprClient;
             _repositoryManager = repositoryManager;
@@ -31,35 +31,33 @@ namespace bbt.gateway.messaging.Services
 
         public async Task<Operator> GetOperator(OperatorType type)
         {
-            var operators = await _daprClient.GetStateAsync<IEnumerable<Operator>>(GlobalConstants.DAPR_STATE_STORE,GlobalConstants.OPERATORS_CACHE_KEY);
-            if(operators is not {})
-            {
-                //await using (var fileLock = await _daprClient.Lock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATORS_LOCK_KEY,"MessagingGateway",10))
-                //{
-                //    if (fileLock.Success)
-                //    {
-                        //operators = await _repositoryManager.Operators.GetAllAsNoTrackingAsync();
-                        using var databaseContext = new DatabaseContext(_dbOptions);
-                        operators = await databaseContext.Operators.AsNoTracking().ToListAsync();
-                        await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, GlobalConstants.OPERATORS_CACHE_KEY, operators,metadata: new Dictionary<string, string>() {
-                            {
-                                "ttlInSeconds", "290"
-                            }
-                        });
-                        //var response = await _daprClient.Unlock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATORS_LOCK_KEY,"MessagingGateway");
-                //    }
-                //    else
-                //    {
-                //        return await GetOperator(type);
-                //    }
-                //}
-            }
+            //var operators = await _daprClient.GetStateAsync<IEnumerable<Operator>>(GlobalConstants.DAPR_STATE_STORE,GlobalConstants.OPERATORS_CACHE_KEY);
+            //await using (var fileLock = await _daprClient.Lock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATORS_LOCK_KEY,"MessagingGateway",10))
+            //{
+            //    if (fileLock.Success)
+            //    {
+            //operators = await _repositoryManager.Operators.GetAllAsNoTrackingAsync();
+            using var databaseContext = new DatabaseContext(_dbOptions);
+            var operators = await databaseContext.Operators.AsNoTracking().ToListAsync();
+            //await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, GlobalConstants.OPERATORS_CACHE_KEY, operators, metadata: new Dictionary<string, string>() {
+            //                {
+            //                    "ttlInSeconds", "290"
+            //                }
+            //            });
+            //var response = await _daprClient.Unlock(GlobalConstants.DAPR_LOCK_STORE, GlobalConstants.OPERATORS_LOCK_KEY,"MessagingGateway");
+            //    }
+            //    else
+            //    {
+            //        return await GetOperator(type);
+            //    }
+            //}
+
             return operators.FirstOrDefault(o => o.Type.Equals(type));
         }
 
         public async Task RevokeCache()
         {
-            await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,GlobalConstants.OPERATORS_CACHE_KEY);
+            //await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE, GlobalConstants.OPERATORS_CACHE_KEY);
         }
     }
 }
