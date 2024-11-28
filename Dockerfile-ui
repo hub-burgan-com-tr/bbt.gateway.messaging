@@ -5,7 +5,7 @@ WORKDIR /app
 
 RUN adduser -u 5679 --disabled-password --gecos "" smsgateway-uiuser && chown -R smsgateway-uiuser:smsgateway-uiuser /app
 USER root
-RUN echo "deb http://us.archive.ubuntu.com/ubuntu focal main" >> /etc/apt/sources.list
+#RUN echo "deb http://us.archive.ubuntu.com/ubuntu focal main" >> /etc/apt/sources.list
 RUN apt-get update \
     && apt-get -y install libldap-2.4-2 sssd realmd krb5-user software-properties-common packagekit gss-ntlmssp samba
 USER smsgateway-uiuser
