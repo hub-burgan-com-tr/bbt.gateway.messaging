@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0.7 AS base
 ENV ASPNETCORE_URLS=http://*:5000
 EXPOSE 5000
 WORKDIR /app
@@ -10,6 +10,7 @@ RUN apt-get update \
     && apt-get -y install libldap-common sssd realmd krb5-user software-properties-common packagekit gss-ntlmssp samba
 USER smsgateway-uiuser
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ENV DOTNET_NUGET_SIGNATURE_VERIFICATION=false
 WORKDIR /src
 
 COPY . .
