@@ -1880,19 +1880,5 @@ namespace bbt.gateway.messaging.Controllers.v2
             }
             return operatorReport;
         }
-        
-        [HttpGet("operators/getFastOperator")]
-        public async Task<IActionResult> GetFastOperator()
-        {
-            return Ok(await _operatorManager.GetFastOperator());
-        }
-
-        [HttpPost("operators/changeFastOperator/{status}")]
-        public async Task<IActionResult> ChangeFastOperator(int status)
-        {
-            await _operatorManager.ChangeFastOperator(status);
-
-            return Ok();
-        }
     }
 }
