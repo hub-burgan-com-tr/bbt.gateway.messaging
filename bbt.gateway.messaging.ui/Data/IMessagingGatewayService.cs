@@ -60,10 +60,10 @@ namespace bbt.gateway.messaging.ui.Data
         [Get("/api/v2/Administration/Report/Sms/{operator}")]
         Task<common.Models.v2.OperatorReport> SmsReportAsync(int @operator,QueryParams queryParams);
 
-        [Get("/api/v2/Administration/operators/getFastOperator")]
+        [Get("/api/v1/Administration/operators/getFastOperator")]
         Task<int?> GetFastOperator();
 
-        [Post("/api/v2/Administration/operators/changeFastOperator/{status}")]
+        [Post("/api/v1/Administration/operators/changeFastOperator/{status}")]
         Task ChangeFastOperator(int status);
     }
 }
