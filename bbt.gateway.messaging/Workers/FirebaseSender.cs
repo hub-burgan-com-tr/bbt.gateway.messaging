@@ -139,6 +139,11 @@ namespace bbt.gateway.messaging.Workers
 
         public async Task<common.Models.v2.FirebasePushResponse> SendTemplatedPushNotificationAsync(common.Models.v2.TemplatedPushRequest data)
         {
+            if (String.IsNullOrWhiteSpace(data.CitizenshipNo))
+            {
+                data.CitizenshipNo = _transactionManager.CustomerRequestInfo.Tckn;
+            }
+
             common.Models.v2.FirebasePushResponse firebasePushResponse = new()
             {
                 TxnId = _transactionManager.TxnId,
