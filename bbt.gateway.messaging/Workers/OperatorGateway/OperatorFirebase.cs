@@ -46,16 +46,27 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                       TransactionManager.LogError($"Firebase Retry : {r}");
                   }).ExecuteAsync(async () =>
                   {
-                      var message = new Message()
-                      {
-                          Notification = new Notification
-                          {
-                              Title = title,
-                              Body = content
-                          },
-                          Token = deviceToken,
-                          
-                      };
+                      //var message = new Message()
+                      //{
+                      //   Notification = new Notification
+                      //    {
+                      //        Title = title,
+                      //        Body = content
+                      //    },
+                      //    Token = deviceToken,
+
+                      //};
+
+                      var message = new Message();
+                      
+                      Dictionary<string,string> pairs = new Dictionary<string,string>();
+                      pairs.Add("title", title);
+                      pairs.Add("body", content);
+                      
+
+                      message.Data = pairs;
+                      message.Token = deviceToken;
+                      
 
                       if (!string.IsNullOrWhiteSpace(customParams))
                       {
