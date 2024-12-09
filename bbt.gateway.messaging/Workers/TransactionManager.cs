@@ -61,6 +61,11 @@ namespace bbt.gateway.messaging.Workers
 
         public async Task AddTransactionAsync()
         {
+            if (Transaction.TransactionType == TransactionType.Otp)
+            {
+                Transaction.Request = Transaction.Request.MaskOtpContent();
+            }
+
             await _repositoryManager.Transactions.AddAsync(Transaction);
         }
 
@@ -122,7 +127,7 @@ namespace bbt.gateway.messaging.Workers
             {
                 CountryCode = Transaction.Phone.CountryCode.ToString(),
                 CityCode = Transaction.Phone.Prefix.ToString(),
-                TelephoneNumber = StringSend ? Transaction.Phone.Number.ToString().PadLeft(NumberLength, '0') : (Transaction.Phone.CountryCode == 90 ? Transaction.Phone.Number.ToString().PadLeft(7,'0') : Transaction.Phone.Number.ToString())
+                TelephoneNumber = StringSend ? Transaction.Phone.Number.ToString().PadLeft(NumberLength, '0') : (Transaction.Phone.CountryCode == 90 ? Transaction.Phone.Number.ToString().PadLeft(7, '0') : Transaction.Phone.Number.ToString())
             });
 
             if (customer.IsSuccess)
@@ -249,7 +254,7 @@ namespace bbt.gateway.messaging.Workers
                         LogError($"Preferred Language Couldn't Be Retrieved | Detail : {ex.ToString()}");
                         return string.Empty;
                     }
-                    
+
                 }
                 else
                 {
@@ -286,7 +291,7 @@ namespace bbt.gateway.messaging.Workers
                 Transaction.CitizenshipNo = CustomerRequestInfo.Tckn;
             }
 
-            if(Transaction.CustomerNo == 0)
+            if (Transaction.CustomerNo == 0)
             {
                 Transaction.CustomerNo = CustomerRequestInfo.CustomerNo;
             }
