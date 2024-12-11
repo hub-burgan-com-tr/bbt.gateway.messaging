@@ -15,10 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapr.Extensions.Configuration" Version="1.13.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
+    <PackageReference Include="Dapr.Extensions.Configuration" Version="1.14.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -28,8 +28,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.13" />
-    <PackageReference Include="VaultSharp" Version="1.13.0.1" />
-    <PackageReference Include="VaultSharp.Extensions.Configuration" Version="1.0.3" />
+    <PackageReference Include="VaultSharp" Version="1.17.5.1" />
+    <PackageReference Include="VaultSharp.Extensions.Configuration" Version="1.0.5" />
 	<PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
 	<PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
 	<PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
@@ -37,10 +37,10 @@
     <PackageReference Include="Refit" Version="8.0.0" />
     <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
     <PackageReference Include="Refit.Newtonsoft.Json" Version="8.0.0" />
-    <PackageReference Include="Dapr.Client" Version="1.13.0" />
+    <PackageReference Include="Dapr.Client" Version="1.14.0" />
     <PackageReference Include="System.Formats.asn1" Version="8.0.1" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
-	<PackageReference Include="FirebaseAdmin" Version="3.0.0" />
+	<PackageReference Include="FirebaseAdmin" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
