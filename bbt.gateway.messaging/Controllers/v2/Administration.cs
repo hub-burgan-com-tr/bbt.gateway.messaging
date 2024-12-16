@@ -16,14 +16,13 @@ using Swashbuckle.AspNetCore.Filters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
+using System.Drawing;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ZstdSharp.Unsafe;
 
 namespace bbt.gateway.messaging.Controllers.v2
 {
@@ -176,15 +175,7 @@ namespace bbt.gateway.messaging.Controllers.v2
 
             if (notifications == null)
             {
-                List<Task<List<Notification>>> taskList =
-                [
-                    GetNotificationFromReminderAsync(customerId),
-                    GetNotificationFromMessagingGatewayAsync(customerId),
-                ];
-
-                List<Notification>[] taskResults = await Task.WhenAll(taskList);
-                notifications = taskResults[0].Concat(taskResults[1]).ToList();
-                notifications.Sort(new NotificationSortByYear());
+                notifications = await GetNotificationFromMessagingGatewayAsync(customerId);
 
                 await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications", notifications, metadata: new Dictionary<string, string>() {
                     {
@@ -197,8 +188,6 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
                 Response.Headers.TryAdd("X-Cache", "Hit");
             }
-
-            notifications = notifications.OrderByDescending(t => t.date).ToList();
 
             return Ok(notifications.Skip((pageIndex - 1) * pageSize).Take(pageSize));
         }
@@ -243,8 +232,9 @@ namespace bbt.gateway.messaging.Controllers.v2
                 date = n.CreatedAt.ToString("d MMMM yyyy", new CultureInfo("tr-TR")),
                 isRead = n.IsRead,
                 notificationId = n.Id.ToString(),
-                reminderType = n.NotificationType
-            }).ToList();
+                reminderType = n.NotificationType,
+                dateTime = n.CreatedAt
+            }).OrderByDescending(t => t.dateTime).ToList();
         }
 
         private async Task DeleteNotificationFromMessagingGateway(string customerId)

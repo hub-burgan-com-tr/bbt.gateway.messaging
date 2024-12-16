@@ -12,7 +12,9 @@ namespace bbt.gateway.common.Models.v2
         public string contentHtml { get; set; }
         public bool isRead { get; set; }
         public string date { get; set; }
-        
+        [JsonIgnore]
+        public DateTime dateTime { get; set; }
+
     }
 
     public class NotificationSortByYear : Comparer<Notification>
