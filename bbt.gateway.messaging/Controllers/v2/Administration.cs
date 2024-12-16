@@ -44,8 +44,8 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly IReminderApi _reminderApi;
 
         public Administration(HeaderManager headerManager, OperatorManager operatorManager,
-            IRepositoryManager repositoryManager, IReminderApi reminderApi, 
-            CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender, InfobipSender infobipSender, DaprClient daprClient,ITransactionManager transactionManager)
+            IRepositoryManager repositoryManager, IReminderApi reminderApi,
+            CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender, InfobipSender infobipSender, DaprClient daprClient, ITransactionManager transactionManager)
         {
             _headerManager = headerManager;
             _operatorManager = operatorManager;
@@ -63,25 +63,25 @@ namespace bbt.gateway.messaging.Controllers.v2
             Tags = new[] { "Notifications Management" })]
         [HttpPost("notification/{customerId}")]
         [SwaggerResponse(200, "Record was updated successfully")]
-        public async Task<IActionResult> SetNotificationRead(string customerId, [FromBody] NotificationSetReadRequest? notificationSetReadRequest,[FromQuery(Name = "notificationId")] string notificationGuid)
-        {   
-            if(notificationSetReadRequest is not {})
+        public async Task<IActionResult> SetNotificationRead(string customerId, [FromBody] NotificationSetReadRequest? notificationSetReadRequest, [FromQuery(Name = "notificationId")] string notificationGuid)
+        {
+            if (notificationSetReadRequest is not { })
             {
                 notificationSetReadRequest = new NotificationSetReadRequest
                 {
                     notificationId = notificationGuid
                 };
             }
-            var isGuid = Guid.TryParse(notificationSetReadRequest.notificationId,out Guid notificationId);
-            if(isGuid)
+            var isGuid = Guid.TryParse(notificationSetReadRequest.notificationId, out Guid notificationId);
+            if (isGuid)
             {
                 var notification = await _repositoryManager.PushNotificationRequestLogs.FirstOrDefaultAsync(p => p.Id.Equals(notificationId));
-                if(notification is { })
+                if (notification is { })
                 {
                     notification.IsRead = true;
                     notification.ReadAt = DateTime.Now;
                     await _repositoryManager.SaveChangesAsync();
-                    await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
+                    await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
                     return Ok();
                 }
                 else
@@ -92,10 +92,11 @@ namespace bbt.gateway.messaging.Controllers.v2
             else
             {
                 var ntfId = long.Parse(notificationSetReadRequest.notificationId);
-                await _reminderApi.SetNotificationRead(customerId, new common.Api.Reminder.Model.SetReadRequest() { 
+                await _reminderApi.SetNotificationRead(customerId, new common.Api.Reminder.Model.SetReadRequest()
+                {
                     notificationId = ntfId
                 });
-                await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
+                await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
                 return Ok();
             }
         }
@@ -115,7 +116,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                     notification.IsDeleted = true;
                     notification.DeletedAt = DateTime.Now;
                     await _repositoryManager.SaveChangesAsync();
-                    await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
+                    await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
                     return Ok();
                 }
                 else
@@ -127,7 +128,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
                 var ntfId = long.Parse(notificationId);
                 await _reminderApi.DeleteNotification(customerId, notificationId);
-                await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
+                await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
                 return Ok();
             }
         }
@@ -142,7 +143,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             taskList.Add(DeleteNotificationFromReminder(customerId));
             taskList.Add(DeleteNotificationFromMessagingGateway(customerId));
             await Task.WhenAll(taskList);
-            await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
+            await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
 
             return Ok();
         }
@@ -171,16 +172,20 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerResponse(200, "Records was returned successfully", typeof(Notification[]))]
         public async Task<IActionResult> GetNotifications(string customerId, int pageIndex, int pageSize)
         {
-            var notifications = await _daprClient.GetStateAsync<List<Notification>>(GlobalConstants.DAPR_STATE_STORE,"mg_"+customerId+"_notifications");
-            
+            var notifications = await _daprClient.GetStateAsync<List<Notification>>(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
+
             if (notifications == null)
             {
-                List<Task<List<Notification>>> taskList = new();
-                taskList.Add(GetNotificationFromReminder(customerId));
-                taskList.Add(GetNotificationFromMessagingGateway(customerId));
+                List<Task<List<Notification>>> taskList =
+                [
+                    GetNotificationFromReminderAsync(customerId),
+                    GetNotificationFromMessagingGatewayAsync(customerId),
+                ];
+
                 List<Notification>[] taskResults = await Task.WhenAll(taskList);
                 notifications = taskResults[0].Concat(taskResults[1]).ToList();
                 notifications.Sort(new NotificationSortByYear());
+
                 await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications", notifications, metadata: new Dictionary<string, string>() {
                     {
                         "ttlInSeconds", "60"
@@ -192,15 +197,17 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
                 Response.Headers.TryAdd("X-Cache", "Hit");
             }
-            
+
+            notifications = notifications.OrderByDescending(t => t.date).ToList();
+
             return Ok(notifications.Skip((pageIndex - 1) * pageSize).Take(pageSize));
         }
 
-        private async Task<List<Notification>> GetNotificationFromReminder(string customerId)
+        private async Task<List<Notification>> GetNotificationFromReminderAsync(string customerId)
         {
-            var notificationList = await _reminderApi.GetNotifications(customerId,1,10000);
+            var notificationList = await _reminderApi.GetNotifications(customerId, 1, 10000);
 
-            return notificationList.Select( n => new Notification()
+            return notificationList.Select(n => new Notification()
             {
                 contentHtml = n.contentHTML,
                 date = n.date,
@@ -226,13 +233,14 @@ namespace bbt.gateway.messaging.Controllers.v2
             };
         }
 
-        private async Task<List<Notification>> GetNotificationFromMessagingGateway(string customerId)
+        private async Task<List<Notification>> GetNotificationFromMessagingGatewayAsync(string customerId)
         {
             var pushList = await _repositoryManager.PushNotificationRequestLogs.GetPushNotifications(customerId);
+
             return pushList.Select(n => new Notification()
             {
                 contentHtml = n.Content,
-                date = n.CreatedAt.ToString("d MMMM yyyy",new CultureInfo("tr-TR")),
+                date = n.CreatedAt.ToString("d MMMM yyyy", new CultureInfo("tr-TR")),
                 isRead = n.IsRead,
                 notificationId = n.Id.ToString(),
                 reminderType = n.NotificationType
@@ -242,7 +250,7 @@ namespace bbt.gateway.messaging.Controllers.v2
         private async Task DeleteNotificationFromMessagingGateway(string customerId)
         {
             var notificationList = await _repositoryManager.PushNotificationRequestLogs.FindAsync(p => p.ContactId.Equals(customerId) && p.IsDeleted != true);
-            foreach(var notification in notificationList)
+            foreach (var notification in notificationList)
             {
                 notification.IsDeleted = true;
                 notification.DeletedAt = DateTime.Now;
@@ -255,7 +263,8 @@ namespace bbt.gateway.messaging.Controllers.v2
             var pushList = await _repositoryManager.PushNotificationRequestLogs.GetPushNotifications(customerId);
             var readCount = pushList.Count(p => p.IsRead);
             var unreadCount = pushList.Count() - readCount;
-            return new NotificationsCountResponse() { 
+            return new NotificationsCountResponse()
+            {
                 readCount = readCount,
                 unreadCount = unreadCount
             };
@@ -265,19 +274,19 @@ namespace bbt.gateway.messaging.Controllers.v2
             Tags = new[] { "Phone Management" })]
         [HttpPut("blacklist/phone/{countryCode}/{prefix}/{number}/{customerNo}")]
         [SwaggerResponse(200, "Whitelist record is deleted successfully", typeof(void))]
-        public async Task<IActionResult> UpdateOldBlacklistCustomerInfo(string countryCode,string prefix,string number,long customerNo)
+        public async Task<IActionResult> UpdateOldBlacklistCustomerInfo(string countryCode, string prefix, string number, long customerNo)
         {
             var phoneNumber = $"+{countryCode}{prefix}{number}";
 
             var blacklistRecords = await _repositoryManager.DirectBlacklists.FindAsync(b => b.GsmNumber.Equals(phoneNumber) && b.CustomerNo == 0);
-            foreach(var blacklistRecord in blacklistRecords)
+            foreach (var blacklistRecord in blacklistRecords)
             {
                 blacklistRecord.CustomerNo = customerNo;
                 _transactionManager.LogInformation($"{blacklistRecord.SmsId}-{phoneNumber} blacklist updated with customer No:{customerNo}");
             }
 
             await _repositoryManager.SaveSmsBankingChangesAsync();
-            
+
             return Ok();
         }
 
@@ -424,22 +433,22 @@ namespace bbt.gateway.messaging.Controllers.v2
             CheckSmsStatusResponse res = new();
 
             var transaction = await _repositoryManager.Transactions.GetWithIdAsNoTrackingAsync(TxnId);
-            if(transaction == null)
+            if (transaction == null)
                 return NotFound("Transaction Not Found");
-            if(transaction.SmsRequestLog == null)
+            if (transaction.SmsRequestLog == null)
             {
                 return NotFound("Sms Log Not Found");
             }
 
             var smsRequestLog = transaction.SmsRequestLog;
-            if(smsRequestLog.ResponseLogs == null || smsRequestLog.ResponseLogs.Count <= 0)
+            if (smsRequestLog.ResponseLogs == null || smsRequestLog.ResponseLogs.Count <= 0)
             {
                 return NotFound("Sms Log Not Found");
             }
 
             var smsResponseLog = smsRequestLog.ResponseLogs.FirstOrDefault();
 
-            if(String.IsNullOrWhiteSpace(smsResponseLog.Status))
+            if (String.IsNullOrWhiteSpace(smsResponseLog.Status))
             {
                 res.status = SmsStatus.Pending;
                 res.message = "Pending";
@@ -462,7 +471,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 return Ok(res);
             }
 
-            
+
         }
 
         [SwaggerOperation(

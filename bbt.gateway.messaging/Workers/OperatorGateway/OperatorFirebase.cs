@@ -1,19 +1,12 @@
-﻿using Azure;
-using bbt.gateway.common.Api.dEngage.Model.Transactional;
-using bbt.gateway.common.Models;
-using bbt.gateway.messaging.Api.Codec.Model;
-using CodecFastApi;
+﻿using bbt.gateway.common.Models;
 using FirebaseAdmin.Messaging;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
 using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.ServiceModel;
 using System.Threading.Tasks;
 
 namespace bbt.gateway.messaging.Workers.OperatorGateway
@@ -56,17 +49,6 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
                           Token = deviceToken,
 
                       };
-
-                      //var message = new Message();
-
-                      //Dictionary<string,string> pairs = new Dictionary<string,string>();
-                      //pairs.Add("title", title);
-                      //pairs.Add("body", content);
-
-
-                      //message.Data = pairs;
-                      //message.Token = deviceToken;
-
 
                       if (!string.IsNullOrWhiteSpace(customParams))
                       {
