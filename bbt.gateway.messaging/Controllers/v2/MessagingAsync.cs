@@ -5,7 +5,6 @@ using bbt.gateway.messaging.Workers;
 using Dapr;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace bbt.gateway.messaging.Controllers.v2
@@ -55,14 +54,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 };
             }
 
-            var actionResult = await _smsStringHelper.ProcessSmsRequestAsync(_data);
-
-            if ((actionResult as Microsoft.AspNetCore.Mvc.ObjectResult)?.StatusCode == 200)
-            {
-                return Ok();
-            }
-
-            return Problem();
+            return await _smsStringHelper.ProcessSmsRequestAsync(_data);
         }
     }
 }
