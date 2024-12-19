@@ -1,5 +1,4 @@
 ﻿using Asp.Versioning;
-using bbt.gateway.common.Api.dEngage.Model.Transactional;
 using bbt.gateway.common.Api.MessagingGateway;
 using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Helpers;
@@ -7,13 +6,10 @@ using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
 using bbt.gateway.messaging.Helpers;
 using bbt.gateway.messaging.Workers;
-using Dapr;
 using Dapr.Client;
 using Elastic.Apm.Api;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Refit;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
@@ -35,14 +31,14 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly dEngageSender _dEngageSender;
         private readonly CodecSender _codecSender;
         private readonly InfobipSender _infobipSender;
-        private readonly FirebaseSender _firebaseSender;
+        private readonly NativePushSender _nativePushSender;
         private readonly IRepositoryManager _repositoryManager;
         private readonly ITracer _tracer;
         private readonly IConfiguration _configuration;
         private readonly IMessagingGatewayApi _messagingGatewayApi;
         private readonly DaprClient _daprClient;
         private readonly SmsStringHelper _smsStringHelper;
-        public Messaging(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender, FirebaseSender firebaseSender
+        public Messaging(OtpSender otpSender, ITransactionManager transactionManager, dEngageSender dEngageSender, NativePushSender nativePushSender
             , IRepositoryManager repositoryManager, CodecSender codecSender, IConfiguration configuration, IMessagingGatewayApi messagingGatewayApi
             , InfobipSender infobipSender, DaprClient daprClient, SmsStringHelper smsStringHelper)
         {
@@ -54,7 +50,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             _repositoryManager = repositoryManager;
             _configuration = configuration;
             _messagingGatewayApi = messagingGatewayApi;
-            _firebaseSender = firebaseSender;
+            _nativePushSender = nativePushSender;
             _tracer = Elastic.Apm.Agent.Tracer;
             _daprClient = daprClient;
 
@@ -759,10 +755,11 @@ namespace bbt.gateway.messaging.Controllers.v2
         {
             try
             {
-                var responseFirebase = await _firebaseSender.SendPushNotificationAsync(data);
+                var responseNative = await _nativePushSender.SendPushNotificationAsync(data);
             }
             catch (Exception ex)
             {
+                _transactionManager.LogError("Messaging.SendPushNotification ex:" + ex.ToString());
             }
 
             var responseDengage = await _dEngageSender.SendPushNotificationV2(data);
@@ -804,11 +801,11 @@ namespace bbt.gateway.messaging.Controllers.v2
         {
             try
             {
-                var responseFirebase = await _firebaseSender.SendTemplatedPushNotificationAsync(data);
+                var responseFirebase = await _nativePushSender.SendTemplatedPushNotificationAsync(data);
             }
             catch (Exception ex)
             {
-
+                _transactionManager.LogError("Messaging.SendTemplatedPushNotification ex:" + ex.ToString());
             }
 
             var responseDengage = await _dEngageSender.SendTemplatedPushNotificationV2(data);

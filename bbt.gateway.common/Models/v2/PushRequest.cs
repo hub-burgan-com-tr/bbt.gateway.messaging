@@ -1,5 +1,4 @@
-﻿using bbt.gateway.common.Attributes;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace bbt.gateway.common.Models.v2
 {
@@ -8,7 +7,6 @@ namespace bbt.gateway.common.Models.v2
         [Required]
         public SenderType Sender { get; set; }
         public string CitizenshipNo { get; set; }
-        public bool? IsFirebase { get; set; } = false;
         public string? Title { get; set; }
         [Required]
         public string Content { get; set; }

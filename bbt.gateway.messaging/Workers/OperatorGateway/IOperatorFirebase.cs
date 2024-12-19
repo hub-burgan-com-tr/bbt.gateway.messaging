@@ -1,6 +1,4 @@
 ﻿using bbt.gateway.common.Models;
-using bbt.gateway.messaging.Api.Codec.Model;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace bbt.gateway.messaging.Workers.OperatorGateway
