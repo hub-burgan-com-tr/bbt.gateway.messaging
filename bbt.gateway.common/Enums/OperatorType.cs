@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace bbt.gateway.common.Models
+﻿namespace bbt.gateway.common.Models
 {
     public enum OperatorType
     {
@@ -18,6 +13,7 @@ namespace bbt.gateway.common.Models
         Foreign = 9,
         ForeignVodafone = 10,
         Infobip = 11,
-        Firebase = 12
+        Firebase = 12,
+        Huawei  = 13
     }
 }

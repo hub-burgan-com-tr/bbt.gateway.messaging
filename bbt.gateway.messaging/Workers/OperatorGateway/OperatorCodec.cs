@@ -91,7 +91,7 @@ namespace bbt.gateway.messaging.Workers.OperatorGateway
 
         private string GetSender()
         {
-            return TransactionManager.CustomerRequestInfo.BusinessLine == "X" ? "On." : "BURGAN";
+            return TransactionManager.CustomerRequestInfo.BusinessLine == "X" ? "ON." : "BURGAN";
         }
     }
 }

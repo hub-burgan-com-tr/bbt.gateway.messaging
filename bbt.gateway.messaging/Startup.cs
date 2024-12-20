@@ -1,26 +1,38 @@
+using AGConnectAdmin;
+using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
 using bbt.gateway.common;
+using bbt.gateway.common.Api.Amorphie;
+using bbt.gateway.common.Api.dEngage;
+using bbt.gateway.common.Api.MessagingGateway;
+using bbt.gateway.common.Api.Reminder;
+using bbt.gateway.common.Http;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.v1;
 using bbt.gateway.common.Repositories;
-using bbt.gateway.common.Api.dEngage;
 using bbt.gateway.messaging.Api.Fora;
+using bbt.gateway.messaging.Api.Infobip;
 using bbt.gateway.messaging.Api.Pusula;
 using bbt.gateway.messaging.Api.Turkcell;
 using bbt.gateway.messaging.Api.TurkTelekom;
 using bbt.gateway.messaging.Api.Vodafone;
 using bbt.gateway.messaging.Helpers;
 using bbt.gateway.messaging.Middlewares;
+using bbt.gateway.messaging.Services;
 using bbt.gateway.messaging.Workers;
 using bbt.gateway.messaging.Workers.OperatorGateway;
-using Elastic.Apm.NetCoreAll;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Refit;
@@ -28,30 +40,8 @@ using Swashbuckle.AspNetCore.Filters;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text.Json;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using bbt.gateway.common.Api.MessagingGateway;
-using bbt.gateway.messaging.Api.Infobip;
-using System.Linq;
-using bbt.gateway.common.Api.Reminder;
-using bbt.gateway.messaging.Services;
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
-using System.Configuration;
-using Google.Apis.Http;
-using bbt.gateway.common.Http;
-using bbt.gateway.common.Api.Amorphie;
-using Asp.Versioning.ApiExplorer;
-using Asp.Versioning;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using bbt.gateway.common.GlobalConstants;
-using bbt.gateway.common.Models.v2;
+using System.Text.Json;
 
 namespace bbt.gateway.messaging
 {
@@ -75,18 +65,6 @@ namespace bbt.gateway.messaging
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
-            //var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Security:Key"]));
-            //var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-            //var jwtSecurityToken = new JwtSecurityToken(
-            //        issuer: "XXX",
-            //        audience: "XXXX",
-            //        claims: new List<Claim>(),
-            //        expires: DateTime.Now.AddMinutes(1),
-            //        signingCredentials: signinCredentials
-            //    );
-            //var jwt = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
-
             services.AddAuthentication(opt =>
             {
                 opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -99,7 +77,8 @@ namespace bbt.gateway.messaging
                     {
                         return System.Threading.Tasks.Task.CompletedTask;
                     },
-                    OnMessageReceived = (context) => {
+                    OnMessageReceived = (context) =>
+                    {
 
                         return System.Threading.Tasks.Task.CompletedTask;
                     }
@@ -155,14 +134,12 @@ namespace bbt.gateway.messaging
 
             services.AddSwaggerGen(c =>
             {
-                
                 c.EnableAnnotations();
                 c.UseInlineDefinitionsForEnums();
                 c.CustomSchemaIds(type => type.FullName);
                 c.OrderActionsBy((apiDesc) => $"{apiDesc.ActionDescriptor.RouteValues["controller"]}_{apiDesc.RelativePath}");
                 c.ExampleFilters();
-                
-                
+
                 c.IncludeXmlComments("wwwroot/bbt.gateway.messaging.xml");
                 c.IncludeXmlComments("wwwroot/bbt.gateway.common.xml");
 
@@ -176,7 +153,7 @@ namespace bbt.gateway.messaging
                     Version = "v2",
                     Title = "Bbt.Gateway.Messaging",
                 });
-                
+
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
@@ -187,33 +164,31 @@ namespace bbt.gateway.messaging
                     Scheme = "Bearer"
                 });
 
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement 
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
-                    { 
+                    {
                         new OpenApiSecurityScheme
-                        { 
+                        {
                             Reference = new OpenApiReference
-                            { 
+                            {
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Bearer"
                             }
                         },
                         new string[]{ }
-                    }    
+                    }
                 });
                 c.DocumentFilter<PathDocumentFilter>();
             });
-            
+
             services.AddSwaggerExamplesFromAssemblyOf<Startup>();
 
-        
-            
             services.AddStackExchangeRedisCache(opt =>
             {
                 opt.Configuration = $"{Configuration["Redis:Host"]}:{Configuration["Redis:Port"]},password={Configuration["Redis:Password"]}";
             });
-            
-            services.AddDbContext<DatabaseContext>(o => { o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("bbt.gateway.messaging"));});
+
+            services.AddDbContext<DatabaseContext>(o => { o.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("bbt.gateway.messaging")); });
             //services.AddDbContext<DodgeDatabaseContext>(o => o.UseSqlServer(Configuration.GetConnectionString("DodgeConnection")));
             services.AddDbContext<SmsBankingDatabaseContext>(o => o.UseSqlServer(Configuration.GetConnectionString("SmsBankingConnection")));
             services.Configure<UserSettings>(Configuration.GetSection(nameof(UserSettings)));
@@ -230,7 +205,8 @@ namespace bbt.gateway.messaging
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(Configuration["Api:Amorphie:User:PrepBaseAddress"]));
 
             services.AddRefitClient<IReminderApi>()
-            .ConfigureHttpClient(c => {
+            .ConfigureHttpClient(c =>
+            {
                 c.BaseAddress = new Uri(Configuration["Api:Reminder:BaseAddress"]);
                 c.DefaultRequestHeaders.Add("channel", Configuration["Api:Reminder:Channel"]);
                 c.DefaultRequestHeaders.Add("branch", Configuration["Api:Reminder:Branch"]);
@@ -252,17 +228,16 @@ namespace bbt.gateway.messaging
                             NullValueHandling = NullValueHandling.Ignore,
                         }
                 )
-                
             })
-               .ConfigureHttpClient(c => 
-               { 
+               .ConfigureHttpClient(c =>
+               {
                    c.BaseAddress = new Uri(Configuration["Api:dEngage:BaseAddress"]);
                    c.Timeout = TimeSpan.FromSeconds(200);
                });
 
             services.AddHttpClient("default", httpClient =>
             {
-                
+
             }).ConfigurePrimaryHttpMessageHandler(() =>
             {
                 return new HttpClientHandler()
@@ -281,11 +256,47 @@ namespace bbt.gateway.messaging
             var factory = new ProxyByPassHttpClientFactory();
             GoogleCredential credential = GoogleCredential.FromJson(Configuration["Firebase"]);
             credential = credential.CreateWithHttpClientFactory(factory);
-            FirebaseApp.Create(new AppOptions()
+            FirebaseApp.Create(new FirebaseAdmin.AppOptions()
             {
                 Credential = credential,
                 HttpClientFactory = factory
             });
+
+            AGConnectApp.Create(new AGConnectAdmin.AppOptions()
+            {
+                ClientId = Configuration["Huawei:Clients:Burgan:Main:ClientId"],
+                ClientSecret = Configuration["Huawei:Clients:Burgan:Main:ClientSecret"],
+                ApiBaseUri = Configuration["Huawei:ApiBaseUri"],
+                LoginUri = Configuration["Huawei:LoginUri"]
+            }, "Burgan");
+
+            AGConnectApp.Create(new AGConnectAdmin.AppOptions()
+            {
+                ClientId = Configuration["Huawei:Clients:On:Main:ClientId"],
+                ClientSecret = Configuration["Huawei:Clients:On:Main:ClientSecret"],
+                ApiBaseUri = Configuration["Huawei:ApiBaseUri"],
+                LoginUri = Configuration["Huawei:LoginUri"]
+            }, "On");
+
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" 
+                || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Test")
+            {
+                AGConnectApp.Create(new AGConnectAdmin.AppOptions()
+                {
+                    ClientId = Configuration["Huawei:Clients:Burgan:Prep:ClientId"],
+                    ClientSecret = Configuration["Huawei:Clients:Burgan:Prep:ClientSecret"],
+                    ApiBaseUri = Configuration["Huawei:ApiBaseUri"],
+                    LoginUri = Configuration["Huawei:LoginUri"]
+                }, "BurganPrep");
+
+                AGConnectApp.Create(new AGConnectAdmin.AppOptions()
+                {
+                    ClientId = Configuration["Huawei:Clients:On:Prep:ClientId"],
+                    ClientSecret = Configuration["Huawei:Clients:On:Prep:ClientSecret"],
+                    ApiBaseUri = Configuration["Huawei:ApiBaseUri"],
+                    LoginUri = Configuration["Huawei:LoginUri"]
+                }, "OnPrep");
+            }
 
             services.AddAllElasticApm();
 
@@ -299,7 +310,8 @@ namespace bbt.gateway.messaging
             services.AddScoped<OperatorIVN>();
             services.AddScoped<OperatordEngage>();
             services.AddScoped<OperatordEngageMock>();
-            services.AddScoped<IOperatorFirebase,OperatorFirebase>();
+            services.AddScoped<IOperatorFirebase, OperatorFirebase>();
+            services.AddScoped<IOperatorHuawei, OperatorHuawei>();
             services.AddScoped<OperatorCodec>();
             services.AddScoped<OperatorCodecMock>();
             services.AddScoped<OperatorInfobip>();
@@ -307,7 +319,7 @@ namespace bbt.gateway.messaging
             services.AddScoped<TurkTelekomApi>();
             services.AddScoped<VodafoneApi>();
             services.AddScoped<TurkcellApi>();
-            services.AddScoped<IInfobipApi,InfobipApi>();
+            services.AddScoped<IInfobipApi, InfobipApi>();
             services.AddScoped<TurkTelekomApiMock>();
             services.AddScoped<VodafoneApiMock>();
             services.AddScoped<TurkcellApiMock>();
@@ -379,7 +391,9 @@ namespace bbt.gateway.messaging
             services.AddScoped<InfobipSender>();
             services.AddScoped<OtpSender>();
             services.AddScoped<dEngageSender>();
+            services.AddScoped<NativePushSender>();
             services.AddScoped<FirebaseSender>();
+            services.AddScoped<HuaweiSender>();
             services.AddScoped<CodecSender>();
             services.AddScoped<HeaderManager>();
             services.AddScoped<OperatorManager>();
@@ -391,7 +405,7 @@ namespace bbt.gateway.messaging
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
-        {            
+        {
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Mock")
             {
                 app.UseGatewayMiddleware();
@@ -402,11 +416,11 @@ namespace bbt.gateway.messaging
 
             app.UseSwagger();
             app.UseStaticFiles();
-            
+
             app.UseSwaggerUI(options =>
             {
                 options.InjectStylesheet("Swagger.css");
-                
+
                 foreach (var description in provider.ApiVersionDescriptions)
                 {
                     options.SwaggerEndpoint(
@@ -415,7 +429,6 @@ namespace bbt.gateway.messaging
                     options.RoutePrefix = "";
                 }
             });
-
 
             app.UseHealthChecks("/hc", new HealthCheckOptions()
             {
@@ -428,14 +441,14 @@ namespace bbt.gateway.messaging
             });
 
             app.UseCloudEvents();
-            
+
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
-            {                
+            {
                 endpoints.MapControllers();
                 endpoints.MapSubscribeHandler();
             });
