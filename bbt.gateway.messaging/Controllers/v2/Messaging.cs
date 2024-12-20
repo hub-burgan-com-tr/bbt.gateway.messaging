@@ -755,6 +755,9 @@ namespace bbt.gateway.messaging.Controllers.v2
         {
             try
             {
+                if (data.Sender != common.Models.v2.SenderType.AutoDetect)
+                    _transactionManager.CustomerRequestInfo.BusinessLine = data.Sender == common.Models.v2.SenderType.On ? "X" : "B";
+
                 var responseNative = await _nativePushSender.SendPushNotificationAsync(data);
             }
             catch (Exception ex)
@@ -801,7 +804,10 @@ namespace bbt.gateway.messaging.Controllers.v2
         {
             try
             {
-                var responseFirebase = await _nativePushSender.SendTemplatedPushNotificationAsync(data);
+                if (data.Sender != common.Models.v2.SenderType.AutoDetect)
+                    _transactionManager.CustomerRequestInfo.BusinessLine = data.Sender == common.Models.v2.SenderType.On ? "X" : "B";
+
+                var responseNative = await _nativePushSender.SendTemplatedPushNotificationAsync(data);
             }
             catch (Exception ex)
             {
