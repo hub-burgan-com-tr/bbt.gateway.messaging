@@ -1,16 +1,12 @@
 ﻿using bbt.gateway.common.Api.Amorphie;
 using bbt.gateway.common.Api.Amorphie.Model;
-using bbt.gateway.common.Api.dEngage.Model.Contents;
 using bbt.gateway.common.Extensions;
-using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Repositories;
 using bbt.gateway.messaging.Exceptions;
 using bbt.gateway.messaging.Helpers;
 using bbt.gateway.messaging.Workers.OperatorGateway;
 using Dapr.Client;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;

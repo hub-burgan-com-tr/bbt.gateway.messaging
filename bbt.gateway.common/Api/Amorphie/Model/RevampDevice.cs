@@ -4,6 +4,6 @@
     {
         public string os { get; set; }
         public string token { get; set; }
-        public bool IsGoogleServiceAvailable { get; set; }
+        public bool isGoogleServiceAvailable { get; set; }
     }
 }

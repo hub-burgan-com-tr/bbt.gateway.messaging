@@ -58,7 +58,7 @@ namespace bbt.gateway.messaging.Workers
                     revampDevice = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
                 }
 
-                if (revampDevice.IsGoogleServiceAvailable)
+                if (revampDevice.isGoogleServiceAvailable)
                 {
                     var responseFirebase = await _firebaseSender.SendPushNotificationAsync(data, revampDevice);
                     return responseFirebase;
@@ -108,7 +108,7 @@ namespace bbt.gateway.messaging.Workers
                     revampDevice = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
                 }
 
-                if (revampDevice.IsGoogleServiceAvailable)
+                if (revampDevice.isGoogleServiceAvailable)
                 {
                     var responseFirebase = await _firebaseSender.SendTemplatedPushNotificationAsync(data, revampDevice);
                     return responseFirebase;
