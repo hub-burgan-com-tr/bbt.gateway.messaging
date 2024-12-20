@@ -1,5 +1,6 @@
 ﻿using bbt.gateway.common.Api.Amorphie;
 using bbt.gateway.common.Api.Amorphie.Model;
+using bbt.gateway.common.Api.dEngage.Model.Transactional;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.messaging.Exceptions;
