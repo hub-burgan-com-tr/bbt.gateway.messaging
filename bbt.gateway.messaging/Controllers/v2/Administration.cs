@@ -662,7 +662,26 @@ namespace bbt.gateway.messaging.Controllers.v2
 
 
             if (blacklistRecord.Status == BlacklistStatus.NotResolved)
+            {
+                if (blacklistRecord.SmsId > 0)
+                {
+                    var oldBlacklistRecord = await _repositoryManager.DirectBlacklists.FirstOrDefaultAsync(b => b.SmsId == blacklistRecord.SmsId);
+                    
+                    oldBlacklistRecord.IsVerified = true;
+                    if(oldBlacklistRecord.IsVerified)
+                    {
+                        blacklistRecord.Status = BlacklistStatus.Resolved;
+                        blacklistRecord.ResolvedAt = oldBlacklistRecord.VerifyDate;
+                        blacklistRecord.ResolvedBy.Name = oldBlacklistRecord.VerifiedBy;
+                        blacklistRecord.Reason = oldBlacklistRecord.Explanation;
+                        await _repositoryManager.SaveChangesAsync();
+                        return NotFound();
+                    }
+                    return Ok();
+                }
                 return Ok();
+            }
+                
 
             return NotFound();
         }
