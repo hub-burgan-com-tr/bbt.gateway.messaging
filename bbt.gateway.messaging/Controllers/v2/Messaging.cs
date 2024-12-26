@@ -753,19 +753,38 @@ namespace bbt.gateway.messaging.Controllers.v2
         [SwaggerResponse(500, "Internal Server Error. Get Contact With Integration", typeof(void))]
         public async Task<IActionResult> SendPushNotification([FromBody] PushRequest data)
         {
+            NativePushResponse responseNative = new NativePushResponse();
+            PushResponse responseDengage = new PushResponse();
+
             try
             {
-                if (data.Sender != common.Models.v2.SenderType.AutoDetect)
-                    _transactionManager.CustomerRequestInfo.BusinessLine = data.Sender == common.Models.v2.SenderType.On ? "X" : "B";
+                if (data.Sender != SenderType.AutoDetect)
+                    _transactionManager.CustomerRequestInfo.BusinessLine = data.Sender == SenderType.On ? "X" : "B";
 
-                var responseNative = await _nativePushSender.SendPushNotificationAsync(data);
+                if (_configuration["PushType"] == "All" || _configuration["PushType"] == "Native")
+                {
+                    responseNative = await _nativePushSender.SendPushNotificationAsync(data);
+                }
             }
             catch (Exception ex)
             {
                 _transactionManager.LogError("Messaging.SendPushNotification ex:" + ex.ToString());
             }
 
-            var responseDengage = await _dEngageSender.SendPushNotificationV2(data);
+            if (_configuration["PushType"] == "All" || _configuration["PushType"] == "Dengage")
+            {
+                responseDengage = await _dEngageSender.SendPushNotificationV2(data);
+            }
+
+            if (_configuration["PushType"] == "All" || _configuration["PushType"] == "Dengage")
+            {
+                return Ok(responseDengage);
+            }
+
+            if (_configuration["PushType"] == "Native")
+            {
+                return Ok(responseNative);
+            }
 
             return Ok(responseDengage);
         }
@@ -802,19 +821,38 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         public async Task<IActionResult> SendTemplatedPushNotification([FromBody] TemplatedPushRequest data)
         {
+            NativePushResponse responseNative = new NativePushResponse();
+            TemplatedPushResponse responseDengage = new TemplatedPushResponse();
+
             try
             {
                 if (data.Sender != common.Models.v2.SenderType.AutoDetect)
                     _transactionManager.CustomerRequestInfo.BusinessLine = data.Sender == common.Models.v2.SenderType.On ? "X" : "B";
 
-                var responseNative = await _nativePushSender.SendTemplatedPushNotificationAsync(data);
+                if (_configuration["PushType"] == "All" || _configuration["PushType"] == "Native")
+                {
+                    responseNative = await _nativePushSender.SendTemplatedPushNotificationAsync(data);
+                }
             }
             catch (Exception ex)
             {
                 _transactionManager.LogError("Messaging.SendTemplatedPushNotification ex:" + ex.ToString());
             }
 
-            var responseDengage = await _dEngageSender.SendTemplatedPushNotificationV2(data);
+            if (_configuration["PushType"] == "All" || _configuration["PushType"] == "Dengage")
+            {
+                responseDengage = await _dEngageSender.SendTemplatedPushNotificationV2(data);
+            }
+
+            if (_configuration["PushType"] == "All" || _configuration["PushType"] == "Dengage")
+            {
+                return Ok(responseDengage);
+            }
+
+            if (_configuration["PushType"] == "Native")
+            {
+                return Ok(responseNative);
+            }
 
             return Ok(responseDengage);
         }
