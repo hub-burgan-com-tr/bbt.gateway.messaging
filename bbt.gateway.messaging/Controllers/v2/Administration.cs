@@ -667,11 +667,14 @@ namespace bbt.gateway.messaging.Controllers.v2
                 {
                     var oldBlacklistRecord = await _repositoryManager.DirectBlacklists.FirstOrDefaultAsync(b => b.SmsId == blacklistRecord.SmsId);
                     
-                    oldBlacklistRecord.IsVerified = true;
                     if(oldBlacklistRecord.IsVerified)
                     {
                         blacklistRecord.Status = BlacklistStatus.Resolved;
                         blacklistRecord.ResolvedAt = oldBlacklistRecord.VerifyDate;
+                        if(blacklistRecord.ResolvedBy is null)
+                        {
+                            blacklistRecord.ResolvedBy = new common.Models.Process();
+                        }
                         blacklistRecord.ResolvedBy.Name = oldBlacklistRecord.VerifiedBy;
                         blacklistRecord.Reason = oldBlacklistRecord.Explanation;
                         await _repositoryManager.SaveChangesAsync();
