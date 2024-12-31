@@ -232,7 +232,8 @@ namespace bbt.gateway.messaging.Controllers.v2
                 isRead = n.IsRead,
                 notificationId = n.Id.ToString(),
                 reminderType = n.NotificationType,
-                dateTime = n.CreatedAt
+                dateTime = n.CreatedAt,
+                customParameters = n.CustomParameters
             }).OrderByDescending(t => t.dateTime).ToList();
         }
 
