@@ -6,6 +6,7 @@ using bbt.gateway.common.Models.v2;
 using bbt.gateway.messaging.Exceptions;
 using System;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace bbt.gateway.messaging.Workers
 {
@@ -46,17 +47,17 @@ namespace bbt.gateway.messaging.Workers
                 {
                     try
                     {
-                        revampDevice = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
+                        revampDevice = await _userApi.GetDeviceTokenAsync(_transactionManager.CustomerRequestInfo.Tckn);
                     }
                     catch
                     {
-                        revampDevice = await _userApiPrep.GetDeviceTokenAsync(data.CitizenshipNo);
+                        revampDevice = await _userApiPrep.GetDeviceTokenAsync(_transactionManager.CustomerRequestInfo.Tckn);
                         isPrep = true;
                     }
                 }
                 else
                 {
-                    revampDevice = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
+                    revampDevice = await _userApi.GetDeviceTokenAsync(_transactionManager.CustomerRequestInfo.Tckn);
                 }
 
                 if (revampDevice.isGoogleServiceAvailable || revampDevice.os == "iOS")
@@ -96,17 +97,17 @@ namespace bbt.gateway.messaging.Workers
                 {
                     try
                     {
-                        revampDevice = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
+                        revampDevice = await _userApi.GetDeviceTokenAsync(_transactionManager.CustomerRequestInfo.Tckn);
                     }
                     catch
                     {
-                        revampDevice = await _userApiPrep.GetDeviceTokenAsync(data.CitizenshipNo);
+                        revampDevice = await _userApiPrep.GetDeviceTokenAsync(_transactionManager.CustomerRequestInfo.Tckn);
                         isPrep = true;
                     }
                 }
                 else
                 {
-                    revampDevice = await _userApi.GetDeviceTokenAsync(data.CitizenshipNo);
+                    revampDevice = await _userApi.GetDeviceTokenAsync(_transactionManager.CustomerRequestInfo.Tckn);
                 }
 
                 if (revampDevice.isGoogleServiceAvailable || revampDevice.os == "iOS")
