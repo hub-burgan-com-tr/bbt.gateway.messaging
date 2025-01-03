@@ -54,6 +54,11 @@ namespace bbt.gateway.messaging.Workers
 
         public async Task<common.Models.v2.NativePushResponse> SendPushNotificationAsync(common.Models.v2.PushRequest data, RevampDevice revampDevice)
         {
+            if (string.IsNullOrWhiteSpace(data.CitizenshipNo))
+            {
+                data.CitizenshipNo = _transactionManager.CustomerRequestInfo.Tckn;
+            }
+
             common.Models.v2.NativePushResponse firebasePushResponse = new()
             {
                 TxnId = _transactionManager.TxnId,
