@@ -1915,5 +1915,14 @@ namespace bbt.gateway.messaging.Controllers.v2
 
             return Ok();
         }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [HttpPost("operators/updateOperatorStatus/{operatorId}/{status}")]
+        public async Task<IActionResult> UpdateOperatorStatusAsync(int operatorId, int status)
+        {
+            await _operatorManager.UpdateOperatorStatusAsync(operatorId, status);
+
+            return Ok();
+        }
     }
 }

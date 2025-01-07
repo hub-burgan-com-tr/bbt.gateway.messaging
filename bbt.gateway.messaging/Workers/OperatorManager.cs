@@ -78,5 +78,15 @@ namespace bbt.gateway.messaging.Workers
                 await _repositoryManager.SaveChangesAsync();
             }
         }
+        public async Task UpdateOperatorStatusAsync(int operatorId, int status)
+        {
+            var @operator = await _repositoryManager.Operators.FirstOrDefaultAsync(t => t.Id == operatorId);
+
+            if (@operator != null)
+            {
+                @operator.Status = (OperatorStatus)status;
+                await _repositoryManager.SaveChangesAsync();
+            }
+        }
     }
 }
