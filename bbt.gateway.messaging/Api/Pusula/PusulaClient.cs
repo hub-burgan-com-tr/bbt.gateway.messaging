@@ -167,10 +167,13 @@ namespace bbt.gateway.messaging.Api.Pusula
 
                     var customerIndividual = httpContent.
                         GetWithRegexSingle("(<CustomerIndividual[^>]*>)(.*?)(</CustomerIndividual>)", 2);
+
                     var customerPhones = httpContent.
                         GetWithRegexMultiple("(<Telephones[^>]*>)(.*?)(</Telephones>)", 2);
+
                     var customerMails = httpContent.
                         GetWithRegexMultiple("(<Emails[^>]*>)(.*?)(</Emails>)", 2);
+
                     if (!string.IsNullOrEmpty(customerIndividual))
                     {
                         XmlDocument xmlDocument = new XmlDocument();
@@ -188,9 +191,13 @@ namespace bbt.gateway.messaging.Api.Pusula
                         else
                         {
                             getCustomerResponse.IsSuccess = true;
-                            getCustomerResponse.BusinessLine = "B";
                             getCustomerResponse.BranchCode = pusulaCustomerInfo.root.MainBranchCode;
                             getCustomerResponse.CitizenshipNo = pusulaCustomerInfo.root.CitizenshipNumber;
+
+                            if (!string.IsNullOrWhiteSpace(pusulaCustomerInfo.root.PortfolioCode) && pusulaCustomerInfo.root.PortfolioCode.Length >= 5)
+                                getCustomerResponse.BusinessLine = pusulaCustomerInfo.root.PortfolioCode.Substring(4, 1);
+                            else
+                                getCustomerResponse.BusinessLine = "B";
                         }
                     }
                     else
