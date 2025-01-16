@@ -41,15 +41,15 @@ builder.Services.AddAuthentication(options =>
     .AddOpenIdConnect("Auth0", options =>
     {
 
-        options.MetadataAddress = builder.Configuration["OpenId:MetadataAddress"]; 
+        options.MetadataAddress = builder.Configuration["Keycloak:MetaAdress"];
         options.NonceCookie.SameSite = SameSiteMode.Unspecified;
         options.CorrelationCookie.SameSite = SameSiteMode.Unspecified;
 
-        options.Authority = $"{builder.Configuration["Okta:OktaDomain"]}";
+        options.Authority = $"{builder.Configuration["Keycloak:OktaDomain"]}";
         // options.SaveTokens = true;
         // Configure the Auth0 Client ID and Client Secret
-        options.ClientId = builder.Configuration["Okta:ClientId"];
-        options.ClientSecret = builder.Configuration["Okta:ClientSecret"];
+        options.ClientId = builder.Configuration["Keycloak:ClientId"];
+        options.ClientSecret = builder.Configuration["Keycloak:ClientSecret"];
         options.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
 
         options.Scope.Clear();
@@ -57,7 +57,7 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("profile");
 
         options.RequireHttpsMetadata = false;
-        options.GetClaimsFromUserInfoEndpoint = true;
+        options.GetClaimsFromUserInfoEndpoint = false;
         // Use the authorization code flow.
         options.ResponseType = OpenIdConnectResponseType.Code;
 
@@ -75,7 +75,11 @@ builder.Services.AddAuthentication(options =>
             // Disable the built-in JWT claims mapping feature.
             InboundClaimTypeMap = new Dictionary<string, string>()
         };
-
+        options.ProtocolValidator = new OpenIdConnectProtocolValidator()
+        {
+            RequireNonce = false,
+            RequireState = false
+        };
         options.Events = new OpenIdConnectEvents
 
         {
@@ -105,22 +109,22 @@ builder.Services.AddAuthentication(options =>
                         if (context?.TokenEndpointResponse is not null && context?.TokenEndpointResponse?.AccessToken is not null)
                         {
                             addToken.Add(new Claim("access_token", context?.TokenEndpointResponse?.AccessToken));
-                    //        using (var client = new HttpClient())
-                    //        {
-                    //            string clientid = builder.Configuration["Okta:TokenUrl"];
-                    //            client.BaseAddress = new Uri(clientid);
-                    //            var content = new FormUrlEncodedContent(new[]
-                    //            {
-                    //    new KeyValuePair<string, string>("access_token",  context?.TokenEndpointResponse?.AccessToken),
-                    //});
-                    //            var result = client.PostAsync("/ib/Resource", content);
-                    //            string responseContent = result.Result.Content.ReadAsStringAsync().Result;
-                    //            AccessTokenResources? accessTokenResources =
-                    //       JsonConvert.DeserializeObject<AccessTokenResources>(responseContent);
-                    //            if (accessTokenResources != null && !string.IsNullOrEmpty(accessTokenResources.sicil) && accessTokenResources.sicil.Length < 12)
-                    //                addToken.Add(new Claim("sicil", accessTokenResources.sicil));
+                            //        using (var client = new HttpClient())
+                            //        {
+                            //            string clientid = builder.Configuration["Okta:TokenUrl"];
+                            //            client.BaseAddress = new Uri(clientid);
+                            //            var content = new FormUrlEncodedContent(new[]
+                            //            {
+                            //    new KeyValuePair<string, string>("access_token",  context?.TokenEndpointResponse?.AccessToken),
+                            //});
+                            //            var result = client.PostAsync("/ib/Resource", content);
+                            //            string responseContent = result.Result.Content.ReadAsStringAsync().Result;
+                            //            AccessTokenResources? accessTokenResources =
+                            //       JsonConvert.DeserializeObject<AccessTokenResources>(responseContent);
+                            //            if (accessTokenResources != null && !string.IsNullOrEmpty(accessTokenResources.sicil) && accessTokenResources.sicil.Length < 12)
+                            //                addToken.Add(new Claim("sicil", accessTokenResources.sicil));
 
-                    //        }
+                            //        }
                         }
                         if (context?.TokenEndpointResponse is not null && context?.TokenEndpointResponse?.IdToken is not null)
                         {

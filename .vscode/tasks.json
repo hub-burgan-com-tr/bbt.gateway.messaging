@@ -37,6 +37,16 @@
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
-        }
+        },
+        {
+            "label": "build-messaging-ui",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/bbt.gateway.messaging.ui/bbt.gateway.messaging.ui.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
     ]
 }
