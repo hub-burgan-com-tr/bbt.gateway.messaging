@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Newtonsoft.Json;
 using Radzen;
 using Refit;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,20 +18,11 @@ builder.Host.UseVaultSecrets(typeof(Program));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<bbt.gateway.messaging.ui.Data.HttpContextAccessor>();
-//builder.Services.Configure<CookiePolicyOptions>(options =>
-//{
-
-//    // this lambda determines whether user consent for non-essential cookies is needed for a given request.
-//    options.CheckConsentNeeded = context => true;
-//    options.MinimumSameSitePolicy = SameSiteMode.None;
-
-//});
 
 IdentityModelEventSource.ShowPII = true;
 
 builder.Services.AddAuthentication(options =>
 {
-
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
 })
@@ -40,16 +30,15 @@ builder.Services.AddAuthentication(options =>
 
     .AddOpenIdConnect("Auth0", options =>
     {
-
-        options.MetadataAddress = builder.Configuration["Keycloak:MetaAdress"];
+        options.MetadataAddress = builder.Configuration["OpenId:MetadataAddress"];
         options.NonceCookie.SameSite = SameSiteMode.Unspecified;
         options.CorrelationCookie.SameSite = SameSiteMode.Unspecified;
 
-        options.Authority = $"{builder.Configuration["Keycloak:OktaDomain"]}";
+        options.Authority = $"{builder.Configuration["Okta:OktaDomain"]}";
         // options.SaveTokens = true;
         // Configure the Auth0 Client ID and Client Secret
-        options.ClientId = builder.Configuration["Keycloak:ClientId"];
-        options.ClientSecret = builder.Configuration["Keycloak:ClientSecret"];
+        options.ClientId = builder.Configuration["Okta:ClientId"];
+        options.ClientSecret = builder.Configuration["Okta:ClientSecret"];
         options.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
 
         options.Scope.Clear();
@@ -81,9 +70,7 @@ builder.Services.AddAuthentication(options =>
             RequireState = false
         };
         options.Events = new OpenIdConnectEvents
-
         {
-
             OnRedirectToIdentityProvider = context =>
             {
 
@@ -99,37 +86,49 @@ builder.Services.AddAuthentication(options =>
             },
             OnTokenValidated = context =>
             {
-
                 try
                 {
                     if (context is not null && context.Principal is not null && context.Principal.Identity is not null)
                     {
                         var identity = (ClaimsIdentity)context.Principal.Identity;
                         List<Claim> addToken = new();
+
                         if (context?.TokenEndpointResponse is not null && context?.TokenEndpointResponse?.AccessToken is not null)
                         {
                             addToken.Add(new Claim("access_token", context?.TokenEndpointResponse?.AccessToken));
-                            //        using (var client = new HttpClient())
-                            //        {
-                            //            string clientid = builder.Configuration["Okta:TokenUrl"];
-                            //            client.BaseAddress = new Uri(clientid);
-                            //            var content = new FormUrlEncodedContent(new[]
-                            //            {
-                            //    new KeyValuePair<string, string>("access_token",  context?.TokenEndpointResponse?.AccessToken),
-                            //});
-                            //            var result = client.PostAsync("/ib/Resource", content);
-                            //            string responseContent = result.Result.Content.ReadAsStringAsync().Result;
-                            //            AccessTokenResources? accessTokenResources =
-                            //       JsonConvert.DeserializeObject<AccessTokenResources>(responseContent);
-                            //            if (accessTokenResources != null && !string.IsNullOrEmpty(accessTokenResources.sicil) && accessTokenResources.sicil.Length < 12)
-                            //                addToken.Add(new Claim("sicil", accessTokenResources.sicil));
 
-                            //        }
+                            var handler = new JwtSecurityTokenHandler();
+                            var login_name = string.Empty;
+
+                            // Token'ýn içeriðini çöz
+                            if (handler.CanReadToken(context?.TokenEndpointResponse?.AccessToken))
+                            {
+                                var jwtToken = handler.ReadJwtToken(context?.TokenEndpointResponse?.AccessToken);
+
+                                // Payload'daki claim'lere eriþim
+                                foreach (var claim in jwtToken.Claims)
+                                {
+                                    Console.WriteLine($"Claim Type: {claim.Type}, Claim Value: {claim.Value}");
+                                }
+
+                                // Örneðin, belirli bir claim'i alma
+                                login_name = jwtToken.Claims.FirstOrDefault(c => c.Type == "login_name")?.Value;
+                                Console.WriteLine($"Preferred Username: {login_name}");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Token okunamýyor.");
+                            }
+
+                            if (login_name != null && !string.IsNullOrEmpty(login_name) && login_name.Length < 12)
+                                addToken.Add(new Claim("sicil", login_name));
                         }
+
                         if (context?.TokenEndpointResponse is not null && context?.TokenEndpointResponse?.IdToken is not null)
                         {
                             addToken.Add(new Claim("id_token", context?.TokenEndpointResponse?.IdToken));
                         }
+
                         if (context?.TokenEndpointResponse is not null && context?.TokenEndpointResponse?.RefreshToken is not null)
                         {
                             addToken.Add(new Claim("refresh_token", context?.TokenEndpointResponse?.RefreshToken));
@@ -139,6 +138,7 @@ builder.Services.AddAuthentication(options =>
                         {
                             identity.AddClaims(addToken);
                         }
+
                         // so that we don't issue a session cookie but one with a fixed expiration
                         context.Properties.IsPersistent = true;
                         context.Properties.AllowRefresh = true;
@@ -146,12 +146,6 @@ builder.Services.AddAuthentication(options =>
                         // align expiration of the cookie with expiration of the
 
                         var accessToken = new JwtSecurityToken(context.TokenEndpointResponse.AccessToken);
-
-                    }
-                    else
-                    {
-                        //hk todo 
-                        //redirect
                     }
                 }
                 catch
@@ -182,16 +176,12 @@ builder.Services.AddAuthentication(options =>
             },
             OnUserInformationReceived = context =>
             {
-                //IHttpContextAccessor httpContextAccessor;
-                //   RegisterUser(context);
-
                 return Task.CompletedTask;
             },
         };
     });
-//);
+
 builder.Services.Configure<OktaSettings>(builder.Configuration.GetSection("Okta"));
-//builder.Services.AddTransient<IClaimsTransformation, ExtraClaimTypes>();
 builder.Services.AddSingleton<HttpClient>();
 builder.Services.AddHttpClient();
 builder.Services.AddRazorPages();
@@ -205,13 +195,11 @@ builder.Services.AddScoped<ITokenService, OktaTokenService>();
 FrameworkDependencyHelper.Instance.LoadServiceCollection(builder.Services);
 var app = builder.Build();
 
-
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
 }
-
 
 app.UseStaticFiles();
 
