@@ -1967,14 +1967,14 @@ namespace bbt.gateway.messaging.Controllers.v2
         }
 
         [ApiExplorerSettings(IgnoreApi = true)]
-        [HttpGet("customerprofiles/phone/{phone.CountryCode}/{phone.Prefix}/{phone.Number}")]
-        public async Task<IActionResult> GetCustomerByPhoneNumber(common.Models.Phone phone)
+        [HttpGet("customerprofiles/phone/{countryCode}/{prefix}/{number}")]
+        public async Task<IActionResult> GetCustomerByPhoneNumber(int countryCode, int prefix, int number)
         {
             var customer = await _pusulaClient.GetCustomerByPhoneNumber(new GetByPhoneNumberRequest()
             {
-                CountryCode = phone.CountryCode.ToString(),
-                CityCode = phone.Prefix.ToString(),
-                TelephoneNumber = phone.CountryCode == 90 ? phone.Number.ToString().PadLeft(7, '0') : phone.Number.ToString()
+                CountryCode = countryCode.ToString(),
+                CityCode = prefix.ToString(),
+                TelephoneNumber = countryCode == 90 ? number.ToString().PadLeft(7, '0') : number.ToString()
             });
 
             var getCustomerProfileResponse = new GetCustomerProfileResponse();

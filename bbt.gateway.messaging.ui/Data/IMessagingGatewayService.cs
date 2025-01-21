@@ -6,13 +6,13 @@ namespace bbt.gateway.messaging.ui.Data
     public interface IMessagingGatewayService
     {
         [Get("/api/v2/Administration/transactions/phone/{phone.CountryCode}/{phone.Prefix}/{phone.Number}")]
-        Task<TransactionsDto> GetTransactionsByPhone(Phone phone,QueryParams queryParams);
+        Task<TransactionsDto> GetTransactionsByPhone(Phone phone, QueryParams queryParams);
 
         [Get("/api/v2/Administration/transactions/mail/{mail}")]
         Task<TransactionsDto> GetTransactionsByMail(string mail, QueryParams queryParams);
 
         [Get("/api/v2/Administration/transactions/customer/{customerNo}/{messageType}")]
-        Task<TransactionsDto> GetTransactionsByCustomerNo(ulong customerNo,int messageType, QueryParams queryParams);
+        Task<TransactionsDto> GetTransactionsByCustomerNo(ulong customerNo, int messageType, QueryParams queryParams);
 
         [Get("/api/v2/Administration/transactions/citizen/{citizenshipNo}/{messageType}")]
         Task<TransactionsDto> GetTransactionsByCitizenshipNo(string citizenshipNo, int messageType, QueryParams queryParams);
@@ -24,7 +24,7 @@ namespace bbt.gateway.messaging.ui.Data
         Task<BlackListEntriesDto> GetBlackListEntriesByCustomerNo(ulong customerNo, QueryParams queryParams);
 
         [Get("/api/v1/Administration/blacklists/phone/{countryCode}/{prefix}/{number}")]
-        [Headers("Authorization","Bearer")]
+        [Headers("Authorization", "Bearer")]
         Task<BlackListEntriesDto> GetBlackListEntriesByPhone(int countryCode, int prefix, int number, QueryParams queryParams);
 
         [Get("/api/v1/Administration/user/control/{userName}")]
@@ -37,7 +37,7 @@ namespace bbt.gateway.messaging.ui.Data
         Task<OtpTrackingLog> CheckOtpSmsStatus(common.Models.v2.CheckSmsRequest data);
 
         [Get("/api/v2/Administration/transactions/createdName/phone/{createdName}/{phone.CountryCode}/{phone.Prefix}/{phone.Number}")]
-        Task<TransactionsDto> GetTransactionsByPhoneCreatedName(Phone phone,string createdName, QueryParams queryParams);
+        Task<TransactionsDto> GetTransactionsByPhoneCreatedName(Phone phone, string createdName, QueryParams queryParams);
 
         [Get("/api/v2/Administration/transactions/createdName/customer/{createdName}/{customerNo}/{messageType}")]
         Task<TransactionsDto> GetTransactionsByCustomerNoCreatedName(ulong customerNo, string createdName, int messageType, QueryParams queryParams);
@@ -46,7 +46,7 @@ namespace bbt.gateway.messaging.ui.Data
         Task<TransactionsDto> GetTransactionsByCitizenshipNoCreatedName(string citizenshipNo, string createdName, int messageType, QueryParams queryParams);
 
         [Get("/api/v2/Administration/report/phone/{phone.CountryCode}/{phone.Prefix}/{phone.Number}")]
-        Task<string> GetTransactionsExcelReportWithPhone(Phone phone,  QueryParams queryParams);
+        Task<string> GetTransactionsExcelReportWithPhone(Phone phone, QueryParams queryParams);
 
         [Get("/api/v2/Administration/report/customer/{customerNo}/{messageType}")]
         Task<string> GetTransactionsExcelReportWithCustomer(ulong customerNo, int messageType, QueryParams queryParams);
@@ -58,7 +58,7 @@ namespace bbt.gateway.messaging.ui.Data
         Task<string> GetTransactionsExcelReportWithMail(string mail, QueryParams queryParams);
 
         [Get("/api/v2/Administration/Report/Sms/{operator}")]
-        Task<common.Models.v2.OperatorReport> SmsReportAsync(int @operator,QueryParams queryParams);
+        Task<common.Models.v2.OperatorReport> SmsReportAsync(int @operator, QueryParams queryParams);
 
         [Get("/api/v2/Administration/operator/getFastOperator")]
         Task<int?> GetFastOperator();
@@ -72,8 +72,8 @@ namespace bbt.gateway.messaging.ui.Data
         [Get("/api/v2/Administration/customerprofiles/citizen/{citizenshipNo}")]
         Task<common.Models.v2.GetCustomerProfileResponse> GetCustomerProfileByCitizenshipNumber(string citizenshipNo);
 
-        [Get("/api/v2/Administration/customerprofiles/phone/{phone.CountryCode}/{phone.Prefix}/{phone.Number}")]
-        Task<common.Models.v2.GetCustomerProfileResponse> GetCustomerProfileByPhoneNumber(common.Models.v2.Phone phone);
+        [Get("/api/v2/Administration/customerprofiles/phone/{countryCode}/{prefix}/{number}")]
+        Task<common.Models.v2.GetCustomerProfileResponse> GetCustomerProfileByPhoneNumber(int countryCode, int prefix, int number);
 
         [Get("/api/v2/Administration/customerprofiles/mail/{mail}")]
         Task<common.Models.v2.GetCustomerProfileResponse> GetCustomerProfileByEmail(string mail);

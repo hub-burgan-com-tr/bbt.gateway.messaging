@@ -224,14 +224,7 @@ namespace bbt.gateway.messaging.ui.Pages
         {
             Phone phone = new Phone(searchModel.FilterValue);
 
-            var phoneV2 = new common.Models.v2.Phone
-            {
-                Prefix = phone.Prefix,
-                Number = phone.Number,
-                CountryCode = phone.CountryCode
-            };
-
-            var resProfile = await MessagingGateway.GetCustomerProfileByPhoneNumber(phoneV2);
+            var resProfile = await MessagingGateway.GetCustomerProfileByPhoneNumber(phone.CountryCode, phone.Prefix, phone.Number);
 
             if (resProfile.IsSuccess == false)
             {
@@ -244,7 +237,6 @@ namespace bbt.gateway.messaging.ui.Pages
                 OpenModal("Banka personeline ait mesajların gösterimi engellenmiştir.");
                 return;
             }
-
 
             var res = await MessagingGateway.GetTransactionsByPhone(new Phone(searchModel.FilterValue), CreateQueryParams());
             transactions = res.Transactions.AsODataEnumerable();
