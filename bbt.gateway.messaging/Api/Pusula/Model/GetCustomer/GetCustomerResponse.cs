@@ -13,5 +13,6 @@ namespace bbt.gateway.messaging.Api.Pusula.Model.GetCustomer
         public string MainEmail { get; set; }
         public string CitizenshipNo { get; set; }
         public List<string> VerifiedMailAdresses { get; set; } = new();
+        public string CustomerProfile { get; set; }
     }
 }
