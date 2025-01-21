@@ -181,19 +181,17 @@ namespace bbt.gateway.messaging.Api.Pusula
                         var serializedJson = JsonConvert.SerializeXmlNode(xmlDocument);
                         var pusulaCustomerInfo = JsonConvert.DeserializeObject<PusulaCustomerRoot>(serializedJson);
 
+                        getCustomerResponse.IsSuccess = true;
+                        getCustomerResponse.BranchCode = pusulaCustomerInfo.root.MainBranchCode;
+                        getCustomerResponse.CitizenshipNo = pusulaCustomerInfo.root.CitizenshipNumber;
+                        getCustomerResponse.CustomerProfile = pusulaCustomerInfo.root.CustomerProfile;
+
                         if (!string.IsNullOrEmpty(pusulaCustomerInfo.root.BusinessLine))
                         {
-                            getCustomerResponse.IsSuccess = true;
-                            getCustomerResponse.BranchCode = pusulaCustomerInfo.root.MainBranchCode;
-                            getCustomerResponse.BusinessLine = pusulaCustomerInfo.root.BusinessLine;
-                            getCustomerResponse.CitizenshipNo = pusulaCustomerInfo.root.CitizenshipNumber;
+                            getCustomerResponse.BusinessLine = pusulaCustomerInfo.root.BusinessLine;                 
                         }
                         else
                         {
-                            getCustomerResponse.IsSuccess = true;
-                            getCustomerResponse.BranchCode = pusulaCustomerInfo.root.MainBranchCode;
-                            getCustomerResponse.CitizenshipNo = pusulaCustomerInfo.root.CitizenshipNumber;
-
                             if (!string.IsNullOrWhiteSpace(pusulaCustomerInfo.root.PortfolioCode) && pusulaCustomerInfo.root.PortfolioCode.Length >= 5)
                                 getCustomerResponse.BusinessLine = pusulaCustomerInfo.root.PortfolioCode.Substring(4, 1);
                             else

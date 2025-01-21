@@ -5,6 +5,10 @@ using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.v2;
 using bbt.gateway.common.Repositories;
+using bbt.gateway.messaging.Api.Pusula;
+using bbt.gateway.messaging.Api.Pusula.Model.GetByCitizenshipNumber;
+using bbt.gateway.messaging.Api.Pusula.Model.GetByPhone;
+using bbt.gateway.messaging.Api.Pusula.Model.GetCustomer;
 using bbt.gateway.messaging.Workers;
 using Dapr.Client;
 using Microsoft.AspNetCore.Http;
@@ -40,10 +44,12 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly DaprClient _daprClient;
         private readonly ITransactionManager _transactionManager;
         private readonly IReminderApi _reminderApi;
+        private readonly PusulaClient _pusulaClient;
 
         public Administration(HeaderManager headerManager, OperatorManager operatorManager,
             IRepositoryManager repositoryManager, IReminderApi reminderApi,
-            CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender, InfobipSender infobipSender, DaprClient daprClient, ITransactionManager transactionManager)
+            CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender, InfobipSender infobipSender, DaprClient daprClient,
+            ITransactionManager transactionManager, PusulaClient pusulaClient)
         {
             _headerManager = headerManager;
             _operatorManager = operatorManager;
@@ -55,6 +61,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             _infobipSender = infobipSender;
             _transactionManager = transactionManager;
             _reminderApi = reminderApi;
+            _pusulaClient = pusulaClient;
         }
 
         [SwaggerOperation(Summary = "Update Notification Read Status",
@@ -667,12 +674,12 @@ namespace bbt.gateway.messaging.Controllers.v2
                 if (blacklistRecord.SmsId > 0)
                 {
                     var oldBlacklistRecord = await _repositoryManager.DirectBlacklists.FirstOrDefaultAsync(b => b.SmsId == blacklistRecord.SmsId);
-                    
-                    if(oldBlacklistRecord.IsVerified)
+
+                    if (oldBlacklistRecord.IsVerified)
                     {
                         blacklistRecord.Status = BlacklistStatus.Resolved;
                         blacklistRecord.ResolvedAt = oldBlacklistRecord.VerifyDate;
-                        if(blacklistRecord.ResolvedBy is null)
+                        if (blacklistRecord.ResolvedBy is null)
                         {
                             blacklistRecord.ResolvedBy = new common.Models.Process();
                         }
@@ -685,7 +692,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                 }
                 return Ok();
             }
-                
+
 
             return NotFound();
         }
@@ -1923,6 +1930,106 @@ namespace bbt.gateway.messaging.Controllers.v2
             await _operatorManager.UpdateOperatorStatusAsync(operatorId, status);
 
             return Ok();
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [HttpGet("customerprofiles/customer/{customerNo}")]
+        public async Task<IActionResult> GetCustomerByCustomerNo(ulong customerNo)
+        {
+            var getCustomerProfileResponse = new GetCustomerProfileResponse();
+
+            await SetCustomerProfileAsync(getCustomerProfileResponse, customerNo);
+
+            return Ok(getCustomerProfileResponse);
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [HttpGet("customerprofiles/citizen/{citizenshipNo}")]
+        public async Task<IActionResult> GetCustomerByCitizenshipNumber(string citizenshipNo)
+        {
+            var customer = await _pusulaClient.GetCustomerByCitizenshipNumber(new GetByCitizenshipNumberRequest()
+            {
+                CitizenshipNumber = citizenshipNo
+            });
+
+             var getCustomerProfileResponse = new GetCustomerProfileResponse();
+
+            if (customer.IsSuccess)
+            {
+                await SetCustomerProfileAsync(getCustomerProfileResponse, customer.CustomerNo);
+            }
+            else
+            {
+                getCustomerProfileResponse.IsSuccess = false;
+            }
+
+            return Ok(getCustomerProfileResponse);
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [HttpGet("customerprofiles/phone/{phone.CountryCode}/{phone.Prefix}/{phone.Number}")]
+        public async Task<IActionResult> GetCustomerByPhoneNumber(common.Models.Phone phone)
+        {
+            var customer = await _pusulaClient.GetCustomerByPhoneNumber(new GetByPhoneNumberRequest()
+            {
+                CountryCode = phone.CountryCode.ToString(),
+                CityCode = phone.Prefix.ToString(),
+                TelephoneNumber = phone.CountryCode == 90 ? phone.Number.ToString().PadLeft(7, '0') : phone.Number.ToString()
+            });
+
+            var getCustomerProfileResponse = new GetCustomerProfileResponse();
+
+            if (customer.IsSuccess)
+            {
+                await SetCustomerProfileAsync(getCustomerProfileResponse, customer.CustomerNo);
+            }
+            else
+            {
+                getCustomerProfileResponse.IsSuccess = false;
+            }
+
+            return Ok(getCustomerProfileResponse);
+        }
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [HttpGet("customerprofiles/mail/{mail}")]
+        public async Task<IActionResult> GetCustomerByEmail(string mail)
+        {
+            var customer = await _pusulaClient.GetCustomerByEmail(new GetByEmailRequest()
+            {
+                Email = mail
+            });
+
+            var getCustomerProfileResponse = new GetCustomerProfileResponse();
+
+            if (customer.IsSuccess)
+            {
+                await SetCustomerProfileAsync(getCustomerProfileResponse, customer.CustomerNo);
+            }
+            else
+            {
+                getCustomerProfileResponse.IsSuccess = false;
+            }
+
+            return Ok(getCustomerProfileResponse);
+        }
+
+        private async Task SetCustomerProfileAsync(GetCustomerProfileResponse getCustomerProfileResponse, ulong customerNo)
+        {
+            var customerDetail = await _pusulaClient.GetCustomer(new GetCustomerRequest()
+            {
+                CustomerNo = customerNo
+            });
+
+            if (customerDetail.IsSuccess)
+            {
+                getCustomerProfileResponse.IsSuccess = true;
+                getCustomerProfileResponse.IsStaff = customerDetail.CustomerProfile == "GB" || customerDetail.CustomerProfile == "GG";
+            }
+            else
+            {
+                getCustomerProfileResponse.IsSuccess = false;
+            }
         }
     }
 }

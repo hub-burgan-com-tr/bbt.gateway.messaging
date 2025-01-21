@@ -65,5 +65,17 @@ namespace bbt.gateway.messaging.ui.Data
 
         [Post("/api/v2/Administration/operator/changeFastOperator/{status}")]
         Task ChangeFastOperator(int status);
+
+        [Get("/api/v2/Administration/customerprofiles/customer/{customerNo}")]
+        Task<common.Models.v2.GetCustomerProfileResponse> GetCustomerProfileByCustomerNo(ulong customerNo);
+
+        [Get("/api/v2/Administration/customerprofiles/citizen/{citizenshipNo}")]
+        Task<common.Models.v2.GetCustomerProfileResponse> GetCustomerProfileByCitizenshipNumber(string citizenshipNo);
+
+        [Get("/api/v2/Administration/customerprofiles/phone/{phone.CountryCode}/{phone.Prefix}/{phone.Number}")]
+        Task<common.Models.v2.GetCustomerProfileResponse> GetCustomerProfileByPhoneNumber(common.Models.v2.Phone phone);
+
+        [Get("/api/v2/Administration/customerprofiles/mail/{mail}")]
+        Task<common.Models.v2.GetCustomerProfileResponse> GetCustomerProfileByEmail(string mail);
     }
 }
