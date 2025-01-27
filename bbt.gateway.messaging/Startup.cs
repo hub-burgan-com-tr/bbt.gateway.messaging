@@ -5,7 +5,6 @@ using bbt.gateway.common;
 using bbt.gateway.common.Api.Amorphie;
 using bbt.gateway.common.Api.dEngage;
 using bbt.gateway.common.Api.MessagingGateway;
-using bbt.gateway.common.Api.Reminder;
 using bbt.gateway.common.Http;
 using bbt.gateway.common.Models;
 using bbt.gateway.common.Models.v1;
@@ -203,22 +202,6 @@ namespace bbt.gateway.messaging
 
             services.AddRefitClient<IUserApiPrep>()
             .ConfigureHttpClient(c => c.BaseAddress = new Uri(Configuration["Api:Amorphie:User:PrepBaseAddress"]));
-
-            services.AddRefitClient<IReminderApi>()
-            .ConfigureHttpClient(c =>
-            {
-                c.BaseAddress = new Uri(Configuration["Api:Reminder:BaseAddress"]);
-                c.DefaultRequestHeaders.Add("channel", Configuration["Api:Reminder:Channel"]);
-                c.DefaultRequestHeaders.Add("branch", Configuration["Api:Reminder:Branch"]);
-                c.DefaultRequestHeaders.Add("user", Configuration["Api:Reminder:User"]);
-            }).ConfigurePrimaryHttpMessageHandler(() =>
-            {
-                return new HttpClientHandler()
-                {
-                    UseProxy = false,
-                    ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
-                };
-            });
 
             services.AddRefitClient<IdEngageClient>(new RefitSettings
             {
