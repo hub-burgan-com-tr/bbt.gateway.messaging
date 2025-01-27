@@ -1,5 +1,4 @@
 ﻿using Asp.Versioning;
-using bbt.gateway.common.Api.Reminder;
 using bbt.gateway.common.Extensions;
 using bbt.gateway.common.GlobalConstants;
 using bbt.gateway.common.Models;
@@ -43,11 +42,10 @@ namespace bbt.gateway.messaging.Controllers.v2
         private readonly InfobipSender _infobipSender;
         private readonly DaprClient _daprClient;
         private readonly ITransactionManager _transactionManager;
-        private readonly IReminderApi _reminderApi;
         private readonly PusulaClient _pusulaClient;
 
         public Administration(HeaderManager headerManager, OperatorManager operatorManager,
-            IRepositoryManager repositoryManager, IReminderApi reminderApi,
+            IRepositoryManager repositoryManager,
             CodecSender codecSender, dEngageSender dEngageSender, OtpSender otpSender, InfobipSender infobipSender, DaprClient daprClient,
             ITransactionManager transactionManager, PusulaClient pusulaClient)
         {
@@ -60,15 +58,17 @@ namespace bbt.gateway.messaging.Controllers.v2
             _daprClient = daprClient;
             _infobipSender = infobipSender;
             _transactionManager = transactionManager;
-            _reminderApi = reminderApi;
             _pusulaClient = pusulaClient;
         }
 
-        [SwaggerOperation(Summary = "Update Notification Read Status",
-            Tags = new[] { "Notifications Management" })]
+        [SwaggerOperation(Summary = "Update Notification Read Status", Tags = ["Notifications Management"])]
         [HttpPost("notification/{customerId}")]
         [SwaggerResponse(200, "Record was updated successfully")]
-        public async Task<IActionResult> SetNotificationRead(string customerId, [FromBody] NotificationSetReadRequest? notificationSetReadRequest, [FromQuery(Name = "notificationId")] string notificationGuid)
+        public async Task<IActionResult> SetNotificationReadAsync(
+                                                                    string customerId,
+                                                                    [FromBody] NotificationSetReadRequest? notificationSetReadRequest,
+                                                                    [FromQuery(Name = "notificationId")] string notificationGuid
+                                                                 )
         {
             if (notificationSetReadRequest is not { })
             {
@@ -77,117 +77,95 @@ namespace bbt.gateway.messaging.Controllers.v2
                     notificationId = notificationGuid
                 };
             }
+
             var isGuid = Guid.TryParse(notificationSetReadRequest.notificationId, out Guid notificationId);
+
             if (isGuid)
             {
                 var notification = await _repositoryManager.PushNotificationRequestLogs.FirstOrDefaultAsync(p => p.Id.Equals(notificationId));
+
                 if (notification is { })
                 {
                     notification.IsRead = true;
                     notification.ReadAt = DateTime.Now;
                     await _repositoryManager.SaveChangesAsync();
                     await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
+
                     return Ok();
                 }
-                else
-                {
-                    return NotFound();
-                }
             }
-            else
-            {
-                var ntfId = long.Parse(notificationSetReadRequest.notificationId);
-                await _reminderApi.SetNotificationRead(customerId, new common.Api.Reminder.Model.SetReadRequest()
-                {
-                    notificationId = ntfId
-                });
-                await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
-                return Ok();
-            }
+
+            return NotFound();
         }
 
-        [SwaggerOperation(Summary = "Update Notification Delete Status",
-            Tags = new[] { "Notifications Management" })]
+        [SwaggerOperation(Summary = "Update Notification Delete Status", Tags = ["Notifications Management"])]
         [HttpDelete("notification/{customerId}/{notificationId}")]
         [SwaggerResponse(200, "Record was updated successfully")]
-        public async Task<IActionResult> SetNotificationDeleted(string customerId, string notificationId)
+        public async Task<IActionResult> SetNotificationDeletedAsync(string customerId, string notificationId)
         {
             var isGuid = Guid.TryParse(notificationId, out Guid notificationIdGuid);
+
             if (isGuid)
             {
                 var notification = await _repositoryManager.PushNotificationRequestLogs.FirstOrDefaultAsync(p => p.Id.Equals(notificationIdGuid));
+
                 if (notification is { })
                 {
                     notification.IsDeleted = true;
                     notification.DeletedAt = DateTime.Now;
                     await _repositoryManager.SaveChangesAsync();
                     await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
+
                     return Ok();
                 }
-                else
-                {
-                    return NotFound();
-                }
             }
-            else
-            {
-                var ntfId = long.Parse(notificationId);
-                await _reminderApi.DeleteNotification(customerId, notificationId);
-                await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
-                return Ok();
-            }
+
+            return NotFound();
         }
 
-        [SwaggerOperation(Summary = "Update Notification Delete Status",
-            Tags = new[] { "Notifications Management" })]
+        [SwaggerOperation(Summary = "Update Notification Delete Status", Tags = ["Notifications Management"])]
         [HttpDelete("notification/{customerId}")]
         [SwaggerResponse(200, "Records was updated successfully")]
-        public async Task<IActionResult> SetNotificationsDeleted(string customerId)
+        public async Task<IActionResult> SetNotificationsDeletedAsync(string customerId)
         {
-            List<Task> taskList = new();
-            taskList.Add(DeleteNotificationFromReminder(customerId));
-            taskList.Add(DeleteNotificationFromMessagingGateway(customerId));
-            await Task.WhenAll(taskList);
+            await DeleteNotificationAsync(customerId);
+
             await _daprClient.DeleteStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
 
             return Ok();
         }
 
-        [SwaggerOperation(Summary = "Returns notifications",
-            Tags = new[] { "Notifications Management" })]
+        [SwaggerOperation(Summary = "Returns notifications", Tags = ["Notifications Management"])]
         [HttpGet("notifications/statistics/{customerId}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(NotificationsCountResponse))]
-        public async Task<IActionResult> GetNotificationStatics(string customerId)
+        public async Task<IActionResult> GetNotificationStaticsAsync(string customerId)
         {
-            List<Task<NotificationsCountResponse>> taskList = new();
-            taskList.Add(GetNotificationStatisticsFromReminder(customerId));
-            taskList.Add(GetNotificationStatisticsFromMessagingGateway(customerId));
-            NotificationsCountResponse[] taskResults = await Task.WhenAll(taskList);
+            var stats = await GetNotificationStatisticsAsync(customerId);
 
             return Ok(new NotificationsCountResponse()
             {
-                readCount = taskResults[0].readCount + taskResults[1].readCount,
-                unreadCount = taskResults[0].unreadCount + taskResults[1].unreadCount,
+                readCount = stats.readCount,
+                unreadCount = stats.unreadCount
             });
         }
 
-        [SwaggerOperation(Summary = "Returns notifications",
-            Tags = new[] { "Notifications Management" })]
+        [SwaggerOperation(Summary = "Returns notifications", Tags = ["Notifications Management"])]
         [HttpGet("notifications/{customerId}/{pageIndex}/{pageSize}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(Notification[]))]
-        public async Task<IActionResult> GetNotifications(string customerId, int pageIndex, int pageSize)
+        public async Task<IActionResult> GetNotificationsAsync(string customerId, int pageIndex, int pageSize)
         {
             var notifications = await _daprClient.GetStateAsync<List<Notification>>(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications");
 
             if (notifications == null)
             {
-                notifications = await GetNotificationFromMessagingGatewayAsync(customerId);
+                notifications = await GetNotificationAsync(customerId);
 
                 await _daprClient.SaveStateAsync(GlobalConstants.DAPR_STATE_STORE, "mg_" + customerId + "_notifications", notifications, metadata: new Dictionary<string, string>() {
                     {
                         "ttlInSeconds", "60"
                     }
                 });
+
                 Response.Headers.TryAdd("X-Cache", "Miss");
             }
             else
@@ -198,37 +176,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             return Ok(notifications.Skip((pageIndex - 1) * pageSize).Take(pageSize));
         }
 
-        private async Task<List<Notification>> GetNotificationFromReminderAsync(string customerId)
-        {
-            var notificationList = await _reminderApi.GetNotifications(customerId, 1, 10000);
-
-            return notificationList.Select(n => new Notification()
-            {
-                contentHtml = n.contentHTML,
-                date = n.date,
-                isRead = n.isRead,
-                notificationId = n.notificationId,
-                reminderType = n.reminderType
-            }).ToList();
-        }
-
-        private async Task DeleteNotificationFromReminder(string customerId)
-        {
-            await _reminderApi.DeleteNotifications(customerId);
-        }
-
-        private async Task<NotificationsCountResponse> GetNotificationStatisticsFromReminder(string customerId)
-        {
-            var statistics = await _reminderApi.GetNoficationsCount(customerId);
-
-            return new NotificationsCountResponse()
-            {
-                readCount = statistics.readCount,
-                unreadCount = statistics.unreadCount
-            };
-        }
-
-        private async Task<List<Notification>> GetNotificationFromMessagingGatewayAsync(string customerId)
+        private async Task<List<Notification>> GetNotificationAsync(string customerId)
         {
             var pushList = await _repositoryManager.PushNotificationRequestLogs.GetPushNotifications(customerId);
 
@@ -240,26 +188,29 @@ namespace bbt.gateway.messaging.Controllers.v2
                 notificationId = n.Id.ToString(),
                 reminderType = n.NotificationType,
                 dateTime = n.CreatedAt,
-                customParameters = n.CustomParameters
+                customParametersString = n.CustomParameters
             }).OrderByDescending(t => t.dateTime).ToList();
         }
 
-        private async Task DeleteNotificationFromMessagingGateway(string customerId)
+        private async Task DeleteNotificationAsync(string customerId)
         {
             var notificationList = await _repositoryManager.PushNotificationRequestLogs.FindAsync(p => p.ContactId.Equals(customerId) && p.IsDeleted != true);
+
             foreach (var notification in notificationList)
             {
                 notification.IsDeleted = true;
                 notification.DeletedAt = DateTime.Now;
             }
+
             await _repositoryManager.SaveChangesAsync();
         }
 
-        private async Task<NotificationsCountResponse> GetNotificationStatisticsFromMessagingGateway(string customerId)
+        private async Task<NotificationsCountResponse> GetNotificationStatisticsAsync(string customerId)
         {
             var pushList = await _repositoryManager.PushNotificationRequestLogs.GetPushNotifications(customerId);
             var readCount = pushList.Count(p => p.IsRead);
             var unreadCount = pushList.Count() - readCount;
+
             return new NotificationsCountResponse()
             {
                 readCount = readCount,
@@ -267,15 +218,15 @@ namespace bbt.gateway.messaging.Controllers.v2
             };
         }
 
-        [SwaggerOperation(Summary = "Update Old Blacklist Record's CustomerNo or ContactNo",
-            Tags = new[] { "Phone Management" })]
+        [SwaggerOperation(Summary = "Update Old Blacklist Record's CustomerNo or ContactNo", Tags = ["Phone Management"])]
         [HttpPut("blacklist/phone/{countryCode}/{prefix}/{number}/{customerNo}")]
         [SwaggerResponse(200, "Whitelist record is deleted successfully", typeof(void))]
-        public async Task<IActionResult> UpdateOldBlacklistCustomerInfo(string countryCode, string prefix, string number, long customerNo)
+        public async Task<IActionResult> UpdateOldBlacklistCustomerInfoAsync(string countryCode, string prefix, string number, long customerNo)
         {
             var phoneNumber = $"+{countryCode}{prefix}{number}";
 
             var blacklistRecords = await _repositoryManager.DirectBlacklists.FindAsync(b => b.GsmNumber.Equals(phoneNumber) && b.CustomerNo == 0);
+
             foreach (var blacklistRecord in blacklistRecords)
             {
                 blacklistRecord.CustomerNo = customerNo;
@@ -287,18 +238,13 @@ namespace bbt.gateway.messaging.Controllers.v2
             return Ok();
         }
 
-        [SwaggerOperation(
-           Summary = "Returns Sms Counts And Success Rate",
-           Description = "Returns Sms Counts And Success Rate."
-           )]
+        [SwaggerOperation(Summary = "Returns Sms Counts And Success Rate", Description = "Returns Sms Counts And Success Rate.")]
         [HttpGet("Report/Sms/{operator}")]
         [ApiExplorerSettings(IgnoreApi = true)]
-
         public async Task<IActionResult> SmsReportAsync(int @operator, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             try
             {
-
                 var key = GlobalConstants.SMS_DAILY_REPORT + "_" + @operator + "_" + startDate.ToShortDateString() + "_" + endDate.ToShortDateString();
                 var res = await _daprClient.GetStateAsync<OperatorReport>(GlobalConstants.DAPR_STATE_STORE, key);
 
@@ -308,114 +254,86 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
                 return StatusCode(500);
             }
-
         }
 
-        [SwaggerOperation(
-           Summary = "Check Fast Sms Message Status",
-           Description = "Check Fast Sms Delivery Status."
-           )]
+        [SwaggerOperation(Summary = "Check Fast Sms Message Status", Description = "Check Fast Sms Delivery Status.")]
         [HttpPost("sms/check-message")]
         [ApiExplorerSettings(IgnoreApi = true)]
-
-        public async Task<IActionResult> CheckMessageStatus([FromBody] CheckFastSmsRequest data)
+        public async Task<IActionResult> CheckMessageStatusAsync([FromBody] CheckFastSmsRequest data)
         {
-
-            if (ModelState.IsValid)
-            {
-                if (data.Operator == OperatorType.Codec)
-                {
-                    var res = await _codecSender.CheckSms(data);
-                    return Ok(res);
-                }
-                if (data.Operator == OperatorType.dEngageOn ||
-                    data.Operator == OperatorType.dEngageBurgan)
-                {
-                    var res = await _dEngageSender.CheckSms(data);
-                    return Ok(res);
-                }
-                if (data.Operator == OperatorType.Infobip)
-                {
-                    var res = await _infobipSender.CheckSms(data);
-                    return Ok(res);
-                }
-
-                return BadRequest("Unknown Operator");
-            }
-            else
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            switch (data.Operator)
+            {
+                case OperatorType.Codec:
+                    {
+                        var res = await _codecSender.CheckSms(data);
+                        return Ok(res);
+                    }
 
+                case OperatorType.dEngageOn:
+                case OperatorType.dEngageBurgan:
+                    {
+                        var res = await _dEngageSender.CheckSms(data);
+                        return Ok(res);
+                    }
+
+                case OperatorType.Infobip:
+                    {
+                        var res = await _infobipSender.CheckSms(data);
+                        return Ok(res);
+                    }
+            }
+
+            return BadRequest("Unknown Operator");
         }
 
-        [SwaggerOperation(
-           Summary = "Check Fast Sms Message Status",
-           Description = "Check Fast Sms Delivery Status."
-           )]
+        [SwaggerOperation(Summary = "Check Fast Sms Message Status", Description = "Check Fast Sms Delivery Status.")]
         [HttpPost("otp/check-message")]
         [ApiExplorerSettings(IgnoreApi = true)]
-
-        public async Task<IActionResult> CheckOtpMessageStatus([FromBody] common.Models.v2.CheckSmsRequest data)
+        public async Task<IActionResult> CheckOtpMessageStatusAsync([FromBody] common.Models.v2.CheckSmsRequest data)
         {
-
-            if (ModelState.IsValid)
-            {
-                if (data.Operator != OperatorType.Infobip)
-                {
-                    var res = await _otpSender.CheckMessage(data.MapTo<common.Models.CheckSmsRequest>());
-                    return Ok(res);
-                }
-                else
-                {
-                    var res = await _infobipSender.CheckSms(data.MapTo<common.Models.CheckSmsRequest>());
-                    return Ok(res);
-                }
-
-            }
-            else
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-
+            if (data.Operator == OperatorType.Infobip)
+            {
+                var res = await _infobipSender.CheckSms(data.MapTo<common.Models.CheckSmsRequest>());
+                return Ok(res);
+            }
+            else
+            {
+                var res = await _otpSender.CheckMessage(data.MapTo<common.Models.CheckSmsRequest>());
+                return Ok(res);
+            }
         }
 
-        [SwaggerOperation(
-           Summary = "Check Mail Message Status",
-           Description = "Check Mail Delivery Status."
-           )]
+        [SwaggerOperation(Summary = "Check Mail Message Status", Description = "Check Mail Delivery Status.")]
         [HttpPost("email/check-message")]
-        //[ApiExplorerSettings(IgnoreApi = true)]
-
-        public async Task<IActionResult> CheckMessageStatus([FromBody] CheckMailStatusRequest data)
+        public async Task<IActionResult> CheckMessageStatusAsync([FromBody] CheckMailStatusRequest data)
         {
-
-            if (ModelState.IsValid)
-            {
-                if (data.Operator == OperatorType.dEngageOn ||
-                    data.Operator == OperatorType.dEngageBurgan)
-                {
-                    var res = await _dEngageSender.CheckMail(data);
-                    return Ok(res);
-                }
-                return BadRequest("Unknown Operator");
-            }
-            else
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
+            if (data.Operator == OperatorType.dEngageOn || data.Operator == OperatorType.dEngageBurgan)
+            {
+                var res = await _dEngageSender.CheckMail(data);
+                return Ok(res);
+            }
+
+            return BadRequest("Unknown Operator");
         }
 
-        [SwaggerOperation(
-           Summary = "Check Sms Message Status",
-           Description = "Check Transactional Sms Delivery Status."
-           )]
+        [SwaggerOperation(Summary = "Check Sms Message Status", Description = "Check Transactional Sms Delivery Status.")]
         [HttpGet("sms/check")]
-
-        public async Task<IActionResult> CheckSmsStatus(System.Guid TxnId)
+        public async Task<IActionResult> CheckSmsStatusAsync(Guid TxnId)
         {
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Mock")
             {
@@ -430,14 +348,17 @@ namespace bbt.gateway.messaging.Controllers.v2
             CheckSmsStatusResponse res = new();
 
             var transaction = await _repositoryManager.Transactions.GetWithIdAsNoTrackingAsync(TxnId);
+
             if (transaction == null)
                 return NotFound("Transaction Not Found");
+
             if (transaction.SmsRequestLog == null)
             {
                 return NotFound("Sms Log Not Found");
             }
 
             var smsRequestLog = transaction.SmsRequestLog;
+
             if (smsRequestLog.ResponseLogs == null || smsRequestLog.ResponseLogs.Count <= 0)
             {
                 return NotFound("Sms Log Not Found");
@@ -467,35 +388,19 @@ namespace bbt.gateway.messaging.Controllers.v2
                 res.code = 0;
                 return Ok(res);
             }
-
-
         }
 
-        [SwaggerOperation(
-          Summary = "Check Message Status",
-          Description = "Check Message Status."
-          )]
+        [SwaggerOperation(Summary = "Check Message Status", Description = "Check Message Status.")]
         [HttpGet("transaction/check")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<IActionResult> CheckTransactionStatus([FromQuery] Guid transactionId)
+        public async Task<IActionResult> CheckTransactionStatusAsync([FromQuery] Guid transactionId)
         {
             var transaction = await _repositoryManager.Transactions.GetWithIdAsNoTrackingAsync(transactionId);
+
             if (transaction == null)
                 return NotFound("Transaction Not Found");
 
-            if (transaction.TransactionType == TransactionType.TransactionalSms
-                || transaction.TransactionType == TransactionType.TransactionalTemplatedSms)
-            {
-
-            }
-
-            if (transaction.TransactionType == TransactionType.Otp)
-            {
-
-            }
-
-            if (transaction.TransactionType == TransactionType.TransactionalMail
-                || transaction.TransactionType == TransactionType.TransactionalTemplatedMail)
+            if (transaction.TransactionType == TransactionType.TransactionalMail || transaction.TransactionType == TransactionType.TransactionalTemplatedMail)
             {
                 if (transaction.MailRequestLog == null)
                 {
@@ -532,57 +437,51 @@ namespace bbt.gateway.messaging.Controllers.v2
             return BadRequest();
         }
 
-        [SwaggerOperation(Summary = "Returns content headers configuration",
-            Tags = new[] { "Header Management" })]
+        [SwaggerOperation(Summary = "Returns content headers configuration", Tags = ["Header Management"])]
         [HttpGet("headers")]
         [SwaggerResponse(200, "Headers is returned successfully", typeof(Header[]))]
-        public async Task<IActionResult> GetHeaders([FromQuery][Range(0, 100)] int page = 0, [FromQuery][Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetHeadersAsync([FromQuery][Range(0, 100)] int page = 0, [FromQuery][Range(1, 100)] int pageSize = 20)
         {
             return Ok(await _headerManager.Get(page, pageSize));
         }
 
-        [SwaggerOperation(Summary = "Save or update header configuration",
-            Tags = new[] { "Header Management" })]
+        [SwaggerOperation(Summary = "Save or update header configuration", Tags = ["Header Management"])]
         [HttpPost("headers")]
         [SwaggerRequestExample(typeof(HeaderRequest), typeof(AddHeaderRequestExampleFilter))]
         [SwaggerResponse(200, "Header is saved successfully", typeof(Header[]))]
-        public async Task<IActionResult> SaveHeader([FromBody] Header data)
+        public async Task<IActionResult> SaveHeaderAsync([FromBody] Header data)
         {
             await _headerManager.Save(data);
             return Ok();
         }
 
-        [SwaggerOperation(Summary = "Deletes header configuration",
-            Tags = new[] { "Header Management" })]
+        [SwaggerOperation(Summary = "Deletes header configuration", Tags = ["Header Management"])]
         [HttpDelete("headers/{id}")]
         [SwaggerResponse(200, "Header is deleted successfully", typeof(void))]
-        public async Task<IActionResult> DeleteHeader(Guid id)
+        public async Task<IActionResult> DeleteHeaderAsync(Guid id)
         {
             await _headerManager.Delete(id);
             return Ok();
         }
 
-        [SwaggerOperation(Summary = "Returns operator configurations",
-            Tags = new[] { "Operator Management" })]
+        [SwaggerOperation(Summary = "Returns operator configurations", Tags = ["Operator Management"])]
         [HttpGet("operators")]
         [SwaggerResponse(200, "Operators was returned successfully", typeof(Operator[]))]
-        public async Task<IActionResult> GetOperators()
+        public async Task<IActionResult> GetOperatorsAsync()
         {
             return Ok(await _operatorManager.Get());
         }
 
-        [SwaggerOperation(Summary = "Updated operator configuration",
-            Tags = new[] { "Operator Management" })]
+        [SwaggerOperation(Summary = "Updated operator configuration", Tags = ["Operator Management"])]
         [HttpPost("operators")]
         [SwaggerResponse(200, "operator has saved successfully", typeof(void))]
-        public async Task<IActionResult> SaveOperator([FromBody] Operator data)
+        public async Task<IActionResult> SaveOperatorAsync([FromBody] Operator data)
         {
             await _operatorManager.Save(data);
             return Ok();
         }
 
-        [SwaggerOperation(Summary = "Resolve Blacklist Entry",
-            Tags = new[] { "Phone Management" })]
+        [SwaggerOperation(Summary = "Resolve Blacklist Entry", Tags = ["Phone Management"])]
         [HttpPost("blacklist/resolve")]
         [SwaggerResponse(200, "Record was updated successfully", typeof(void))]
 
@@ -612,6 +511,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                         oldBlacklistRecord.VerifiedBy = resolveBlacklistEntryFromPhoneRequest.ResolvedBy.Name;
                         oldBlacklistRecord.Explanation = resolveBlacklistEntryFromPhoneRequest.Reason;
                         oldBlacklistRecord.IsVerified = true;
+
                         await _repositoryManager.SaveSmsBankingChangesAsync();
                     }
 
@@ -625,13 +525,16 @@ namespace bbt.gateway.messaging.Controllers.v2
             else
             {
                 var oldBlacklistRecord = await _repositoryManager.DirectBlacklists.GetLastBlacklistEntry(resolveBlacklistEntryFromPhoneRequest.Phone.ToOldBlacklistNumber());
+
                 if (oldBlacklistRecord != null)
                 {
                     oldBlacklistRecord.VerifyDate = DateTime.Now;
                     oldBlacklistRecord.VerifiedBy = resolveBlacklistEntryFromPhoneRequest.ResolvedBy.Name;
                     oldBlacklistRecord.Explanation = resolveBlacklistEntryFromPhoneRequest.Reason;
                     oldBlacklistRecord.IsVerified = true;
+
                     await _repositoryManager.SaveSmsBankingChangesAsync();
+
                     return Ok();
                 }
                 else
@@ -639,25 +542,21 @@ namespace bbt.gateway.messaging.Controllers.v2
                     return NotFound();
                 }
             }
-            return BadRequest();
         }
 
-        [SwaggerOperation(Summary = "Returns phone activities",
-            Tags = new[] { "Phone Management" })]
+        [SwaggerOperation(Summary = "Returns phone activities", Tags = ["Phone Management"])]
         [HttpGet("phone-monitor/{countryCode}/{prefix}/{number}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(PhoneConfiguration))]
-
-        public async Task<IActionResult> GetPhoneMonitorRecords(int countryCode, int prefix, int number, int count)
+        public async Task<IActionResult> GetPhoneMonitorRecordsAsync(int countryCode, int prefix, int number, int count)
         {
             return Ok(await _repositoryManager.PhoneConfigurations.GetWithRelatedLogsAndBlacklistEntriesAsync(countryCode, prefix, number, count));
         }
 
-        [SwaggerOperation(Summary = "Returns phone has active blacklist or not",
-            Tags = new[] { "Phone Management" })]
+        [SwaggerOperation(Summary = "Returns phone has active blacklist or not", Tags = ["Phone Management"])]
         [HttpGet("check-blacklist/{countryCode}/{prefix}/{number}")]
         [SwaggerResponse(200, "Phone has active blacklist", typeof(void))]
         [SwaggerResponse(404, "Phone has not active blacklist", typeof(void))]
-        public async Task<IActionResult> CheckPhoneBlacklistStatus(string countryCode, string prefix, string number)
+        public async Task<IActionResult> CheckPhoneBlacklistStatusAsync(string countryCode, string prefix, string number)
         {
             var blacklistRecord = await _repositoryManager.BlackListEntries.GetLastBlacklistRecord(
                 Convert.ToInt32(countryCode),
@@ -667,7 +566,6 @@ namespace bbt.gateway.messaging.Controllers.v2
 
             if (blacklistRecord == null)
                 return NotFound();
-
 
             if (blacklistRecord.Status == BlacklistStatus.NotResolved)
             {
@@ -685,36 +583,35 @@ namespace bbt.gateway.messaging.Controllers.v2
                         }
                         blacklistRecord.ResolvedBy.Name = oldBlacklistRecord.VerifiedBy;
                         blacklistRecord.Reason = oldBlacklistRecord.Explanation;
+
                         await _repositoryManager.SaveChangesAsync();
+
                         return NotFound();
                     }
+
                     return Ok();
                 }
+
                 return Ok();
             }
-
 
             return NotFound();
         }
 
-        [SwaggerOperation(Summary = "Returns phone blacklist records",
-            Tags = new[] { "Phone Management" })]
+        [SwaggerOperation(Summary = "Returns phone blacklist records", Tags = ["Phone Management"])]
         [HttpGet("blacklists/{countryCode}/{prefix}/{number}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(BlackListEntry))]
-
-        public async Task<IActionResult> GetPhoneBlacklistRecords(string countryCode, string prefix, string number, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetPhoneBlacklistRecordsAsync(string countryCode, string prefix, string number, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {
             return Ok(await _repositoryManager.BlackListEntries
                 .GetWithLogsAsync(Convert.ToInt32(countryCode), Convert.ToInt32(prefix), Convert.ToInt32(number), page, pageSize));
         }
 
-        [SwaggerOperation(Summary = "Adds phone to blacklist records",
-            Tags = new[] { "Phone Management" })]
+        [SwaggerOperation(Summary = "Adds phone to blacklist records", Tags = ["Phone Management"])]
         [HttpPost("blacklists")]
         [SwaggerResponse(201, "Record was created successfully", typeof(void))]
-        public async Task<IActionResult> AddPhoneToBlacklist([FromBody] AddPhoneToBlacklistRequest data)
+        public async Task<IActionResult> AddPhoneToBlacklistAsync([FromBody] AddPhoneToBlacklistRequest data)
         {
-
             Guid newOtpBlackListEntryId = Guid.NewGuid();
 
             var config = (await _repositoryManager.PhoneConfigurations
@@ -722,7 +619,6 @@ namespace bbt.gateway.messaging.Controllers.v2
                 c.Phone.Prefix == Convert.ToInt32(data.Phone.Prefix) &&
                 c.Phone.Number == Convert.ToInt32(data.Phone.Number)))
                 .FirstOrDefault();
-
 
             if (config == null)
             {
@@ -786,16 +682,17 @@ namespace bbt.gateway.messaging.Controllers.v2
             return Created("", newOtpBlackListEntryId);
         }
 
-        [SwaggerOperation(Summary = "Resolve blacklist item",
-            Tags = new[] { "Phone Management" })]
+        [SwaggerOperation(Summary = "Resolve blacklist item", Tags = ["Phone Management"])]
         [HttpPatch("blacklists/{blacklist-entry-id}/resolve")]
         [SwaggerResponse(201, "Record was updated successfully", typeof(void))]
         [SwaggerResponse(404, "Record not found", typeof(void))]
-        public async Task<IActionResult> ResolveBlacklistItem([FromRoute(Name = "blacklist-entry-id")] Guid entryId, [FromBody] ResolveBlacklistEntryRequest data)
+        public async Task<IActionResult> ResolveBlacklistItemAsync([FromRoute(Name = "blacklist-entry-id")] Guid entryId, [FromBody] ResolveBlacklistEntryRequest data)
         {
             var config = await _repositoryManager.BlackListEntries.FirstOrDefaultAsync(b => b.Id == entryId);
+
             if (config == null)
                 return NotFound(entryId);
+
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             var resolvedAt = (env == "Prod" || env == "Drc") ? DateTime.Now : (data.ResolvedAt ?? DateTime.Now);
             config.ResolvedBy = data.ResolvedBy;
@@ -818,16 +715,15 @@ namespace bbt.gateway.messaging.Controllers.v2
             return StatusCode(201);
         }
 
-        [SwaggerOperation(Summary = "Deletes phone activities",
-            Tags = new[] { "Phone Management" })]
+        [SwaggerOperation(Summary = "Deletes phone activities", Tags = ["Phone Management"])]
         [HttpDelete("phone-monitor/{countryCode}/{prefix}/{number}")]
         [SwaggerResponse(204, "Records was deleted successfully", typeof(void))]
-
-        public async Task<IActionResult> GetPhoneMonitorRecords(int countryCode, int prefix, int number)
+        public async Task<IActionResult> DeletePhoneMonitorRecordsAsync(int countryCode, int prefix, int number)
         {
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             if (env != "Prod" &&
-                env != "Production" && env != "Drc")
+                env != "Production" &&
+                env != "Drc")
             {
                 var phoneConfigurations = await _repositoryManager.PhoneConfigurations.FindAsync(p =>
                 p.Phone.CountryCode == countryCode &&
@@ -840,20 +736,20 @@ namespace bbt.gateway.messaging.Controllers.v2
                     await _repositoryManager.PhoneConfigurations.DeletePhoneConfiguration(phoneConfiguration.Id);
                 }
 
-
                 return NoContent();
             }
+
             return Forbid();
         }
 
         [SwaggerOperation(Summary = "Adds phone to whitelist",
             Description = "<div>Phone Number Has To Be Added To Whitelist To Receives Sms On Test Environment</div>",
-            Tags = new[] { "Whitelist Management" })]
+            Tags = ["Whitelist Management"])]
         [HttpPost("whitelist/phone")]
         [SwaggerResponse(201, "Record was created successfully", typeof(void))]
         [SwaggerResponse(400, "Phone Number Field Is Mandatory", typeof(void))]
         [SwaggerResponse(409, "Phone Number Is Already Exists In Whitelist", typeof(void))]
-        public async Task<IActionResult> AddPhoneToWhitelist([FromBody] AddPhoneToWhitelistRequest data)
+        public async Task<IActionResult> AddPhoneToWhitelistAsync([FromBody] AddPhoneToWhitelistRequest data)
         {
             if (data.Phone == null)
             {
@@ -863,7 +759,9 @@ namespace bbt.gateway.messaging.Controllers.v2
             if ((await _repositoryManager.Whitelist.FindAsync(w => (w.Phone.CountryCode == Convert.ToInt32(data.Phone.CountryCode))
              && (w.Phone.Prefix == Convert.ToInt32(data.Phone.Prefix))
              && (w.Phone.Number == Convert.ToInt32(data.Phone.Number)))).FirstOrDefault() != null)
+            {
                 return BadRequest("Phone Number Is Already Exist");
+            }
 
             var whitelistRecord = new WhiteList()
             {
@@ -886,17 +784,15 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         [SwaggerOperation(Summary = "Adds mail to whitelist",
             Description = "<div>Mail Address Has To Be Added To Whitelist To Receives E-Mail On Test Environment</div>",
-            Tags = new[] { "Whitelist Management" })]
+            Tags = ["Whitelist Management"])]
         [HttpPost("whitelist/email")]
         [SwaggerResponse(201, "Record was created successfully", typeof(void))]
         [SwaggerResponse(400, "Phone Number Field Is Mandatory", typeof(void))]
         [SwaggerResponse(409, "Phone Number Is Already Exists In Whitelist", typeof(void))]
-        public async Task<IActionResult> AddMailToWhitelist([FromBody] AddMailToWhitelistRequest data)
+        public async Task<IActionResult> AddMailToWhitelistAsync([FromBody] AddMailToWhitelistRequest data)
         {
             if (data.Email == null)
-            {
                 return BadRequest("Email Field Is Mandatory");
-            }
 
             if ((await _repositoryManager.Whitelist.FindAsync(w => w.Mail == data.Email)).FirstOrDefault() != null)
                 return BadRequest("Email Is Already Exist");
@@ -917,17 +813,15 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         [SwaggerOperation(Summary = "Adds Citizenshipno to whitelist",
             Description = "<div>Citizenshipno Has To Be Added To Whitelist To Receives Pushs On Test Environment</div>",
-            Tags = new[] { "Whitelist Management" })]
+            Tags = ["Whitelist Management"])]
         [HttpPost("whitelist/push")]
         [SwaggerResponse(201, "Record was created successfully", typeof(void))]
         [SwaggerResponse(400, "Citizenshipno Field Is Mandatory", typeof(void))]
         [SwaggerResponse(409, "Citizenshipno Is Already Exists In Whitelist", typeof(void))]
-        public async Task<IActionResult> AddCitizenshipnoToWhitelist([FromBody] AddCitizenshipnoToWhitelistRequest data)
+        public async Task<IActionResult> AddCitizenshipnoToWhitelistAsync([FromBody] AddCitizenshipnoToWhitelistRequest data)
         {
             if (data.CitizenshipNo == null)
-            {
                 return BadRequest("Citizenshipno Field Is Mandatory");
-            }
 
             if ((await _repositoryManager.Whitelist.FindAsync(w => w.ContactId == data.CitizenshipNo)).FirstOrDefault() != null)
                 return BadRequest("Citizenshipno Is Already Exist");
@@ -946,11 +840,10 @@ namespace bbt.gateway.messaging.Controllers.v2
             return Created("", whitelistRecord.Id);
         }
 
-        [SwaggerOperation(Summary = "Deletes Phone Number From Whitelist configuration",
-            Tags = new[] { "Whitelist Management" })]
+        [SwaggerOperation(Summary = "Deletes Phone Number From Whitelist configuration", Tags = ["Whitelist Management"])]
         [HttpDelete("whitelist/phone")]
         [SwaggerResponse(200, "Whitelist record is deleted successfully", typeof(void))]
-        public async Task<IActionResult> DeletePhoneFromWhitelist(PhoneString phone)
+        public async Task<IActionResult> DeletePhoneFromWhitelistAsync(PhoneString phone)
         {
             var ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
                     ?? HttpContext.Connection.RemoteIpAddress.ToString();
@@ -968,15 +861,14 @@ namespace bbt.gateway.messaging.Controllers.v2
             }
 
             await _repositoryManager.SaveChangesAsync();
+
             return Ok();
         }
 
-
-        [SwaggerOperation(Summary = "Deletes Mail Address From Whitelist configuration",
-            Tags = new[] { "Whitelist Management" })]
+        [SwaggerOperation(Summary = "Deletes Mail Address From Whitelist configuration", Tags = ["Whitelist Management"])]
         [HttpDelete("whitelist/mail")]
         [SwaggerResponse(200, "Whitelist record is deleted successfully", typeof(void))]
-        public async Task<IActionResult> DeleteMailFromWhitelist(string Mail)
+        public async Task<IActionResult> DeleteMailFromWhitelistAsync(string Mail)
         {
             var recordsToDelete = await _repositoryManager.Whitelist.FindAsync(w => w.Mail == Mail);
 
@@ -989,14 +881,14 @@ namespace bbt.gateway.messaging.Controllers.v2
             }
 
             await _repositoryManager.SaveChangesAsync();
+
             return Ok();
         }
 
-        [SwaggerOperation(Summary = "Deletes Citizenshipno From Whitelist configuration",
-            Tags = new[] { "Whitelist Management" })]
+        [SwaggerOperation(Summary = "Deletes Citizenshipno From Whitelist configuration", Tags = ["Whitelist Management"])]
         [HttpDelete("whitelist/push")]
         [SwaggerResponse(200, "Whitelist record is deleted successfully", typeof(void))]
-        public async Task<IActionResult> DeletePushFromWhitelist(string CitizenshipNo)
+        public async Task<IActionResult> DeletePushFromWhitelistAsync(string CitizenshipNo)
         {
             var recordsToDelete = await _repositoryManager.Whitelist.FindAsync(w => w.ContactId == CitizenshipNo);
 
@@ -1012,66 +904,60 @@ namespace bbt.gateway.messaging.Controllers.v2
             return Ok();
         }
 
-        [SwaggerOperation(Summary = "Returns phone's whitelist status",
-            Tags = new[] { "Whitelist Management" })]
+        [SwaggerOperation(Summary = "Returns phone's whitelist status", Tags = ["Whitelist Management"])]
         [HttpGet("whitelist/check/phone")]
         [SwaggerResponse(200, "Phone is in whitelist", typeof(void))]
         [SwaggerResponse(404, "Phone is not in whitelist", typeof(void))]
-        public async Task<IActionResult> CheckPhone(string CountryCode, string Prefix, string Number)
+        public async Task<IActionResult> CheckPhoneAsync(string CountryCode, string Prefix, string Number)
         {
             if ((await _repositoryManager.Whitelist.FindAsync(w => (w.Phone.CountryCode == Convert.ToInt32(CountryCode))
                && (w.Phone.Prefix == Convert.ToInt32(Prefix))
                && (w.Phone.Number == Convert.ToInt32(Number)))).FirstOrDefault() != null)
+            {
                 return Ok();
-            else
-                return NotFound();
+            }
+
+            return NotFound();
         }
 
-        [SwaggerOperation(Summary = "Returns E-mail's whitelist status",
-            Tags = new[] { "Whitelist Management" })]
+        [SwaggerOperation(Summary = "Returns E-mail's whitelist status", Tags = ["Whitelist Management"])]
         [HttpGet("whitelist/check/email")]
         [SwaggerResponse(200, "E-Mail is in whitelist", typeof(void))]
         [SwaggerResponse(404, "E-Mail is not in whitelist", typeof(void))]
-        public async Task<IActionResult> CheckMail(string email)
+        public async Task<IActionResult> CheckMailAsync(string email)
         {
             if ((await _repositoryManager.Whitelist.FindAsync(w => w.Mail == email)).FirstOrDefault() != null)
                 return Ok();
-            else
-                return NotFound();
+
+            return NotFound();
         }
 
-        [SwaggerOperation(Summary = "Returns CitizenshipNo's whitelist status",
-            Tags = new[] { "Whitelist Management" })]
+        [SwaggerOperation(Summary = "Returns CitizenshipNo's whitelist status", Tags = ["Whitelist Management"])]
         [HttpGet("whitelist/check/push")]
         [SwaggerResponse(200, "CitizensipNo is in whitelist", typeof(void))]
         [SwaggerResponse(404, "CitizensipNo is not in whitelist", typeof(void))]
-        public async Task<IActionResult> CheckPush(string CitizenshipNo)
+        public async Task<IActionResult> CheckPushAsync(string CitizenshipNo)
         {
             if ((await _repositoryManager.Whitelist.FindAsync(w => w.ContactId == CitizenshipNo)).FirstOrDefault() != null)
                 return Ok();
-            else
-                return NotFound();
+
+            return NotFound();
         }
 
-
-
-        [SwaggerOperation(Summary = "Returns phones otp sending logs",
-            Tags = new[] { "Phone Management" })]
+        [SwaggerOperation(Summary = "Returns phones otp sending logs", Tags = ["Phone Management"])]
         [HttpGet("otp-log/{countryCode}/{prefix}/{number}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(OtpRequestLog[]))]
-        public async Task<IActionResult> GetOtpLog(int countryCode, int prefix, int number, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetOtpLogAsync(int countryCode, int prefix, int number, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {
             return Ok(await _repositoryManager.OtpRequestLogs
                 .GetWithResponseLogsAsync(countryCode, prefix, number, page, pageSize));
         }
 
-        [SwaggerOperation(Summary = "Returns phones sms sending logs",
-            Tags = new[] { "Phone Management" })]
+        [SwaggerOperation(Summary = "Returns phones sms sending logs", Tags = ["Phone Management"])]
         [HttpGet("sms-log/{countryCode}/{prefix}/{number}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(SmsResponseLog[]))]
-        public async Task<IActionResult> GetSmsLog(int countryCode, int prefix, int number, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetSmsLogAsync(int countryCode, int prefix, int number, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {
-
             return Ok((await _repositoryManager.SmsRequestLogs
                 .FindAsync(c => c.PhoneConfiguration.Phone.CountryCode == countryCode && c.PhoneConfiguration.Phone.Prefix == prefix && c.PhoneConfiguration.Phone.Number == number))
                 .Skip(page * pageSize)
@@ -1079,12 +965,10 @@ namespace bbt.gateway.messaging.Controllers.v2
                 .ToArray());
         }
 
-        [SwaggerOperation(Summary = "Returns Generated Template Message Associated With Transaction",
-            Tags = new[] { "Transaction Management" })]
+        [SwaggerOperation(Summary = "Returns Generated Template Message Associated With Transaction", Tags = ["Transaction Management"])]
         [HttpGet("transaction/{txnId}/generatedMessage")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(GeneratedMessage))]
-
-        public async Task<IActionResult> GetPhoneBlacklistRecords(Guid txnId)
+        public async Task<IActionResult> GetPhoneBlacklistRecordsAsync(Guid txnId)
         {
             var transaction = await _repositoryManager.Transactions.GetWithIdAsNoTrackingAsync(txnId);
             if (transaction == null)
@@ -1107,20 +991,20 @@ namespace bbt.gateway.messaging.Controllers.v2
             return BadRequest();
         }
 
-        [SwaggerOperation(Summary = "Returns transactions info",
-            Tags = new[] { "Transaction Management" })]
+        [SwaggerOperation(Summary = "Returns transactions info", Tags = ["Transaction Management"])]
         [HttpGet("transactions/phone/{countryCode}/{prefix}/{number}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(Transaction[]))]
-        public async Task<IActionResult> GetTransactionsWithPhone(int countryCode, int prefix, int number, string createdName, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetTransactionsWithPhoneAsync(int countryCode, int prefix, int number, string createdName, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {
             if (createdName == null)
                 createdName = string.Empty;
+
             if (smsType == 1)
             {
                 var res = await _repositoryManager.Transactions.GetOtpMessagesWithPhoneByCreatedNameAsync(createdName, countryCode, prefix, number, startDate, endDate, page, pageSize);
                 return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
             }
-            if (smsType == 2)
+            else if (smsType == 2)
             {
                 var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithPhoneByCreatedNameAsync(createdName, countryCode, prefix, number, startDate, endDate, page, pageSize);
                 return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
@@ -1129,18 +1013,17 @@ namespace bbt.gateway.messaging.Controllers.v2
             return Ok(new TransactionsDto());
         }
 
-        [SwaggerOperation(Summary = "Returns transactions info by createdName",
-            Tags = new[] { "Transaction Management" })]
+        [SwaggerOperation(Summary = "Returns transactions info by createdName", Tags = ["Transaction Management"])]
         [HttpGet("transactions/createdName/phone/{createdName}/{countryCode}/{prefix}/{number}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(Transaction[]))]
-        public async Task<IActionResult> GetTransactionsWithPhoneByCreatedName(string createdName, int countryCode, int prefix, int number, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetTransactionsWithPhoneByCreatedNameAsync(string createdName, int countryCode, int prefix, int number, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {
             if (smsType == 1)
             {
                 var res = await _repositoryManager.Transactions.GetOtpMessagesWithPhoneByCreatedNameAsync(createdName, countryCode, prefix, number, startDate, endDate, page, pageSize);
                 return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
             }
-            if (smsType == 2)
+            else if (smsType == 2)
             {
                 var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithPhoneByCreatedNameAsync(createdName, countryCode, prefix, number, startDate, endDate, page, pageSize);
                 return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
@@ -1149,59 +1032,64 @@ namespace bbt.gateway.messaging.Controllers.v2
             return Ok(new TransactionsDto());
         }
 
-        [SwaggerOperation(Summary = "Returns transactions info",
-            Tags = new[] { "Transaction Management" })]
+        [SwaggerOperation(Summary = "Returns transactions info", Tags = ["Transaction Management"])]
         [HttpGet("transactions/mail/{mail}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(Transaction[]))]
-        public async Task<IActionResult> GetTransactionsWithEmail(string mail, string createdName, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetTransactionsWithEmailAsync(string mail, string createdName, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {
             if (createdName == null)
                 createdName = string.Empty;
+
             var res = await _repositoryManager.Transactions.GetMailMessagesWithMailAsync(createdName, mail, startDate, endDate, page, pageSize);
+
             return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
         }
 
-        [SwaggerOperation(Summary = "Returns transactions info",
-            Tags = new[] { "Transaction Management" })]
+        [SwaggerOperation(Summary = "Returns transactions info", Tags = ["Transaction Management"])]
         [HttpGet("transactions/customer/{customerNo}/{messageType}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(Transaction[]))]
-        public async Task<IActionResult> GetTransactionsWithCustomerNo(ulong customerNo, string createdName, int messageType, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetTransactionsWithCustomerNoAsync(ulong customerNo, string createdName, int messageType, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {
             if (createdName == null)
                 createdName = string.Empty;
-            if (messageType == 1)
-            {
-                if (smsType == 1)
-                {
-                    var res = await _repositoryManager.Transactions.GetOtpMessagesWithCustomerNoAsync(customerNo, startDate, endDate, page, pageSize);
-                    return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
-                }
-                if (smsType == 2)
-                {
-                    var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithCustomerNoAsync(customerNo, startDate, endDate, page, pageSize);
-                    return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
-                }
 
-                return Ok(new TransactionsDto());
-            }
-            if (messageType == 2)
+            switch (messageType)
             {
-                var res = await _repositoryManager.Transactions.GetMailMessagesWithCustomerNoAsync(createdName, customerNo, startDate, endDate, page, pageSize);
-                return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
-            }
-            if (messageType == 3)
-            {
-                var res = await _repositoryManager.Transactions.GetPushMessagesWithCustomerNoAsync(createdName, customerNo, startDate, endDate, page, pageSize);
-                return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
+                case 1:
+                    {
+                        if (smsType == 1)
+                        {
+                            var res = await _repositoryManager.Transactions.GetOtpMessagesWithCustomerNoAsync(customerNo, startDate, endDate, page, pageSize);
+                            return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
+                        }
+                        else if (smsType == 2)
+                        {
+                            var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithCustomerNoAsync(customerNo, startDate, endDate, page, pageSize);
+                            return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
+                        }
+
+                        return Ok(new TransactionsDto());
+                    }
+
+                case 2:
+                    {
+                        var res = await _repositoryManager.Transactions.GetMailMessagesWithCustomerNoAsync(createdName, customerNo, startDate, endDate, page, pageSize);
+                        return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
+                    }
+
+                case 3:
+                    {
+                        var res = await _repositoryManager.Transactions.GetPushMessagesWithCustomerNoAsync(createdName, customerNo, startDate, endDate, page, pageSize);
+                        return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
+                    }
             }
 
             return Ok(new TransactionsDto());
         }
-        [SwaggerOperation(Summary = "Returns transactions info by created name",
-      Tags = new[] { "Transaction Management" })]
+        [SwaggerOperation(Summary = "Returns transactions info by created name", Tags = ["Transaction Management"])]
         [HttpGet("transactions/createdName/customer/{createdName}/{customerNo}/{messageType}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(Transaction[]))]
-        public async Task<IActionResult> GetTransactionsWithCustomerNoByCreatedName(string createdName, ulong customerNo, int messageType, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetTransactionsWithCustomerNoByCreatedNameAsync(string createdName, ulong customerNo, int messageType, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {
             if (messageType == 1)
             {
@@ -1210,7 +1098,7 @@ namespace bbt.gateway.messaging.Controllers.v2
                     var res = await _repositoryManager.Transactions.GetOtpMessagesWithCustomerNoByCreatedNameAsync(createdName, customerNo, startDate, endDate, page, pageSize);
                     return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
                 }
-                if (smsType == 2)
+                else if (smsType == 2)
                 {
                     var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithCustomerNoByCreatedNameAsync(createdName, customerNo, startDate, endDate, page, pageSize);
                     return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
@@ -1218,73 +1106,76 @@ namespace bbt.gateway.messaging.Controllers.v2
 
                 return Ok(new TransactionsDto());
             }
+
             return Ok(new TransactionsDto());
         }
-        [SwaggerOperation(Summary = "Returns transactions info",
-            Tags = new[] { "Transaction Management" })]
+
+        [SwaggerOperation(Summary = "Returns transactions info", Tags = ["Transaction Management"])]
         [HttpGet("transactions/citizen/{citizenshipNo}/{messageType}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(Transaction[]))]
-        public async Task<IActionResult> GetTransactionsWithCitizenshipNo(string citizenshipNo, string createdName, int messageType, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetTransactionsWithCitizenshipNoAsync(string citizenshipNo, string createdName, int messageType, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {
             if (createdName == null)
                 createdName = string.Empty;
-            if (messageType == 1)
-            {
-                if (smsType == 1)
-                {
-                    var res = await _repositoryManager.Transactions.GetOtpMessagesWithCitizenshipNoByCreatedNameAsync(createdName, citizenshipNo, startDate, endDate, page, pageSize);
-                    return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
-                }
 
-                if (smsType == 2)
-                {
-                    var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithCitizenshipNoByCreatedNameAsync(createdName, citizenshipNo, startDate, endDate, page, pageSize);
-                    return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
-                }
-                return Ok(new TransactionsDto());
-            }
-            if (messageType == 2)
+            switch (messageType)
             {
-                var res = await _repositoryManager.Transactions.GetMailMessagesWithCitizenshipNoAsync(createdName, citizenshipNo, startDate, endDate, page, pageSize);
-                return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
-            }
-            if (messageType == 3)
-            {
-                var res = await _repositoryManager.Transactions.GetPushMessagesWithCitizenshipNoAsync(createdName, citizenshipNo, startDate, endDate, page, pageSize);
-                return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
+                case 1:
+                    {
+                        if (smsType == 1)
+                        {
+                            var res = await _repositoryManager.Transactions.GetOtpMessagesWithCitizenshipNoByCreatedNameAsync(createdName, citizenshipNo, startDate, endDate, page, pageSize);
+                            return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
+                        }
+
+                        else if (smsType == 2)
+                        {
+                            var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithCitizenshipNoByCreatedNameAsync(createdName, citizenshipNo, startDate, endDate, page, pageSize);
+                            return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
+                        }
+
+                        return Ok(new TransactionsDto());
+                    }
+
+                case 2:
+                    {
+                        var res = await _repositoryManager.Transactions.GetMailMessagesWithCitizenshipNoAsync(createdName, citizenshipNo, startDate, endDate, page, pageSize);
+                        return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
+                    }
+
+                case 3:
+                    {
+                        var res = await _repositoryManager.Transactions.GetPushMessagesWithCitizenshipNoAsync(createdName, citizenshipNo, startDate, endDate, page, pageSize);
+                        return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
+                    }
             }
 
             return Ok(new List<Transaction>());
         }
 
-        [SwaggerOperation(Summary = "Returns transactions info by created name",
-    Tags = new[] { "Transaction Management" })]
+        [SwaggerOperation(Summary = "Returns transactions info by created name", Tags = ["Transaction Management"])]
         [HttpGet("transactions/createdName/citizen/{createdName}/{citizenshipNo}/{messageType}")]
         [SwaggerResponse(200, "Records was returned successfully", typeof(Transaction[]))]
-        public async Task<IActionResult> GetTransactionsWithCitizenshipNoByCreatedName(string createdName, string citizenshipNo, int messageType, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
+        public async Task<IActionResult> GetTransactionsWithCitizenshipNoByCreatedNameAsync(string createdName, string citizenshipNo, int messageType, int smsType, DateTime startDate, DateTime endDate, [Range(0, 100)] int page = 0, [Range(1, 100)] int pageSize = 20)
         {
-
             if (smsType == 1)
             {
                 var res = await _repositoryManager.Transactions.GetOtpMessagesWithCitizenshipNoByCreatedNameAsync(createdName, citizenshipNo, startDate, endDate, page, pageSize);
                 return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
             }
-
-            if (smsType == 2)
+            else if (smsType == 2)
             {
                 var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithCitizenshipNoByCreatedNameAsync(createdName, citizenshipNo, startDate, endDate, page, pageSize);
                 return Ok(new TransactionsDto { Transactions = res.Item1, Count = res.Item2 });
             }
+
             return Ok(new TransactionsDto());
-
-
         }
 
-        [SwaggerOperation(Summary = "Returns report for CreditReport",
-            Tags = new[] { "Report Management" })]
+        [SwaggerOperation(Summary = "Returns report for CreditReport", Tags = ["Report Management"])]
         [HttpPost("CreditReport")]
         [SwaggerResponse(200, "Report is returned successfully", typeof(FileContentResult))]
-        public async Task<FileContentResult> GetReport(IFormFile file)
+        public async Task<FileContentResult> GetReportAsync(IFormFile file)
         {
             using var reader = new StreamReader(file.OpenReadStream());
             string fileContent = await reader.ReadToEndAsync();
@@ -1299,6 +1190,7 @@ namespace bbt.gateway.messaging.Controllers.v2
             resultContent += reportDate + "\r\n";
 
             string? line = await stringReader.ReadLineAsync();
+
             while (line != null)
             {
                 var lineArray = line.Trim().Split("|");
@@ -1337,14 +1229,14 @@ namespace bbt.gateway.messaging.Controllers.v2
                     var smsResponseLog = GetSmsResponseLog(transactions.FirstOrDefault());
 
                     resultContent += line +
-                        await GetReportLine(
+                        await GetReportLineAsync(
                             GetSmsResponseLog(transactions.FirstOrDefault()),
                             transactions.FirstOrDefault().SmsRequestLog);
                 }
                 if (transactions?.Count() > 1)
                 {
                     resultContent += line +
-                        await GetReportLine(
+                        await GetReportLineAsync(
                             GetSmsResponseLog(
                                 transactions.OrderByDescending(t => t.CreatedAt).ElementAt(repeatedLinesOrder[GetKeyName(lineArray)]--)),
                                 transactions.FirstOrDefault().SmsRequestLog);
@@ -1353,7 +1245,6 @@ namespace bbt.gateway.messaging.Controllers.v2
                 line = await stringReader2.ReadLineAsync();
             }
 
-
             return File(Encoding.UTF8.GetBytes(resultContent), "application/octet-stream", "rapor.csv");
         }
 
@@ -1361,10 +1252,13 @@ namespace bbt.gateway.messaging.Controllers.v2
         {
             if (transaction.SmsRequestLog == null)
                 return null;
+
             if (transaction.SmsRequestLog.ResponseLogs == null)
                 return null;
+
             if (transaction.SmsRequestLog.ResponseLogs.Count() == 0)
                 return null;
+
             return transaction.SmsRequestLog.ResponseLogs.FirstOrDefault();
         }
 
@@ -1373,94 +1267,91 @@ namespace bbt.gateway.messaging.Controllers.v2
             return $"{array[1].Trim()}_{array[2].Trim()}".Trim();
         }
 
-        private async Task<string> GetReportLine(SmsResponseLog smsResponseLog, SmsRequestLog smsRequestLog)
+        private async Task<string> GetReportLineAsync(SmsResponseLog smsResponseLog, SmsRequestLog smsRequestLog)
         {
-            if (smsResponseLog != null)
+            if (smsResponseLog == null)
             {
-                SmsTrackingLog? trackingLog = null;
-                if (smsResponseLog.Operator == OperatorType.Codec)
-                {
-                    trackingLog = await _codecSender.CheckSms(new CheckFastSmsRequest
-                    {
-                        Operator = smsResponseLog.Operator,
-                        SmsRequestLogId = smsRequestLog.Id,
-                        StatusQueryId = smsResponseLog.StatusQueryId
-                    });
-                }
-                if (smsResponseLog.Operator == OperatorType.dEngageOn ||
-                    smsResponseLog.Operator == OperatorType.dEngageBurgan)
-                {
-                    trackingLog = await _dEngageSender.CheckSms(new CheckFastSmsRequest
-                    {
-                        Operator = smsResponseLog.Operator,
-                        SmsRequestLogId = smsRequestLog.Id,
-                        StatusQueryId = smsResponseLog.StatusQueryId
-                    });
-                }
-
-                if (trackingLog != null)
-                {
-                    return $"|{smsResponseLog?.CreatedAt.ToString(new System.Globalization.CultureInfo("tr-TR"))}|{trackingLog.Status}|{trackingLog.StatusReason}\r\n";
-
-                }
-
-                return $"|{smsResponseLog?.CreatedAt.ToString(new System.Globalization.CultureInfo("tr-TR"))}|Rapor Bulunamadı\r\n";
+                return $"|{smsResponseLog?.CreatedAt.ToString(new CultureInfo("tr-TR"))}|Rapor Bulunamadı\r\n";
             }
 
-            return $"|{smsResponseLog?.CreatedAt.ToString(new System.Globalization.CultureInfo("tr-TR"))}|Rapor Bulunamadı\r\n";
+            SmsTrackingLog? trackingLog = null;
 
+            if (smsResponseLog.Operator == OperatorType.Codec)
+            {
+                trackingLog = await _codecSender.CheckSms(new CheckFastSmsRequest
+                {
+                    Operator = smsResponseLog.Operator,
+                    SmsRequestLogId = smsRequestLog.Id,
+                    StatusQueryId = smsResponseLog.StatusQueryId
+                });
+            }
+            else if (smsResponseLog.Operator == OperatorType.dEngageOn || smsResponseLog.Operator == OperatorType.dEngageBurgan)
+            {
+                trackingLog = await _dEngageSender.CheckSms(new CheckFastSmsRequest
+                {
+                    Operator = smsResponseLog.Operator,
+                    SmsRequestLogId = smsRequestLog.Id,
+                    StatusQueryId = smsResponseLog.StatusQueryId
+                });
+            }
+
+            if (trackingLog != null)
+            {
+                return $"|{smsResponseLog?.CreatedAt.ToString(new CultureInfo("tr-TR"))}|{trackingLog.Status}|{trackingLog.StatusReason}\r\n";
+            }
+
+            return $"|{smsResponseLog?.CreatedAt.ToString(new CultureInfo("tr-TR"))}|Rapor Bulunamadı\r\n";
         }
 
-        [SwaggerOperation(Summary = "Returns report for SmsExcelRapor with Phone",
-           Tags = new[] { "Report Management" })]
+        [SwaggerOperation(Summary = "Returns report for SmsExcelRapor with Phone", Tags = ["Report Management"])]
         [HttpGet("report/phone/{countryCode}/{prefix}/{number}")]
         [SwaggerResponse(200, "Report is returned successfully", typeof(string))]
         [SwaggerResponse(400, "Excel oluşturulamadı", typeof(string))]
-        public async Task<IActionResult> GetTransactionsExcelReportWithPhone(string createdName, int countryCode, int prefix, int number, int smsType, DateTime startDate, DateTime endDate, int pageSize)
+        public async Task<IActionResult> GetTransactionsExcelReportWithPhoneAsync(string createdName, int countryCode, int prefix, int number, int smsType, DateTime startDate, DateTime endDate, int pageSize)
         {
             if (createdName == null)
                 createdName = string.Empty;
 
             string response = string.Empty;
+
             try
             {
                 TransactionsDto dto = new TransactionsDto();
+
                 if (smsType == 1)
                 {
                     var res = await _repositoryManager.Transactions.GetOtpMessagesWithPhoneByCreatedNameAsync(createdName, countryCode, prefix, number, startDate, endDate, 0, pageSize);
                     dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
                 }
-                if (smsType == 2)
+                else if (smsType == 2)
                 {
                     var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithPhoneByCreatedNameAsync(createdName, countryCode, prefix, number, startDate, endDate, 0, pageSize);
                     dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
                 }
+
                 response = ExcelCreate(dto.Transactions, 1);
             }
             catch (Exception ex)
             {
-
                 return BadRequest(ex.ToString());
             }
 
-
             return Ok(response);
         }
-        [SwaggerOperation(Summary = "Returns report for SmsExcelRapor with Phone",
-        Tags = new[] { "Report Management" })]
+        [SwaggerOperation(Summary = "Returns report for SmsExcelRapor with Phone", Tags = ["Report Management"])]
         [HttpGet("report/mail/{mail}")]
         [SwaggerResponse(200, "Report is returned successfully", typeof(byte[]))]
-        public async Task<IActionResult> GetTransactionsExcelReportWithMail(string mail, string createdName, DateTime startDate, DateTime endDate, int pageSize)
+        public async Task<IActionResult> GetTransactionsExcelReportWithMailAsync(string mail, string createdName, DateTime startDate, DateTime endDate, int pageSize)
         {
-
             if (createdName == null)
                 createdName = string.Empty;
+
             string response = string.Empty;
+
             try
             {
                 var res = await _repositoryManager.Transactions.GetMailMessagesWithMailAsync(createdName, mail, startDate, endDate, 0, pageSize);
                 TransactionsDto dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
-
 
                 response = ExcelCreate(dto.Transactions, 2);
             }
@@ -1472,46 +1363,49 @@ namespace bbt.gateway.messaging.Controllers.v2
             return Ok(response);
         }
 
-        [SwaggerOperation(Summary = "Returns report for SmsExcelRapor with CustomerNo",
-      Tags = new[] { "Report Management" })]
+        [SwaggerOperation(Summary = "Returns report for SmsExcelRapor with CustomerNo", Tags = ["Report Management"])]
         [HttpGet("report/customer/{customerNo}/{messageType}")]
         [SwaggerResponse(200, "Report is returned successfully", typeof(byte[]))]
-        public async Task<IActionResult> GetTransactionsExcelReportWithCustomer(string createdName, ulong customerNo, int messageType, int smsType, DateTime startDate, DateTime endDate, int pageSize)
+        public async Task<IActionResult> GetTransactionsExcelReportWithCustomerAsync(string createdName, ulong customerNo, int messageType, int smsType, DateTime startDate, DateTime endDate, int pageSize)
         {
-
-
             string response = string.Empty;
             TransactionsDto dto = new TransactionsDto();
             if (createdName == null)
                 createdName = string.Empty;
             try
             {
-                if (messageType == 1)
+                switch (messageType)
                 {
-                    if (smsType == 1)
-                    {
-                        var res = await _repositoryManager.Transactions.GetOtpMessagesWithCustomerNoByCreatedNameAsync(createdName, customerNo, startDate, endDate, 0, pageSize);
-                        dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
-                    }
-                    if (smsType == 2)
-                    {
-                        var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithCustomerNoByCreatedNameAsync(createdName, customerNo, startDate, endDate, 0, pageSize);
-                        dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
-                    }
+                    case 1:
+                        {
+                            if (smsType == 1)
+                            {
+                                var res = await _repositoryManager.Transactions.GetOtpMessagesWithCustomerNoByCreatedNameAsync(createdName, customerNo, startDate, endDate, 0, pageSize);
+                                dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
+                            }
+                            else if (smsType == 2)
+                            {
+                                var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithCustomerNoByCreatedNameAsync(createdName, customerNo, startDate, endDate, 0, pageSize);
+                                dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
+                            }
 
+                            break;
+                        }
 
-                }
-                if (messageType == 2)
-                {
-                    var res = await _repositoryManager.Transactions.GetMailMessagesWithCustomerNoAsync(createdName, customerNo, startDate, endDate, 0, pageSize);
-                    dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
-                }
-                if (messageType == 3)
-                {
-                    var res = await _repositoryManager.Transactions.GetPushMessagesWithCustomerNoAsync(createdName, customerNo, startDate, endDate, 0, pageSize);
-                    dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
-                }
+                    case 2:
+                        {
+                            var res = await _repositoryManager.Transactions.GetMailMessagesWithCustomerNoAsync(createdName, customerNo, startDate, endDate, 0, pageSize);
+                            dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
+                            break;
+                        }
 
+                    case 3:
+                        {
+                            var res = await _repositoryManager.Transactions.GetPushMessagesWithCustomerNoAsync(createdName, customerNo, startDate, endDate, 0, pageSize);
+                            dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
+                            break;
+                        }
+                }
 
                 response = ExcelCreate(dto.Transactions, messageType);
             }
@@ -1523,47 +1417,51 @@ namespace bbt.gateway.messaging.Controllers.v2
             return Ok(response);
         }
 
-
-        [SwaggerOperation(Summary = "Returns report for SmsExcelRapor with CitizenshipNo",
-      Tags = new[] { "Report Management" })]
+        [SwaggerOperation(Summary = "Returns report for SmsExcelRapor with CitizenshipNo", Tags = ["Report Management"])]
         [HttpGet("report/citizen/{citizenshipNo}/{messageType}")]
         [SwaggerResponse(200, "Report is returned successfully", typeof(byte[]))]
-        public async Task<IActionResult> GetTransactionsExcelReportWithCitizenshipNo(string citizenshipNo, string createdName, int messageType, int smsType, DateTime startDate, DateTime endDate, int pageSize = 20)
+        public async Task<IActionResult> GetTransactionsExcelReportWithCitizenshipNoAsync(string citizenshipNo, string createdName, int messageType, int smsType, DateTime startDate, DateTime endDate, int pageSize = 20)
         {
-
             TransactionsDto dto = new TransactionsDto();
             string response = string.Empty;
+
             if (createdName == null)
                 createdName = string.Empty;
+
             try
             {
-                if (messageType == 1)
+                switch (messageType)
                 {
-                    if (smsType == 1)
-                    {
-                        var res = await _repositoryManager.Transactions.GetOtpMessagesWithCitizenshipNoByCreatedNameAsync(createdName, citizenshipNo, startDate, endDate, 0, pageSize);
-                        dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
-                    }
+                    case 1:
+                        {
+                            if (smsType == 1)
+                            {
+                                var res = await _repositoryManager.Transactions.GetOtpMessagesWithCitizenshipNoByCreatedNameAsync(createdName, citizenshipNo, startDate, endDate, 0, pageSize);
+                                dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
+                            }
+                            else if (smsType == 2)
+                            {
+                                var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithCitizenshipNoByCreatedNameAsync(createdName, citizenshipNo, startDate, endDate, 0, pageSize);
+                                dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
+                            }
 
-                    if (smsType == 2)
-                    {
-                        var res = await _repositoryManager.Transactions.GetTransactionalSmsMessagesWithCitizenshipNoByCreatedNameAsync(createdName, citizenshipNo, startDate, endDate, 0, pageSize);
-                        dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
-                    }
+                            break;
+                        }
 
+                    case 2:
+                        {
+                            var res = await _repositoryManager.Transactions.GetMailMessagesWithCitizenshipNoAsync(createdName, citizenshipNo, startDate, endDate, 0, pageSize);
+                            dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
+                            break;
+                        }
+
+                    case 3:
+                        {
+                            var res = await _repositoryManager.Transactions.GetPushMessagesWithCitizenshipNoAsync(createdName, citizenshipNo, startDate, endDate, 0, pageSize);
+                            dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
+                            break;
+                        }
                 }
-                if (messageType == 2)
-                {
-                    var res = await _repositoryManager.Transactions.GetMailMessagesWithCitizenshipNoAsync(createdName, citizenshipNo, startDate, endDate, 0, pageSize);
-                    dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
-                }
-                if (messageType == 3)
-                {
-                    var res = await _repositoryManager.Transactions.GetPushMessagesWithCitizenshipNoAsync(createdName, citizenshipNo, startDate, endDate, 0, pageSize);
-                    dto = new TransactionsDto { Transactions = res.Item1, Count = res.Item2 };
-                }
-
-
 
                 response = ExcelCreate(dto.Transactions, messageType);
             }
@@ -1579,11 +1477,11 @@ namespace bbt.gateway.messaging.Controllers.v2
         {
             var stream = new System.IO.MemoryStream();
             string response = string.Empty;
+
             using (ExcelPackage package = new ExcelPackage(stream))
             {
                 try
                 {
-
                     var worksheet = package.Workbook.Worksheets.Add("SmsExcelRapor");
                     worksheet.Protection.AllowAutoFilter = false;
                     worksheet.Protection.AllowDeleteColumns = false;
@@ -1600,17 +1498,20 @@ namespace bbt.gateway.messaging.Controllers.v2
                     worksheet.Cells[1, 3].Value = "Kimlik No";
                     worksheet.Cells[1, 4].Value = "Gönderim Zamanı";
                     worksheet.Cells[1, 5].Value = "İşlem Türü";
+
                     if (messageType == 1 || messageType == 3)
                         worksheet.Cells[1, 6].Value = "Telefon";
                     else if (messageType == 2)
                         worksheet.Cells[1, 6].Value = "Mail";
+
                     worksheet.Cells[1, 7].Value = "Durum";
                     worksheet.Cells[1, 8].Value = "Gönderen Sistem Bilgisi";
                     worksheet.Cells[1, 9].Value = "Response Message";
+
                     Color BaslikRengi = ColorTranslator.FromHtml("#ed7c31");
+
                     for (int i = 1; i < 10; i++)
                     {
-
                         worksheet.Cells[1, i].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                         worksheet.Cells[1, i].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                         worksheet.Cells[1, i].Style.Fill.BackgroundColor.SetColor(BaslikRengi);
@@ -1618,86 +1519,74 @@ namespace bbt.gateway.messaging.Controllers.v2
                         worksheet.Column(i).AutoFit();
                         worksheet.Cells[1, i].Style.Font.Bold = true;
                     }
+
                     int Index = 2;
                     foreach (Transaction transaction in transactions)
                     {
-
                         worksheet.Cells[Index, 2].Value = transaction.CustomerNo;
                         worksheet.Cells[Index, 3].Value = transaction.CitizenshipNo;
                         worksheet.Cells[Index, 4].Value = transaction.CreatedAt.ToString();
                         worksheet.Cells[Index, 5].Value = transaction.TransactionType.ToString();
-                        string Basari = CheckSmsStatus(transaction);
-                        if (messageType == 1)
+
+                        string Basari = CheckMessageStatusByTransaction(transaction);
+
+                        switch (messageType)
                         {
-                            if (transaction.Phone != null)
-                                worksheet.Cells[Index, 6].Value = transaction.Phone.ToString();
-                            if (Basari != "Basarili" && transaction.OtpRequestLog != null && transaction.OtpRequestLog.ResponseLogs != null && transaction.OtpRequestLog.ResponseLogs.Count() > 0)
-                            {
+                            case 1:
+                                if (transaction.Phone != null)
+                                    worksheet.Cells[Index, 6].Value = transaction.Phone.ToString();
 
-
-
-                                worksheet.Cells[Index, 10].Value = transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().StatusQueryId;
-
-
-                                if (transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().TrackingLogs != null && transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().TrackingLogs.Count() > 0)
+                                if (Basari != "Basarili" && transaction.OtpRequestLog != null && transaction.OtpRequestLog.ResponseLogs != null && transaction.OtpRequestLog.ResponseLogs.Count() > 0)
                                 {
-                                    worksheet.Cells[Index, 9].Value = transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().TrackingLogs.FirstOrDefault().ResponseMessage;
-                                }
-                                else
-                                {
-                                    if (!string.IsNullOrEmpty(transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().ResponseMessage))
-                                        worksheet.Cells[Index, 9].Value = transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().ResponseMessage;
+                                    worksheet.Cells[Index, 10].Value = transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().StatusQueryId;
+
+                                    if (transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().TrackingLogs != null && transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().TrackingLogs.Count() > 0)
+                                    {
+                                        worksheet.Cells[Index, 9].Value = transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().TrackingLogs.FirstOrDefault().ResponseMessage;
+                                    }
                                     else
                                     {
-                                        worksheet.Cells[Index, 9].Value = transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().ResponseCode.ToString();
+                                        if (!string.IsNullOrEmpty(transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().ResponseMessage))
+                                            worksheet.Cells[Index, 9].Value = transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().ResponseMessage;
+                                        else
+                                        {
+                                            worksheet.Cells[Index, 9].Value = transaction.OtpRequestLog.ResponseLogs.FirstOrDefault().ResponseCode.ToString();
+                                        }
                                     }
                                 }
-                            }
-                            else if (Basari != "Basarili")
-                            {
-                                worksheet.Cells[Index, 9].Value = "Beklenmedik bir hata oluştu:TransactionId=>" + transaction.Id;
-                            }
-
-                        }
-                        else if (messageType == 2)
-                        {
-                            worksheet.Cells[Index, 6].Value = transaction.Mail.ToString();
-                            if (Basari != "Basarili" && transaction.MailRequestLog != null && transaction.MailRequestLog.ResponseLogs != null && transaction.MailRequestLog.ResponseLogs.Count() > 0)
-                            {
-                                if (transaction.MailRequestLog.ResponseLogs.FirstOrDefault().ResponseMessage.Length < 50)
-                                    worksheet.Cells[Index, 9].Value = transaction.MailRequestLog.ResponseLogs.FirstOrDefault().ResponseMessage;
-                                else
+                                else if (Basari != "Basarili")
                                 {
                                     worksheet.Cells[Index, 9].Value = "Beklenmedik bir hata oluştu:TransactionId=>" + transaction.Id;
                                 }
-                                worksheet.Cells[Index, 10].Value = transaction.MailRequestLog.ResponseLogs.FirstOrDefault().StatusQueryId;
-                            }
-                        }
-                        else if (messageType == 3)
-                        {
-                            if (Basari != "Basarili" && transaction.PushNotificationRequestLog != null && transaction.PushNotificationRequestLog.ResponseLogs != null && transaction.PushNotificationRequestLog.ResponseLogs.Count() > 0)
-                            {
+                                break;
+                            case 2:
+                                worksheet.Cells[Index, 6].Value = transaction.Mail.ToString();
+                                if (Basari != "Basarili" && transaction.MailRequestLog != null && transaction.MailRequestLog.ResponseLogs != null && transaction.MailRequestLog.ResponseLogs.Count() > 0)
+                                {
+                                    if (transaction.MailRequestLog.ResponseLogs.FirstOrDefault().ResponseMessage.Length < 50)
+                                        worksheet.Cells[Index, 9].Value = transaction.MailRequestLog.ResponseLogs.FirstOrDefault().ResponseMessage;
+                                    else
+                                    {
+                                        worksheet.Cells[Index, 9].Value = "Beklenmedik bir hata oluştu:TransactionId=>" + transaction.Id;
+                                    }
+                                    worksheet.Cells[Index, 10].Value = transaction.MailRequestLog.ResponseLogs.FirstOrDefault().StatusQueryId;
+                                }
+                                break;
+                            case 3:
+                                if (Basari != "Basarili" && transaction.PushNotificationRequestLog != null && transaction.PushNotificationRequestLog.ResponseLogs != null && transaction.PushNotificationRequestLog.ResponseLogs.Count() > 0)
+                                {
+                                    worksheet.Cells[Index, 10].Value = transaction.PushNotificationRequestLog.ResponseLogs.FirstOrDefault().StatusQueryId;
 
+                                    worksheet.Cells[Index, 9].Value = transaction.PushNotificationRequestLog.ResponseLogs.FirstOrDefault().ResponseMessage;
 
-
-                                worksheet.Cells[Index, 10].Value = transaction.PushNotificationRequestLog.ResponseLogs.FirstOrDefault().StatusQueryId;
-
-
-
-                                worksheet.Cells[Index, 9].Value = transaction.PushNotificationRequestLog.ResponseLogs.FirstOrDefault().ResponseMessage;
-
-                            }
+                                }
+                                break;
                         }
                         worksheet.Cells[Index, 7].Value = Basari;
                         worksheet.Cells[Index, 8].Value = transaction.CreatedBy.Name;
 
-
                         Index++;
-
                     }
-
-
-
 
                     package.Save();
 
@@ -1715,208 +1604,100 @@ namespace bbt.gateway.messaging.Controllers.v2
             {
 
             }
-            return response;
 
+            return response;
         }
-        private string CheckSmsStatus(Transaction txn)
+        private string CheckMessageStatusByTransaction(Transaction txn)
         {
-            if (txn.TransactionType == TransactionType.Otp)
+            switch (txn.TransactionType)
             {
-                if (txn.OtpRequestLog != null)
-                {
-                    if (txn.OtpRequestLog.ResponseLogs != null)
+                case TransactionType.Otp:
                     {
-                        if (txn.OtpRequestLog.ResponseLogs.Any(l => l.TrackingStatus == SmsTrackingStatus.Delivered))
-                            return "Basarili";
-                        else if (txn.OtpRequestLog.ResponseLogs.Any(l => l.TrackingStatus == SmsTrackingStatus.Pending))
+                        if (txn.OtpRequestLog != null && txn.OtpRequestLog.ResponseLogs != null)
                         {
-                            return "Sms Kontrol Gerekli";
+                            if (txn.OtpRequestLog.ResponseLogs.Any(l => l.TrackingStatus == SmsTrackingStatus.Delivered))
+                            {
+                                return "Basarili";
+                            }
+                            else if (txn.OtpRequestLog.ResponseLogs.Any(l => l.TrackingStatus == SmsTrackingStatus.Pending))
+                            {
+                                return "Sms Kontrol Gerekli";
+                            }
+                            else
+                            {
+                                return "Başarısız";
+                            }
                         }
-                        else
-                        {
-                            return "Başarısız";
-                        }
+
+                        break;
                     }
-                }
-            }
-            if (txn.TransactionType == TransactionType.TransactionalMail || txn.TransactionType == TransactionType.TransactionalTemplatedMail)
-            {
-                if (txn.MailRequestLog != null)
-                {
-                    if (txn.MailRequestLog.ResponseLogs != null)
+
+                case TransactionType.TransactionalMail:
+                case TransactionType.TransactionalTemplatedMail:
                     {
-                        if (txn.MailRequestLog.ResponseLogs.Any(l => l.ResponseCode == "0"))
-                            return "Basarili";
-                        else
+                        if (txn.MailRequestLog != null && txn.MailRequestLog.ResponseLogs != null)
                         {
-                            return "Başarısız";
+                            if (txn.MailRequestLog.ResponseLogs.Any(l => l.ResponseCode == "0"))
+                            {
+                                return "Basarili";
+                            }
+                            else
+                            {
+                                return "Başarısız";
+                            }
                         }
+
+                        break;
                     }
-                }
-            }
-            if (txn.TransactionType == TransactionType.TransactionalSms || txn.TransactionType == TransactionType.TransactionalTemplatedSms)
-            {
-                if (txn.SmsRequestLog != null)
-                {
-                    if (txn.SmsRequestLog.ResponseLogs != null)
+
+                case TransactionType.TransactionalSms:
+                case TransactionType.TransactionalTemplatedSms:
                     {
-                        if (txn.SmsRequestLog.ResponseLogs.Any(l => l.OperatorResponseCode == 0))
-                            return "Basarili";
-                        else
+                        if (txn.SmsRequestLog != null && txn.SmsRequestLog.ResponseLogs != null)
                         {
-                            return "Başarısız";
+                            if (txn.SmsRequestLog.ResponseLogs.Any(l => l.OperatorResponseCode == 0))
+                            {
+                                return "Basarili";
+                            }
+                            else
+                            {
+                                return "Başarısız";
+                            }
                         }
+
+                        break;
                     }
-                }
-            }
-            if (txn.TransactionType == TransactionType.TransactionalPush || txn.TransactionType == TransactionType.TransactionalTemplatedPush)
-            {
-                if (txn.PushNotificationRequestLog != null)
-                {
-                    if (txn.PushNotificationRequestLog.ResponseLogs != null)
+
+                case TransactionType.TransactionalPush:
+                case TransactionType.TransactionalTemplatedPush:
                     {
-                        if (txn.PushNotificationRequestLog.ResponseLogs.Any(l => l.ResponseCode == "0"))
-                            return "Basarili";
-                        else
+                        if (txn.PushNotificationRequestLog != null && txn.PushNotificationRequestLog.ResponseLogs != null)
                         {
-                            return "Başarısız";
+                            if (txn.PushNotificationRequestLog.ResponseLogs.Any(l => l.ResponseCode == "0"))
+                            {
+                                return "Basarili";
+                            }
+                            else
+                            {
+                                return "Başarısız";
+                            }
                         }
+
+                        break;
                     }
-                }
             }
 
             return "Başarısız";
         }
 
-        private async Task<OperatorReport> GetOperatorInfo(DateTime startDate, DateTime endDate, OperatorType @operator, bool isOtp, bool isFast)
-        {
-            var operatorReport = new OperatorReport();
-            operatorReport.Operator = @operator;
-            if (isOtp)
-            {
-
-                try
-                {
-                    operatorReport.OtpCount = await _repositoryManager.Transactions.GetSuccessfullOtpCount(startDate, endDate, @operator);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
-                try
-                {
-                    operatorReport.ForeignOtpCount = await _repositoryManager.Transactions.GetSuccessfullForeignOtpCount(startDate, endDate, @operator);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
-                try
-                {
-                    operatorReport.SuccessfullOtpRequestCount = await _repositoryManager.Transactions.GetOtpRequestCount(startDate, endDate, @operator, true);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
-                try
-                {
-                    operatorReport.UnsuccessfullOtpRequestCount = await _repositoryManager.Transactions.GetOtpRequestCount(startDate, endDate, @operator, false);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
-                try
-                {
-                    operatorReport.SuccessfullForeignOtpRequestCount = await _repositoryManager.Transactions.GetForeignOtpRequestCount(startDate, endDate, @operator, true);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
-                try
-                {
-                    operatorReport.UnsuccessfullForeignOtpRequestCount = await _repositoryManager.Transactions.GetForeignOtpRequestCount(startDate, endDate, @operator, false);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-            }
-
-            if (isFast)
-            {
-                try
-                {
-                    operatorReport.FastCount = await _repositoryManager.Transactions.GetSuccessfullSmsCount(startDate, endDate, @operator);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
-                try
-                {
-                    operatorReport.ForeignFastCount = await _repositoryManager.Transactions.GetSuccessfullForeignSmsCount(startDate, endDate, @operator);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
-                try
-                {
-                    operatorReport.SuccessfullFastRequestCount = await _repositoryManager.Transactions.GetSmsRequestCount(startDate, endDate, @operator, true);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
-                try
-                {
-                    operatorReport.UnsuccessfullFastRequestCount = await _repositoryManager.Transactions.GetSmsRequestCount(startDate, endDate, @operator, false);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
-                try
-                {
-                    operatorReport.SuccessfullForeignFastRequestCount = await _repositoryManager.Transactions.GetForeignSmsRequestCount(startDate, endDate, @operator, true);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
-                try
-                {
-                    operatorReport.UnsuccessfullForeignFastRequestCount = await _repositoryManager.Transactions.GetForeignSmsRequestCount(startDate, endDate, @operator, false);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-            }
-            return operatorReport;
-        }
-
         [HttpGet("operator/getFastOperator")]
-        public async Task<IActionResult> GetFastOperator()
+        public async Task<IActionResult> GetFastOperatorAsync()
         {
             return Ok(await _operatorManager.GetFastOperator());
         }
 
         [HttpPost("operator/changeFastOperator/{status}")]
-        public async Task<IActionResult> ChangeFastOperator(int status)
+        public async Task<IActionResult> ChangeFastOperatorAsync(int status)
         {
             await _operatorManager.ChangeFastOperator(status);
 
@@ -1934,7 +1715,7 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("customerprofiles/customer/{customerNo}")]
-        public async Task<IActionResult> GetCustomerByCustomerNo(ulong customerNo)
+        public async Task<IActionResult> GetCustomerByCustomerNoAsync(ulong customerNo)
         {
             var getCustomerProfileResponse = new GetCustomerProfileResponse();
 
@@ -1945,14 +1726,14 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("customerprofiles/citizen/{citizenshipNo}")]
-        public async Task<IActionResult> GetCustomerByCitizenshipNumber(string citizenshipNo)
+        public async Task<IActionResult> GetCustomerByCitizenshipNumberAsync(string citizenshipNo)
         {
             var customer = await _pusulaClient.GetCustomerByCitizenshipNumber(new GetByCitizenshipNumberRequest()
             {
                 CitizenshipNumber = citizenshipNo
             });
 
-             var getCustomerProfileResponse = new GetCustomerProfileResponse();
+            var getCustomerProfileResponse = new GetCustomerProfileResponse();
 
             if (customer.IsSuccess)
             {
@@ -1968,7 +1749,7 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("customerprofiles/phone/{countryCode}/{prefix}/{number}")]
-        public async Task<IActionResult> GetCustomerByPhoneNumber(int countryCode, int prefix, int number)
+        public async Task<IActionResult> GetCustomerByPhoneNumberAsync(int countryCode, int prefix, int number)
         {
             var customer = await _pusulaClient.GetCustomerByPhoneNumber(new GetByPhoneNumberRequest()
             {
@@ -1993,7 +1774,7 @@ namespace bbt.gateway.messaging.Controllers.v2
 
         [ApiExplorerSettings(IgnoreApi = true)]
         [HttpGet("customerprofiles/mail/{mail}")]
-        public async Task<IActionResult> GetCustomerByEmail(string mail)
+        public async Task<IActionResult> GetCustomerByEmailAsync(string mail)
         {
             var customer = await _pusulaClient.GetCustomerByEmail(new GetByEmailRequest()
             {
