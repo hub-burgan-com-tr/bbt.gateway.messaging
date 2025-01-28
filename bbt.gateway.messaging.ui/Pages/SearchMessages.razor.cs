@@ -1,6 +1,8 @@
 ﻿using bbt.gateway.common.Models;
 using bbt.gateway.messaging.ui.Data;
 using bbt.gateway.messaging.ui.Pages.Base;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using Radzen;
 using Radzen.Blazor;
@@ -9,6 +11,11 @@ namespace bbt.gateway.messaging.ui.Pages
 {
     public partial class SearchMessages : BaseComponent
     {
+        private string[]? _searchStaffMessageUsers;
+
+        [Inject]
+        private IConfiguration _configuration { get; set; }
+
         private IEnumerable<Transaction>? transactions;
         private SearchModel searchModel = new SearchModel();
         private int pageCount = 10;
@@ -18,6 +25,11 @@ namespace bbt.gateway.messaging.ui.Pages
         private RadzenDataGrid<Transaction> grid;
         private string base64Value = string.Empty;
         Transaction transactionFirst = new Transaction();
+        public bool IsAuthorized { get; set; } = false;
+        [CascadingParameter]
+        Task<AuthenticationState> AuthenticationStated { get; set; }
+        private string _sicil { get; set; }
+
         void SelectionChanged(int i)
         {
             searchModel.SelectedSearchType = i;
@@ -140,6 +152,18 @@ namespace bbt.gateway.messaging.ui.Pages
             if (firstRender)
             {
                 grid.EmptyText = "Hiç Kayıt Bulunamadı.";
+
+                var user = (await AuthenticationStated).User;
+
+                _sicil = user.Claims.Where(c => c.Type == "sicil").Select(c => c.Value).SingleOrDefault();
+
+                if (!string.IsNullOrEmpty(_sicil))
+                {
+                    _sicil = _sicil.Replace("EBT", "").Replace("\\", "");
+                }
+
+                if (!string.IsNullOrWhiteSpace(_configuration["SearchStaffMessageUsers"]))
+                    _searchStaffMessageUsers = _configuration["SearchStaffMessageUsers"]!.ToString().Split(",");
             }
         }
 
@@ -224,21 +248,32 @@ namespace bbt.gateway.messaging.ui.Pages
         {
             Phone phone = new Phone(searchModel.FilterValue);
 
-            var resProfile = await MessagingGateway.GetCustomerProfileByPhoneNumber(phone.CountryCode, phone.Prefix, phone.Number);
+            bool canSearchStaffMessageUsers = false;
 
-            if (resProfile.IsSuccess == false)
+            if (!string.IsNullOrEmpty(_sicil) && _searchStaffMessageUsers != null
+                          && _searchStaffMessageUsers.Length > 0 && _searchStaffMessageUsers.Contains(_sicil))
             {
-                OpenModal("Müşteri profil servisi hata aldı.");
-                return;
+                canSearchStaffMessageUsers = true;
             }
 
-            if (resProfile.IsStaff)
+            if (!canSearchStaffMessageUsers)
             {
-                OpenModal("Banka personeline ait mesajların gösterimi engellenmiştir.");
-                return;
+                var resProfile = await MessagingGateway.GetCustomerProfileByPhoneNumber(phone.CountryCode, phone.Prefix, phone.Number);
+
+                if (resProfile.IsSuccess == false)
+                {
+                    OpenModal("Müşteri profil servisi hata aldı.");
+                    return;
+                }
+
+                if (resProfile.IsStaff)
+                {
+                    OpenModal("Banka personeline ait mesajların gösterimi engellenmiştir.");
+                    return;
+                }
             }
 
-            var res = await MessagingGateway.GetTransactionsByPhone(new Phone(searchModel.FilterValue), CreateQueryParams());
+            var res = await MessagingGateway.GetTransactionsByPhone(phone, CreateQueryParams());
             transactions = res.Transactions.AsODataEnumerable();
             rowsCount = res.Count;
 
@@ -254,18 +289,29 @@ namespace bbt.gateway.messaging.ui.Pages
 
         async Task SearchWithMail()
         {
-            var resProfile = await MessagingGateway.GetCustomerProfileByEmail(searchModel.FilterValue);
+            bool canSearchStaffMessageUsers = false;
 
-            if (resProfile.IsSuccess == false)
+            if (!string.IsNullOrEmpty(_sicil) && _searchStaffMessageUsers != null
+                          && _searchStaffMessageUsers.Length > 0 && _searchStaffMessageUsers.Contains(_sicil))
             {
-                OpenModal("Müşteri profil servisi hata aldı.");
-                return;
+                canSearchStaffMessageUsers = true;
             }
 
-            if (resProfile.IsStaff)
+            if (!canSearchStaffMessageUsers)
             {
-                OpenModal("Banka personeline ait mesajların gösterimi engellenmiştir.");
-                return;
+                var resProfile = await MessagingGateway.GetCustomerProfileByEmail(searchModel.FilterValue);
+
+                if (resProfile.IsSuccess == false)
+                {
+                    OpenModal("Müşteri profil servisi hata aldı.");
+                    return;
+                }
+
+                if (resProfile.IsStaff)
+                {
+                    OpenModal("Banka personeline ait mesajların gösterimi engellenmiştir.");
+                    return;
+                } 
             }
 
             var res = await MessagingGateway.GetTransactionsByMail(searchModel.FilterValue, CreateQueryParams());
@@ -285,18 +331,29 @@ namespace bbt.gateway.messaging.ui.Pages
         {
             try
             {
-                var resProfile = await MessagingGateway.GetCustomerProfileByCustomerNo(Convert.ToUInt64(searchModel.FilterValue));
+                bool canSearchStaffMessageUsers = false;
 
-                if (resProfile.IsSuccess == false)
+                if (!string.IsNullOrEmpty(_sicil) && _searchStaffMessageUsers != null
+                              && _searchStaffMessageUsers.Length > 0 && _searchStaffMessageUsers.Contains(_sicil))
                 {
-                    OpenModal("Müşteri profil servisi hata aldı.");
-                    return;
+                    canSearchStaffMessageUsers = true;
                 }
 
-                if (resProfile.IsStaff)
+                if (!canSearchStaffMessageUsers)
                 {
-                    OpenModal("Banka personeline ait mesajların gösterimi engellenmiştir.");
-                    return;
+                    var resProfile = await MessagingGateway.GetCustomerProfileByCustomerNo(Convert.ToUInt64(searchModel.FilterValue));
+
+                    if (resProfile.IsSuccess == false)
+                    {
+                        OpenModal("Müşteri profil servisi hata aldı.");
+                        return;
+                    }
+
+                    if (resProfile.IsStaff)
+                    {
+                        OpenModal("Banka personeline ait mesajların gösterimi engellenmiştir.");
+                        return;
+                    } 
                 }
 
                 var res = await MessagingGateway.GetTransactionsByCustomerNo(Convert.ToUInt64(searchModel.FilterValue), Constants.MessageTypeMap[searchModel.MessageType], CreateQueryParams());
@@ -322,18 +379,29 @@ namespace bbt.gateway.messaging.ui.Pages
 
         async Task SearchWithCitizenshipNo()
         {
-            var resProfile = await MessagingGateway.GetCustomerProfileByCitizenshipNumber(searchModel.FilterValue);
+            bool canSearchStaffMessageUsers = false;
 
-            if (resProfile.IsSuccess == false)
+            if (!string.IsNullOrEmpty(_sicil) && _searchStaffMessageUsers != null
+                          && _searchStaffMessageUsers.Length > 0 && _searchStaffMessageUsers.Contains(_sicil))
             {
-                OpenModal("Müşteri profil servisi hata aldı.");
-                return;
+                canSearchStaffMessageUsers = true;
             }
 
-            if (resProfile.IsStaff)
+            if (!canSearchStaffMessageUsers)
             {
-                OpenModal("Banka personeline ait mesajların gösterimi engellenmiştir.");
-                return;
+                var resProfile = await MessagingGateway.GetCustomerProfileByCitizenshipNumber(searchModel.FilterValue);
+
+                if (resProfile.IsSuccess == false)
+                {
+                    OpenModal("Müşteri profil servisi hata aldı.");
+                    return;
+                }
+
+                if (resProfile.IsStaff)
+                {
+                    OpenModal("Banka personeline ait mesajların gösterimi engellenmiştir.");
+                    return;
+                } 
             }
 
             var res = await MessagingGateway.GetTransactionsByCitizenshipNo(searchModel.FilterValue, Constants.MessageTypeMap[searchModel.MessageType], CreateQueryParams());
