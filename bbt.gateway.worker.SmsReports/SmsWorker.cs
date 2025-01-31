@@ -14,6 +14,7 @@ namespace bbt.gateway.worker.SmsReports
     public class SmsWorker : BackgroundService
     {
         private const string PROCESS_NO_CACHE_KEY = "bbt_gateway_worker_sms_reports_process_no";
+        private const string _reportTimeFormat = "yyyy-MM-dd HH:mm:ss";
 
         private readonly IMessagingGatewayApi _messagingGatewayApi;
         private readonly ITracer _tracer;
@@ -23,7 +24,6 @@ namespace bbt.gateway.worker.SmsReports
         private IDistributedCache _distributedCache;
         private IConfiguration _configuration;
 
-        private Dictionary<int, DataDateRange> _dateRanges;
         public SmsWorker(LogManager logManager, ITracer tracer,
             IMessagingGatewayApi messagingGatewayApi, DbContextOptions<DatabaseContext> dbContextOptions,
             IHostApplicationLifetime hostApplicationLifetime, IDistributedCache distributedCache, IConfiguration configuration
@@ -35,7 +35,6 @@ namespace bbt.gateway.worker.SmsReports
             _dbContext = new DatabaseContext(dbContextOptions);
             _hostApplicationLifetime = hostApplicationLifetime;
             _distributedCache = distributedCache;
-            _dateRanges = new Dictionary<int, DataDateRange>();
             _configuration = configuration;
         }
 
@@ -56,57 +55,65 @@ namespace bbt.gateway.worker.SmsReports
                     {
                         var workerCount = Convert.ToInt32(_configuration["WorkerCount"]);
 
-                        var hourRange = 24 / workerCount;
-
                         var lastDay = DateTime.Now.AddDays(-1).Date;
                         var today = DateTime.Today;
 
-                        for (int i = 0; i < workerCount - 1; i++)
-                        {
-                            _dateRanges.Add(i + 1, new DataDateRange()
-                            {
-                                startDate = lastDay.AddHours(hourRange * i),
-                                endDate = lastDay.AddHours(hourRange * (i + 1))
-                            });
-                        }
-
-                        //Add Last Part
-                        _dateRanges.Add(workerCount, new DataDateRange()
-                        {
-                            startDate = _dateRanges[workerCount - 1].endDate,
-                            endDate = today
-                        });
+                        var cacheKey = PROCESS_NO_CACHE_KEY + "_" + lastDay.ToString("dd_MM_yyyy");
 
                         int currentProcessIndex;
-                        var processOrderFromCache = _distributedCache.GetString(PROCESS_NO_CACHE_KEY + "_" + lastDay.ToString("dd_MM_yyyy"));
+                        var processOrderFromCache = _distributedCache.GetString(cacheKey);
 
-                        if (processOrderFromCache is null)
+                        currentProcessIndex = processOrderFromCache is null ? 1 : Convert.ToInt32(processOrderFromCache) + 1;
+
+                        await _distributedCache.SetStringAsync(cacheKey,
+                                                               currentProcessIndex.ToString(),
+                                                               new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromHours(24) }
+                                                               );
+
+                        string? reportStartDate;
+                        string? reportEndDate;
+
+                        if (currentProcessIndex <= workerCount)
                         {
-                            currentProcessIndex = 1;
+                            var dateRanges = new Dictionary<int, DataDateRange>();
+                            var hourRange = 24 / workerCount;
 
-                            await _distributedCache.SetStringAsync(PROCESS_NO_CACHE_KEY + "_" + lastDay.ToString("dd_MM_yyyy"),
-                                                                    currentProcessIndex.ToString(),
-                                                                    new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromHours(24) }
-                                                                    );
+                            for (int i = 0; i < workerCount - 1; i++)
+                            {
+                                dateRanges.Add(i + 1, new DataDateRange()
+                                {
+                                    startDate = lastDay.AddHours(hourRange * i),
+                                    endDate = lastDay.AddHours(hourRange * (i + 1))
+                                });
+                            }
+
+                            //Add Last Part
+                            dateRanges.Add(workerCount, new DataDateRange()
+                            {
+                                startDate = dateRanges[workerCount - 1].endDate,
+                                endDate = today
+                            });
+
+                            reportStartDate = dateRanges[currentProcessIndex].startDate.ToString(_reportTimeFormat);
+                            reportEndDate = dateRanges[currentProcessIndex].endDate.ToString(_reportTimeFormat);
                         }
                         else
                         {
-                            currentProcessIndex = Convert.ToInt32(processOrderFromCache) + 1;
-
-                            await _distributedCache.SetStringAsync(PROCESS_NO_CACHE_KEY + "_" + lastDay.ToString("dd_MM_yyyy"), 
-                                                                    currentProcessIndex.ToString(), 
-                                                                    new DistributedCacheEntryOptions { SlidingExpiration = TimeSpan.FromHours(24) }
-                                                                    );
+                            reportStartDate = lastDay.ToString(_reportTimeFormat);
+                            reportEndDate = today.ToString(_reportTimeFormat);
                         }
 
                         _logManager.LogInformation("Current Process Index : " + currentProcessIndex);
-                        _logManager.LogInformation("Start Date : " + _dateRanges[currentProcessIndex].startDate.ToString("yyyy-MM-dd HH:mm:ss"));
-                        _logManager.LogInformation("End Date : " + _dateRanges[currentProcessIndex].endDate.ToString("yyyy-MM-dd HH:mm:ss"));
+                        _logManager.LogInformation("Start Date : " + reportStartDate);
+                        _logManager.LogInformation("End Date : " + reportEndDate);
 
                         var smsResponseLogs = await _dbContext.SmsResponseLog.
-                        FromSqlRaw("Select * from SmsResponseLog (NOLOCK) WHERE OperatorResponseCode = 0 AND CreatedAt Between {0} AND {1} AND (status is null OR status = '')", 
-                                     _dateRanges[currentProcessIndex].startDate.ToString("yyyy-MM-dd HH:mm:ss"), 
-                                     _dateRanges[currentProcessIndex].endDate.ToString("yyyy-MM-dd HH:mm:ss"))
+                        FromSqlRaw("Select * from SmsResponseLog (NOLOCK) " +
+                                    "WHERE OperatorResponseCode = 0 " +
+                                    "AND CreatedAt Between {0} " + "AND {1} " +
+                                    "AND (status is null OR status = '')",
+                                     reportStartDate,
+                                     reportEndDate)
                         .AsNoTracking().ToListAsync();
 
                         _logManager.LogInformation("Sms Count : " + smsResponseLogs.Count);
